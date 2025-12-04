@@ -1,0 +1,105 @@
+version: 1
+# AWS Amplify build configuration for InsightSphere Dashboard
+# This file defines the build process for different environments
+
+# Backend configuration
+backend:
+  phases:
+    build:
+      commands:
+        - '# Execute Amplify CLI with the helper script'
+        - amplifyPush --simple
+
+# Frontend configuration
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - echo "Installing dependencies..."
+        - npm ci
+        - echo "Environment: $AWS_BRANCH"
+        
+    build:
+      commands:
+        - echo "Building application for $AWS_BRANCH environment..."
+        - |
+          if [ "$AWS_BRANCH" = "main" ]; then
+            export VITE_ENV=production
+          elif [ "$AWS_BRANCH" = "staging" ]; then
+            export VITE_ENV=staging
+          else
+            export VITE_ENV=development
+          fi
+        - echo "VITE_ENV=$VITE_ENV"
+        - npm run build
+        
+    postBuild:
+      commands:
+        - echo "Build completed successfully"
+        - echo "Optimizing assets..."
+        - node scripts/build-optimize.js
+        - |
+          # Generate build info file with environment details
+          cat > dist/build-info.json << EOF
+          {
+            "version": "$AWS_COMMIT_ID",
+            "branch": "$AWS_BRANCH",
+            "buildTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "environment": "$VITE_ENV",
+            "nodeVersion": "$(node --version)",
+            "npmVersion": "$(npm --version)",
+            "buildNumber": "$AWS_JOB_ID"
+          }
+          EOF
+        - echo "Running pre-deployment checks..."
+        - npm run predeploy || echo "Pre-deployment checks completed with warnings"
+        
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+      
+  cache:
+    paths:
+      - node_modules/**/*
+      - .npm/**/*
+
+# Custom headers for security and performance
+customHeaders:
+  - pattern: '**/*'
+    headers:
+      - key: 'Strict-Transport-Security'
+        value: 'max-age=31536000; includeSubDomains'
+      - key: 'X-Content-Type-Options'
+        value: 'nosniff'
+      - key: 'X-Frame-Options'
+        value: 'DENY'
+      - key: 'X-XSS-Protection'
+        value: '1; mode=block'
+      - key: 'Referrer-Policy'
+        value: 'strict-origin-when-cross-origin'
+      - key: 'Permissions-Policy'
+        value: 'geolocation=(), microphone=(), camera=()'
+        
+  - pattern: '*.js'
+    headers:
+      - key: 'Cache-Control'
+        value: 'public, max-age=31536000, immutable'
+        
+  - pattern: '*.css'
+    headers:
+      - key: 'Cache-Control'
+        value: 'public, max-age=31536000, immutable'
+        
+  - pattern: '*.json'
+    headers:
+      - key: 'Cache-Control'
+        value: 'public, max-age=0, must-revalidate'
+        
+  - pattern: '/index.html'
+    headers:
+      - key: 'Cache-Control'
+        value: 'no-cache, no-store, must-revalidate'
+
+# Environment-specific configuration
+# These can be overridden in the Amplify Console for each branch

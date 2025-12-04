@@ -1,0 +1,4 @@
+insightsphere
+Yes
+AWS profile
+default

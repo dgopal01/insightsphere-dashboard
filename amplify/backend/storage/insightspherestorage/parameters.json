@@ -1,0 +1,32 @@
+{
+  "bucketName": "insightsphere-exports",
+  "authPolicyName": "s3_amplify_policy",
+  "unauthPolicyName": "s3_amplify_unauth_policy",
+  "authRoleName": {
+    "Ref": "AuthRoleName"
+  },
+  "unauthRoleName": {
+    "Ref": "UnauthRoleName"
+  },
+  "selectedGuestPermissions": [],
+  "selectedAuthenticatedPermissions": [
+    "s3:PutObject",
+    "s3:GetObject",
+    "s3:ListBucket",
+    "s3:DeleteObject"
+  ],
+  "s3PermissionsAuthenticatedPublic": "DISALLOW",
+  "s3PublicPolicy": "DISALLOW",
+  "s3PermissionsAuthenticatedUploads": "DISALLOW",
+  "s3UploadsPublicPolicy": "DISALLOW",
+  "s3PermissionsAuthenticatedProtected": "DISALLOW",
+  "s3ProtectedPolicy": "DISALLOW",
+  "s3PermissionsAuthenticatedPrivate": "s3:PutObject,s3:GetObject,s3:DeleteObject",
+  "s3PrivatePolicy": "Private_policy_UUID",
+  "AuthenticatedAllowList": "ALLOW",
+  "s3ReadPolicy": "Private_policy_UUID",
+  "s3UploadPolicy": "Private_policy_UUID",
+  "s3DeletePolicy": "Private_policy_UUID",
+  "policyUUID": "UUID",
+  "storageAccess": "authAndGuest"
+}

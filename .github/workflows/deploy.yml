@@ -1,0 +1,240 @@
+name: Deploy InsightSphere Dashboard
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - staging
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  # Job 1: Run tests and linting
+  test:
+    name: Test and Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run type checking
+        run: npm run type-check
+      
+      - name: Run linting
+        run: npm run lint
+      
+      - name: Run format check
+        run: npm run format:check
+      
+      - name: Run tests
+        run: npm run test:coverage
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # Job 2: Build application
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: test
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Set environment variables
+        run: |
+          if [ "${{ matrix.environment }}" == "production" ]; then
+            echo "VITE_ENV=production" >> $GITHUB_ENV
+          elif [ "${{ matrix.environment }}" == "staging" ]; then
+            echo "VITE_ENV=staging" >> $GITHUB_ENV
+          else
+            echo "VITE_ENV=development" >> $GITHUB_ENV
+          fi
+      
+      - name: Build application
+        run: |
+          if [ "${{ matrix.environment }}" == "production" ]; then
+            npm run build:prod
+          elif [ "${{ matrix.environment }}" == "staging" ]; then
+            npm run build:staging
+          else
+            npm run build:dev
+          fi
+        env:
+          VITE_ENV: ${{ env.VITE_ENV }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      
+      - name: Run pre-deployment checks
+        run: npm run predeploy
+        env:
+          VITE_ENV: ${{ env.VITE_ENV }}
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.environment }}
+          path: dist/
+          retention-days: 7
+
+  # Job 3: Deploy to development
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    environment:
+      name: development
+      url: https://dev.insightsphere.example.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-development
+          path: dist/
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Deploy to Amplify
+        run: |
+          echo "Deploying to Amplify Development environment"
+          # Amplify will automatically deploy from the develop branch
+          # This step can be used for additional deployment tasks if needed
+
+  # Job 4: Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+    environment:
+      name: staging
+      url: https://staging.insightsphere.example.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-staging
+          path: dist/
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_STAGING }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_STAGING }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Deploy to Amplify
+        run: |
+          echo "Deploying to Amplify Staging environment"
+          # Amplify will automatically deploy from the staging branch
+
+  # Job 5: Deploy to production
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://insightsphere.example.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-production
+          path: dist/
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      
+      - name: Deploy to Amplify
+        run: |
+          echo "Deploying to Amplify Production environment"
+          # Amplify will automatically deploy from the main branch
+      
+      - name: Create Sentry release
+        if: env.VITE_SENTRY_DSN != ''
+        run: |
+          curl -sL https://sentry.io/get-cli/ | bash
+          sentry-cli releases new "${{ github.sha }}"
+          sentry-cli releases set-commits "${{ github.sha }}" --auto
+          sentry-cli releases finalize "${{ github.sha }}"
+          sentry-cli releases deploys "${{ github.sha }}" new -e production
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+
+  # Job 6: Notify deployment status
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [deploy-dev, deploy-staging, deploy-prod]
+    if: always()
+    
+    steps:
+      - name: Send notification
+        run: |
+          echo "Deployment completed. Status: ${{ needs.deploy-prod.result || needs.deploy-staging.result || needs.deploy-dev.result }}"
+          # Add Slack, email, or other notification integrations here
