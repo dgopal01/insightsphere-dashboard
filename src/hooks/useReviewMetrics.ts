@@ -86,12 +86,13 @@ export function useReviewMetrics(
       setError(null);
 
       // Fetch all chat logs and feedback logs to calculate metrics
+      // Note: Using the actual AppSync resolver names (listChatLogs, listFeedback)
       const [chatLogsResponse, feedbackLogsResponse] = await Promise.all([
-        apiService.query<{ listUnityAIAssistantLogs: { items: any[] } }>(
-          `query ListUnityAIAssistantLogs($limit: Int) {
-            listUnityAIAssistantLogs(limit: $limit) {
+        apiService.query<{ listChatLogs: { items: any[] } }>(
+          `query ListChatLogs($limit: Int) {
+            listChatLogs(limit: $limit) {
               items {
-                log_id
+                id
                 rev_comment
                 rev_feedback
               }
@@ -99,9 +100,9 @@ export function useReviewMetrics(
           }`,
           { limit: 1000 }
         ),
-        apiService.query<{ listUserFeedbacks: { items: any[] } }>(
-          `query ListUserFeedbacks($limit: Int) {
-            listUserFeedbacks(limit: $limit) {
+        apiService.query<{ listFeedback: { items: any[] } }>(
+          `query ListFeedback($limit: Int) {
+            listFeedback(limit: $limit) {
               items {
                 id
                 rev_comment
@@ -113,8 +114,8 @@ export function useReviewMetrics(
         ),
       ]);
 
-      const chatLogs = chatLogsResponse.listUnityAIAssistantLogs.items;
-      const feedbackLogs = feedbackLogsResponse.listUserFeedbacks.items;
+      const chatLogs = chatLogsResponse.listChatLogs.items;
+      const feedbackLogs = feedbackLogsResponse.listFeedback.items;
 
       // Calculate chat logs metrics
       const totalChatLogs = chatLogs.length;

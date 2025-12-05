@@ -6,7 +6,7 @@
 
 import { useState, useCallback } from 'react';
 import { apiService } from '../services';
-import { listUnityAIAssistantLogs } from '../graphql/queries';
+import { listChatLogs } from '../graphql/queries';
 import { updateUnityAIAssistantLog } from '../graphql/mutations';
 import type {
   ChatLogEntry,
@@ -142,12 +142,12 @@ export function useChatLogs(): UseChatLogsReturn {
           limit: 50,
         };
 
-        const result = await apiService.query<{ listUnityAIAssistantLogs: ListUnityAIAssistantLogsResponse }>(
-          listUnityAIAssistantLogs,
+        const result = await apiService.query<{ listChatLogs: ListUnityAIAssistantLogsResponse }>(
+          listChatLogs,
           variables
         );
 
-        const response = result.listUnityAIAssistantLogs;
+        const response = result.listChatLogs;
         const sortedLogs = sortLogs(response.items, sortDirection);
 
         setLogs(sortedLogs);
@@ -183,12 +183,12 @@ export function useChatLogs(): UseChatLogsReturn {
         nextToken,
       };
 
-      const result = await apiService.query<{ listUnityAIAssistantLogs: ListUnityAIAssistantLogsResponse }>(
-        listUnityAIAssistantLogs,
+      const result = await apiService.query<{ listChatLogs: ListUnityAIAssistantLogsResponse }>(
+        listChatLogs,
         variables
       );
 
-      const response = result.listUnityAIAssistantLogs;
+      const response = result.listChatLogs;
       const sortedNewLogs = sortLogs(response.items, currentSortDirection);
 
       setLogs((prevLogs) => [...prevLogs, ...sortedNewLogs]);

@@ -6,7 +6,7 @@
 
 import { useState, useCallback } from 'react';
 import { apiService } from '../services';
-import { listUserFeedbacks } from '../graphql/queries';
+import { listFeedback } from '../graphql/queries';
 import { updateUserFeedback } from '../graphql/mutations';
 import type {
   FeedbackLogEntry,
@@ -142,12 +142,12 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
           limit: 50,
         };
 
-        const result = await apiService.query<{ listUserFeedbacks: ListUserFeedbacksResponse }>(
-          listUserFeedbacks,
+        const result = await apiService.query<{ listFeedback: ListUserFeedbacksResponse }>(
+          listFeedback,
           variables
         );
 
-        const response = result.listUserFeedbacks;
+        const response = result.listFeedback;
         const sortedLogs = sortLogs(response.items, sortDirection);
 
         setLogs(sortedLogs);
@@ -183,12 +183,12 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
         nextToken,
       };
 
-      const result = await apiService.query<{ listUserFeedbacks: ListUserFeedbacksResponse }>(
-        listUserFeedbacks,
+      const result = await apiService.query<{ listFeedback: ListUserFeedbacksResponse }>(
+        listFeedback,
         variables
       );
 
-      const response = result.listUserFeedbacks;
+      const response = result.listFeedback;
       const sortedNewLogs = sortLogs(response.items, currentSortDirection);
 
       setLogs((prevLogs) => [...prevLogs, ...sortedNewLogs]);
