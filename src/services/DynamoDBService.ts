@@ -17,23 +17,38 @@ const AWS_REGION = import.meta.env.VITE_AWS_REGION || 'us-east-1';
  * Get DynamoDB client with Cognito credentials
  */
 async function getDynamoDBClient(): Promise<DynamoDBDocumentClient> {
-  const session = await fetchAuthSession();
-  const credentials = session.credentials;
+  try {
+    const session = await fetchAuthSession();
+    
+    // Check if we have credentials
+    if (!session.credentials) {
+      console.error('No credentials in session:', session);
+      throw new Error('No credentials available. Please ensure you are signed in and the Identity Pool is configured.');
+    }
 
-  if (!credentials) {
-    throw new Error('No credentials available');
+    const credentials = session.credentials;
+    
+    console.log('Creating DynamoDB client with credentials from:', {
+      identityId: session.identityId,
+      hasAccessKey: !!credentials.accessKeyId,
+      hasSecretKey: !!credentials.secretAccessKey,
+      hasSessionToken: !!credentials.sessionToken,
+    });
+
+    const client = new DynamoDBClient({
+      region: AWS_REGION,
+      credentials: {
+        accessKeyId: credentials.accessKeyId,
+        secretAccessKey: credentials.secretAccessKey,
+        sessionToken: credentials.sessionToken,
+      },
+    });
+
+    return DynamoDBDocumentClient.from(client);
+  } catch (error) {
+    console.error('Error getting DynamoDB client:', error);
+    throw new Error(`Failed to get DynamoDB client: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
-
-  const client = new DynamoDBClient({
-    region: AWS_REGION,
-    credentials: {
-      accessKeyId: credentials.accessKeyId,
-      secretAccessKey: credentials.secretAccessKey,
-      sessionToken: credentials.sessionToken,
-    },
-  });
-
-  return DynamoDBDocumentClient.from(client);
 }
 
 /**
