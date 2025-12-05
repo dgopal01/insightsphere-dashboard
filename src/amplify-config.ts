@@ -16,6 +16,7 @@ export const configureAmplify = () => {
       Cognito: {
         userPoolId: awsconfig.aws_user_pools_id,
         userPoolClientId: awsconfig.aws_user_pools_web_client_id,
+        identityPoolId: awsconfig.aws_cognito_identity_pool_id,
         loginWith: {
           email: true,
         },
@@ -35,4 +36,6 @@ export const configureAmplify = () => {
       },
     },
   });
+  
+  console.log('Amplify configured with Identity Pool:', awsconfig.aws_cognito_identity_pool_id);
 };
