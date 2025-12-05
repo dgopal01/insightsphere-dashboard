@@ -161,7 +161,9 @@ export const MonitoringDashboard = () => {
               const vital = getLatestWebVital(vitalName);
               return (
                 <Grid size={{ xs: 12, sm: 6, md: 2.4 }} key={vitalName}>
-                  <Box sx={{ textAlign: 'center', p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                  <Box
+                    sx={{ textAlign: 'center', p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}
+                  >
                     <Typography variant="subtitle2" color="text.secondary">
                       {vitalName}
                     </Typography>
@@ -209,9 +211,7 @@ export const MonitoringDashboard = () => {
                 <TableBody>
                   {recentErrors.map((error, index) => (
                     <TableRow key={index}>
-                      <TableCell>
-                        {new Date(error.timestamp).toLocaleTimeString()}
-                      </TableCell>
+                      <TableCell>{new Date(error.timestamp).toLocaleTimeString()}</TableCell>
                       <TableCell>{error.action}</TableCell>
                       <TableCell>{error.label || 'N/A'}</TableCell>
                       <TableCell>{error.userId || 'Anonymous'}</TableCell>
@@ -244,9 +244,7 @@ export const MonitoringDashboard = () => {
                 <TableBody>
                   {recentApiCalls.map((call, index) => (
                     <TableRow key={index}>
-                      <TableCell>
-                        {new Date(call.timestamp).toLocaleTimeString()}
-                      </TableCell>
+                      <TableCell>{new Date(call.timestamp).toLocaleTimeString()}</TableCell>
                       <TableCell>{call.action}</TableCell>
                       <TableCell>{call.value?.toFixed(0) || 'N/A'}</TableCell>
                       <TableCell>

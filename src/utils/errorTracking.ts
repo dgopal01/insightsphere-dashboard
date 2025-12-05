@@ -189,12 +189,15 @@ export const addBreadcrumb = (
  * Start a performance transaction
  */
 export const startTransaction = (name: string, op: string) => {
-  return Sentry.startSpan({
-    name,
-    op,
-  }, () => {
-    // Transaction logic here
-  });
+  return Sentry.startSpan(
+    {
+      name,
+      op,
+    },
+    () => {
+      // Transaction logic here
+    }
+  );
 };
 
 /**

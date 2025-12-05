@@ -138,10 +138,7 @@ export const trackUserAction = async (action: string, value?: number): Promise<v
 /**
  * Track error metrics
  */
-export const trackErrorMetric = async (
-  errorType: string,
-  errorMessage: string
-): Promise<void> => {
+export const trackErrorMetric = async (errorType: string, errorMessage: string): Promise<void> => {
   await sendMetricToCloudWatch({
     namespace: 'InsightSphere/Errors',
     metricName: 'ErrorCount',
@@ -212,9 +209,7 @@ export const getCloudWatchDashboardConfig = () => {
         {
           type: 'metric',
           properties: {
-            metrics: [
-              ['InsightSphere/API', 'ApiCallCount', { stat: 'Sum' }],
-            ],
+            metrics: [['InsightSphere/API', 'ApiCallCount', { stat: 'Sum' }]],
             period: 300,
             stat: 'Sum',
             region: 'us-east-1',
@@ -224,9 +219,7 @@ export const getCloudWatchDashboardConfig = () => {
         {
           type: 'metric',
           properties: {
-            metrics: [
-              ['InsightSphere/Errors', 'ErrorCount', { stat: 'Sum' }],
-            ],
+            metrics: [['InsightSphere/Errors', 'ErrorCount', { stat: 'Sum' }]],
             period: 300,
             stat: 'Sum',
             region: 'us-east-1',

@@ -149,7 +149,9 @@ export const FeedbackList: React.FC<FeedbackListProps> = ({
       return {
         groupKey: key,
         groupLabel,
-        items: items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()),
+        items: items.sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        ),
       };
     });
 
@@ -387,7 +389,7 @@ export const FeedbackList: React.FC<FeedbackListProps> = ({
               alignItems: 'center',
               cursor: 'pointer',
               '&:hover': { bgcolor: 'action.hover' },
-              '&:focus-within': { 
+              '&:focus-within': {
                 outline: '2px solid',
                 outlineColor: 'primary.main',
                 outlineOffset: '2px',
@@ -419,7 +421,11 @@ export const FeedbackList: React.FC<FeedbackListProps> = ({
         )}
 
         {isExpanded && (
-          <Box id={`group-content-${group.groupKey}`} role="region" aria-label={`${group.groupLabel} feedback entries`}>
+          <Box
+            id={`group-content-${group.groupKey}`}
+            role="region"
+            aria-label={`${group.groupLabel} feedback entries`}
+          >
             {group.items.length === 0 ? (
               <Typography variant="body2" color="text.secondary" sx={{ p: 2 }}>
                 No feedback in this group
@@ -473,9 +479,9 @@ export const FeedbackList: React.FC<FeedbackListProps> = ({
       {onGroupByChange && (
         <FormControl fullWidth sx={{ mb: 3 }}>
           <InputLabel id="group-by-label">Group By</InputLabel>
-          <Select 
-            value={groupBy} 
-            onChange={handleGroupByChange} 
+          <Select
+            value={groupBy}
+            onChange={handleGroupByChange}
             label="Group By"
             labelId="group-by-label"
             inputProps={{
@@ -496,9 +502,9 @@ export const FeedbackList: React.FC<FeedbackListProps> = ({
       {/* Load More Button (for pagination when not grouped) */}
       {groupBy === 'none' && hasMore && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          <Button 
-            variant="outlined" 
-            onClick={handleLoadMore} 
+          <Button
+            variant="outlined"
+            onClick={handleLoadMore}
             size="large"
             aria-label="Load more feedback entries"
             sx={{
@@ -518,8 +524,11 @@ export const FeedbackList: React.FC<FeedbackListProps> = ({
       {feedback.length > 0 && (
         <Box sx={{ mt: 3, textAlign: 'center' }}>
           <Typography variant="caption" color="text.secondary">
-            Showing {groupBy === 'none' ? Math.min((page + 1) * itemsPerPage, feedback.length) : feedback.length} of{' '}
-            {feedback.length} feedback {feedback.length !== 1 ? 'entries' : 'entry'}
+            Showing{' '}
+            {groupBy === 'none'
+              ? Math.min((page + 1) * itemsPerPage, feedback.length)
+              : feedback.length}{' '}
+            of {feedback.length} feedback {feedback.length !== 1 ? 'entries' : 'entry'}
           </Typography>
         </Box>
       )}

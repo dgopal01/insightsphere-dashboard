@@ -50,7 +50,13 @@ const columns: Column[] = [
   { id: 'conversationId', label: 'Conversation ID', minWidth: 150, sortable: true },
   { id: 'userMessage', label: 'User Message', minWidth: 200, sortable: false },
   { id: 'aiResponse', label: 'AI Response', minWidth: 200, sortable: false },
-  { id: 'responseTime', label: 'Response Time (ms)', minWidth: 100, align: 'right', sortable: true },
+  {
+    id: 'responseTime',
+    label: 'Response Time (ms)',
+    minWidth: 100,
+    align: 'right',
+    sortable: true,
+  },
   { id: 'accuracy', label: 'Accuracy', minWidth: 100, align: 'center', sortable: true },
 ];
 
@@ -83,7 +89,6 @@ export const VirtualizedLogTable: React.FC<VirtualizedLogTableProps> = ({
   onRowClick,
   height = 600,
 }) => {
-
   const [orderBy, setOrderBy] = useState<ColumnId>('timestamp');
   const [order, setOrder] = useState<Order>('desc');
   const listRef = useRef<FixedSizeList>(null);

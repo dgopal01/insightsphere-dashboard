@@ -1,6 +1,144 @@
 /**
- * GraphQL Queries for InsightSphere Dashboard
+ * GraphQL Queries for InsightSphere Dashboard and Chat Logs Review System
  */
+
+// ============================================================================
+// Chat Logs Review System Queries
+// ============================================================================
+
+/**
+ * Get a single Unity AI Assistant Log by log_id
+ */
+export const getUnityAIAssistantLog = /* GraphQL */ `
+  query GetUnityAIAssistantLog($log_id: ID!) {
+    getUnityAIAssistantLog(log_id: $log_id) {
+      log_id
+      timestamp
+      carrier_name
+      chat_id
+      citation
+      fi_name
+      guardrail_id
+      guardrail_intervened
+      model_id
+      question
+      response
+      rev_comment
+      rev_feedback
+      session_id
+      user_name
+      usr_comment
+      usr_feedback
+    }
+  }
+`;
+
+/**
+ * List Unity AI Assistant Logs with optional filtering and pagination
+ */
+export const listUnityAIAssistantLogs = /* GraphQL */ `
+  query ListUnityAIAssistantLogs(
+    $filter: ModelUnityAIAssistantLogFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listUnityAIAssistantLogs(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        log_id
+        timestamp
+        carrier_name
+        chat_id
+        citation
+        fi_name
+        guardrail_id
+        guardrail_intervened
+        model_id
+        question
+        response
+        rev_comment
+        rev_feedback
+        session_id
+        user_name
+        usr_comment
+        usr_feedback
+      }
+      nextToken
+    }
+  }
+`;
+
+/**
+ * Get a single User Feedback by id
+ */
+export const getUserFeedback = /* GraphQL */ `
+  query GetUserFeedback($id: ID!) {
+    getUserFeedback(id: $id) {
+      id
+      datetime
+      carrier
+      comments
+      feedback
+      question
+      response
+      session_id
+      type
+      username
+      user_name
+      rev_comment
+      rev_feedback
+    }
+  }
+`;
+
+/**
+ * List User Feedbacks with optional filtering and pagination
+ */
+export const listUserFeedbacks = /* GraphQL */ `
+  query ListUserFeedbacks(
+    $filter: ModelUserFeedbackFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listUserFeedbacks(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        datetime
+        carrier
+        comments
+        feedback
+        question
+        response
+        session_id
+        type
+        username
+        user_name
+        rev_comment
+        rev_feedback
+      }
+      nextToken
+    }
+  }
+`;
+
+/**
+ * Get review metrics for dashboard
+ */
+export const getReviewMetrics = /* GraphQL */ `
+  query GetReviewMetrics {
+    getReviewMetrics {
+      totalChatLogs
+      reviewedChatLogs
+      pendingChatLogs
+      totalFeedbackLogs
+      reviewedFeedbackLogs
+      pendingFeedbackLogs
+    }
+  }
+`;
+
+// ============================================================================
+// InsightSphere Dashboard Queries (Legacy)
+// ============================================================================
 
 /**
  * Get a single chat log by ID

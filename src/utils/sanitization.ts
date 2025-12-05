@@ -48,9 +48,7 @@ export function sanitizeText(input: string | null | undefined): string {
  * @param comment - The feedback comment to sanitize
  * @returns Sanitized comment safe for display
  */
-export function sanitizeFeedbackComment(
-  comment: string | null | undefined
-): string {
+export function sanitizeFeedbackComment(comment: string | null | undefined): string {
   return sanitizeText(comment);
 }
 
@@ -61,9 +59,7 @@ export function sanitizeFeedbackComment(
  * @param searchInput - The search query to sanitize
  * @returns Sanitized search query safe for display
  */
-export function sanitizeSearchInput(
-  searchInput: string | null | undefined
-): string {
+export function sanitizeSearchInput(searchInput: string | null | undefined): string {
   if (!searchInput) {
     return '';
   }
@@ -90,20 +86,7 @@ export function sanitizeHtml(html: string | null | undefined): string {
   }
 
   return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
-      'b',
-      'i',
-      'em',
-      'strong',
-      'br',
-      'p',
-      'ul',
-      'ol',
-      'li',
-      'a',
-      'span',
-      'div',
-    ],
+    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br', 'p', 'ul', 'ol', 'li', 'a', 'span', 'div'],
     ALLOWED_ATTR: ['href', 'target', 'rel'],
     KEEP_CONTENT: true,
     RETURN_DOM: false,

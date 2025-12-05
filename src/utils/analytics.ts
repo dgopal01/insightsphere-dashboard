@@ -223,7 +223,11 @@ export const trackApiCall = (apiName: string, duration: number, success: boolean
 /**
  * Track error
  */
-export const trackError = (errorType: string, errorMessage: string, metadata?: Record<string, unknown>) => {
+export const trackError = (
+  errorType: string,
+  errorMessage: string,
+  metadata?: Record<string, unknown>
+) => {
   trackEvent({
     type: 'error',
     category: 'Error',

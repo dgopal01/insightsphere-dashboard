@@ -11,7 +11,7 @@ import { Refresh, WifiOff, ErrorOutline, Lock } from '@mui/icons-material';
 /**
  * Error types
  */
-export type ErrorType = 'network' | 'authentication' | 'validation' | 'server' | 'unknown';
+export type ErrorType = 'network' | 'authentication' | 'graphql' | 'validation' | 'application' | 'server' | 'unknown';
 
 /**
  * Props for ErrorDisplay component
@@ -50,8 +50,15 @@ function getUserFriendlyMessage(error: Error | string, type: ErrorType): string 
       return 'Unable to connect to the server. Please check your internet connection and try again.';
     case 'authentication':
       return 'Your session has expired or you do not have permission to access this resource. Please sign in again.';
+    case 'graphql':
+      return 'There was an error processing your request. Please try again.';
     case 'validation':
-      return errorMessage || 'The information you provided is invalid. Please check your input and try again.';
+      return (
+        errorMessage ||
+        'The information you provided is invalid. Please check your input and try again.'
+      );
+    case 'application':
+      return 'The application encountered an error. Please refresh the page and try again.';
     case 'server':
       return 'The server encountered an error while processing your request. Please try again later.';
     default:
@@ -68,8 +75,12 @@ function getErrorTitle(type: ErrorType): string {
       return 'Connection Error';
     case 'authentication':
       return 'Authentication Error';
+    case 'graphql':
+      return 'Request Error';
     case 'validation':
       return 'Validation Error';
+    case 'application':
+      return 'Application Error';
     case 'server':
       return 'Server Error';
     default:
@@ -130,10 +141,10 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
 
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
             {onRetry && (
-              <Button 
-                variant="contained" 
-                color="primary" 
-                startIcon={<Refresh />} 
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<Refresh />}
                 onClick={onRetry}
                 aria-label="Retry the failed operation"
                 sx={{
@@ -149,8 +160,8 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
             )}
 
             {onDismiss && (
-              <Button 
-                variant="outlined" 
+              <Button
+                variant="outlined"
                 onClick={onDismiss}
                 aria-label="Dismiss error message"
                 sx={{
@@ -178,10 +189,10 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
       onClose={onDismiss}
       action={
         onRetry && (
-          <Button 
-            color="inherit" 
-            size="small" 
-            startIcon={<Refresh />} 
+          <Button
+            color="inherit"
+            size="small"
+            startIcon={<Refresh />}
             onClick={onRetry}
             aria-label="Retry the failed operation"
           >

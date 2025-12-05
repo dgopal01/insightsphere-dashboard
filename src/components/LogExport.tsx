@@ -5,15 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import {
-  Button,
-  CircularProgress,
-  Box,
-  Alert,
-  Link,
-  Typography,
-  Snackbar,
-} from '@mui/material';
+import { Button, CircularProgress, Box, Alert, Link, Typography, Snackbar } from '@mui/material';
 import { Download, CheckCircle } from '@mui/icons-material';
 import type { ChatLog } from '../types/graphql';
 import { storageService } from '../services/StorageService';
@@ -137,7 +129,7 @@ export const LogExport: React.FC<LogExportProps> = ({
         onProgress: (progress) => {
           if (progress.totalBytes) {
             const percentage = Math.round((progress.transferredBytes / progress.totalBytes) * 100);
-            setState((prev) => ({ ...prev, progress: 33 + (percentage * 0.33) }));
+            setState((prev) => ({ ...prev, progress: 33 + percentage * 0.33 }));
           }
         },
       });
@@ -187,10 +179,12 @@ export const LogExport: React.FC<LogExportProps> = ({
       <Button
         variant="contained"
         color="primary"
-        startIcon={state.isExporting ? <CircularProgress size={20} color="inherit" /> : <Download />}
+        startIcon={
+          state.isExporting ? <CircularProgress size={20} color="inherit" /> : <Download />
+        }
         onClick={handleExport}
         disabled={disabled || state.isExporting || logs.length === 0}
-        sx={{ 
+        sx={{
           mb: 2,
           '&:focus-visible': {
             outline: '2px solid',
@@ -198,7 +192,11 @@ export const LogExport: React.FC<LogExportProps> = ({
             outlineOffset: '2px',
           },
         }}
-        aria-label={state.isExporting ? `Exporting chat logs, ${state.progress} percent complete` : `Export ${logs.length} chat logs to CSV`}
+        aria-label={
+          state.isExporting
+            ? `Exporting chat logs, ${state.progress} percent complete`
+            : `Export ${logs.length} chat logs to CSV`
+        }
         aria-busy={state.isExporting}
         aria-live="polite"
       >
@@ -207,9 +205,9 @@ export const LogExport: React.FC<LogExportProps> = ({
 
       {/* Error Message */}
       {state.error && (
-        <Alert 
-          severity="error" 
-          sx={{ mb: 2 }} 
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
           onClose={() => setState((prev) => ({ ...prev, error: null }))}
           role="alert"
           aria-live="assertive"
@@ -222,7 +220,13 @@ export const LogExport: React.FC<LogExportProps> = ({
 
       {/* Download Link */}
       {state.downloadUrl && (
-        <Alert severity="success" icon={<CheckCircle />} sx={{ mb: 2 }} role="status" aria-live="polite">
+        <Alert
+          severity="success"
+          icon={<CheckCircle />}
+          sx={{ mb: 2 }}
+          role="status"
+          aria-live="polite"
+        >
           <Typography variant="body2" gutterBottom>
             <strong>Export Complete!</strong> Your CSV file is ready for download.
           </Typography>
@@ -230,7 +234,7 @@ export const LogExport: React.FC<LogExportProps> = ({
             href={state.downloadUrl}
             download={`${filename}.csv`}
             underline="hover"
-            sx={{ 
+            sx={{
               fontWeight: 'bold',
               '&:focus-visible': {
                 outline: '2px solid',

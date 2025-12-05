@@ -103,8 +103,8 @@ export const FeedbackMetricsExample: React.FC = () => {
           FeedbackMetrics Component Example
         </Typography>
         <Typography variant="body1" color="text.secondary" paragraph>
-          This example demonstrates the FeedbackMetrics component with sample data.
-          The component displays:
+          This example demonstrates the FeedbackMetrics component with sample data. The component
+          displays:
         </Typography>
         <Box component="ul" sx={{ pl: 3 }}>
           <li>
@@ -118,14 +118,10 @@ export const FeedbackMetricsExample: React.FC = () => {
             </Typography>
           </li>
           <li>
-            <Typography variant="body2">
-              Trend charts showing feedback over time
-            </Typography>
+            <Typography variant="body2">Trend charts showing feedback over time</Typography>
           </li>
           <li>
-            <Typography variant="body2">
-              Date range filter controls
-            </Typography>
+            <Typography variant="body2">Date range filter controls</Typography>
           </li>
         </Box>
       </Paper>

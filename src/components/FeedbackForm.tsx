@@ -326,7 +326,9 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
             inputProps={{
               maxLength: 1001, // Allow typing one extra to show error
               'aria-label': 'Additional comments about the response',
-              'aria-describedby': validationErrors.comment ? 'comment-error char-count' : 'char-count',
+              'aria-describedby': validationErrors.comment
+                ? 'comment-error char-count'
+                : 'char-count',
               'aria-invalid': !!validationErrors.comment,
             }}
             FormHelperTextProps={{
@@ -351,9 +353,9 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
 
         {/* Submit Error */}
         {submitError && (
-          <Alert 
-            severity="error" 
-            sx={{ mb: 2 }} 
+          <Alert
+            severity="error"
+            sx={{ mb: 2 }}
             onClose={() => setSubmitError(null)}
             role="alert"
             aria-live="assertive"

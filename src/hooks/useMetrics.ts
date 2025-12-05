@@ -91,8 +91,10 @@ function buildFeedbackFilter(options: UseMetricsOptions) {
  * Average of accuracy values where available
  */
 function calculateAccuracy(logs: ChatLog[]): number {
-  const logsWithAccuracy = logs.filter((log) => log.accuracy !== undefined && log.accuracy !== null);
-  
+  const logsWithAccuracy = logs.filter(
+    (log) => log.accuracy !== undefined && log.accuracy !== null
+  );
+
   if (logsWithAccuracy.length === 0) {
     return 0;
   }
@@ -143,7 +145,7 @@ export function useMetrics(options: UseMetricsOptions = {}): UseMetricsReturn {
     queryKey: ['metrics', 'chatLogs', startDate, endDate, userId, conversationId],
     queryFn: async () => {
       const filter = buildChatLogFilter({ startDate, endDate, userId, conversationId });
-      
+
       // Fetch all logs (may need pagination for large datasets)
       const result = await apiService.query<any>(listChatLogs, {
         filter,
@@ -165,7 +167,7 @@ export function useMetrics(options: UseMetricsOptions = {}): UseMetricsReturn {
     queryKey: ['metrics', 'feedback', startDate, endDate, userId],
     queryFn: async () => {
       const filter = buildFeedbackFilter({ startDate, endDate, userId });
-      
+
       // Fetch all feedback (may need pagination for large datasets)
       const result = await apiService.query<any>(listFeedback, {
         filter,

@@ -40,12 +40,7 @@ export const ErrorBoundaryExample: React.FC = () => {
         Click the button to trigger an error and see the ErrorBoundary in action.
       </Typography>
 
-      <Button
-        variant="contained"
-        color="error"
-        onClick={() => setThrowError(true)}
-        sx={{ mb: 2 }}
-      >
+      <Button variant="contained" color="error" onClick={() => setThrowError(true)} sx={{ mb: 2 }}>
         Trigger Error
       </Button>
 

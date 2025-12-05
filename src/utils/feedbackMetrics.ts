@@ -8,7 +8,7 @@ import type { Feedback, FeedbackMetrics } from '../types';
 /**
  * Calculate positive/negative feedback ratio
  * Requirement 4.1: Display positive/negative feedback ratio
- * 
+ *
  * @param feedback - Array of feedback entries
  * @returns Object with positive count, negative count, and ratio
  */
@@ -41,7 +41,7 @@ export function calculateFeedbackRatio(feedback: Feedback[]): {
 /**
  * Calculate average rating from feedback entries
  * Requirement 4.4: Calculate average rating
- * 
+ *
  * @param feedback - Array of feedback entries
  * @returns Average rating (0 if no feedback)
  */
@@ -57,7 +57,7 @@ export function calculateAverageRating(feedback: Feedback[]): number {
 /**
  * Filter feedback by time period
  * Requirement 4.2: Add time period filtering for metrics
- * 
+ *
  * @param feedback - Array of feedback entries
  * @param startDate - Start date in ISO 8601 format
  * @param endDate - End date in ISO 8601 format
@@ -88,7 +88,7 @@ export function filterFeedbackByTimePeriod(
 /**
  * Calculate comprehensive feedback metrics
  * Combines all metric calculations into a single function
- * 
+ *
  * @param feedback - Array of feedback entries
  * @param startDate - Optional start date for filtering
  * @param endDate - Optional end date for filtering

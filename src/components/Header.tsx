@@ -58,8 +58,8 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           aria-label="Open navigation menu"
           edge="start"
           onClick={onMenuClick}
-          sx={{ 
-            mr: 2, 
+          sx={{
+            mr: 2,
             display: { sm: 'none' },
             '&:focus-visible': {
               outline: '2px solid',
@@ -75,8 +75,16 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           InsightSphere
         </Typography>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} role="navigation" aria-label="User menu">
-          <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }} aria-label="Current user">
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+          role="navigation"
+          aria-label="User menu"
+        >
+          <Typography
+            variant="body2"
+            sx={{ display: { xs: 'none', sm: 'block' } }}
+            aria-label="Current user"
+          >
             {user?.username || 'User'}
           </Typography>
           <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>

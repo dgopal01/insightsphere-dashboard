@@ -12,6 +12,8 @@ import {
   isRetryableError,
   getRetryDelay,
   formatErrorForDisplay,
+  retryWithBackoff,
+  createRetryable,
 } from '../errorHandling';
 import { APIError } from '../../services/APIService';
 
@@ -49,6 +51,16 @@ describe('classifyError', () => {
   it('classifies APIError with 500 status as server', () => {
     const error = new APIError('Server error', 500);
     expect(classifyError(error)).toBe('server');
+  });
+
+  it('classifies GraphQL errors', () => {
+    const error = { graphQLErrors: [{ message: 'GraphQL error' }] };
+    expect(classifyError(error)).toBe('graphql');
+  });
+
+  it('classifies application errors', () => {
+    const error = new Error('React component error');
+    expect(classifyError(error)).toBe('application');
   });
 
   it('classifies unknown errors', () => {
@@ -97,10 +109,22 @@ describe('getUserFriendlyMessage', () => {
     expect(message).toContain('session has expired');
   });
 
+  it('returns GraphQL error message', () => {
+    const error = new Error('GraphQL error');
+    const message = getUserFriendlyMessage(error, 'graphql');
+    expect(message).toContain('error processing your request');
+  });
+
   it('returns validation error message with original message', () => {
     const error = new Error('Invalid email format');
     const message = getUserFriendlyMessage(error, 'validation');
     expect(message).toContain('Invalid email format');
+  });
+
+  it('returns application error message', () => {
+    const error = new Error('Application error');
+    const message = getUserFriendlyMessage(error, 'application');
+    expect(message).toContain('application encountered an error');
   });
 
   it('returns server error message', () => {
@@ -204,5 +228,127 @@ describe('formatErrorForDisplay', () => {
 
   it('formats unknown error', () => {
     expect(formatErrorForDisplay({ unknown: 'error' })).toBe('An unexpected error occurred');
+  });
+});
+
+
+describe('retryWithBackoff', () => {
+  it('succeeds on first attempt', async () => {
+    const fn = vi.fn().mockResolvedValue('success');
+    const result = await retryWithBackoff(fn);
+    expect(result).toBe('success');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries on retryable error and eventually succeeds', async () => {
+    const fn = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Network timeout'))
+      .mockRejectedValueOnce(new Error('Network timeout'))
+      .mockResolvedValue('success');
+
+    const result = await retryWithBackoff(fn, { maxAttempts: 3, baseDelay: 10 });
+    expect(result).toBe('success');
+    expect(fn).toHaveBeenCalledTimes(3);
+  });
+
+  it('throws error after max attempts', async () => {
+    const error = new Error('Network timeout');
+    const fn = vi.fn().mockRejectedValue(error);
+
+    await expect(retryWithBackoff(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow(
+      'Network timeout'
+    );
+    expect(fn).toHaveBeenCalledTimes(3);
+  });
+
+  it('does not retry non-retryable errors', async () => {
+    const error = new Error('Invalid input');
+    const fn = vi.fn().mockRejectedValue(error);
+
+    await expect(retryWithBackoff(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow(
+      'Invalid input'
+    );
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onRetry callback on each retry', async () => {
+    const fn = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Network timeout'))
+      .mockResolvedValue('success');
+
+    const onRetry = vi.fn();
+    await retryWithBackoff(fn, { maxAttempts: 3, baseDelay: 10, onRetry });
+
+    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(onRetry).toHaveBeenCalledWith(1, expect.any(Error));
+  });
+
+  it('uses custom shouldRetry function', async () => {
+    const error = new Error('Custom error');
+    const fn = vi.fn().mockRejectedValue(error);
+    const shouldRetry = vi.fn().mockReturnValue(false);
+
+    await expect(
+      retryWithBackoff(fn, { maxAttempts: 3, baseDelay: 10, shouldRetry })
+    ).rejects.toThrow('Custom error');
+
+    expect(fn).toHaveBeenCalledTimes(1);
+    expect(shouldRetry).toHaveBeenCalledWith(error);
+  });
+
+  it('respects maxDelay cap', async () => {
+    const fn = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Network timeout'))
+      .mockResolvedValue('success');
+
+    const onRetry = vi.fn();
+    await retryWithBackoff(fn, {
+      maxAttempts: 3,
+      baseDelay: 1000,
+      maxDelay: 500,
+      onRetry,
+    });
+
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('createRetryable', () => {
+  it('creates a retryable function', async () => {
+    const fn = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Network timeout'))
+      .mockResolvedValue('success');
+
+    const retryableFn = createRetryable(fn, { maxAttempts: 3, baseDelay: 10 });
+    const result = await retryableFn();
+
+    expect(result).toBe('success');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('passes arguments to the original function', async () => {
+    const fn = vi.fn().mockResolvedValue('success');
+    const retryableFn = createRetryable(fn, { maxAttempts: 3, baseDelay: 10 });
+
+    await retryableFn('arg1', 'arg2');
+    expect(fn).toHaveBeenCalledWith('arg1', 'arg2');
+  });
+
+  it('retries with arguments', async () => {
+    const fn = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Network timeout'))
+      .mockResolvedValue('success');
+
+    const retryableFn = createRetryable(fn, { maxAttempts: 3, baseDelay: 10 });
+    await retryableFn('test');
+
+    expect(fn).toHaveBeenCalledTimes(2);
+    expect(fn).toHaveBeenNthCalledWith(1, 'test');
+    expect(fn).toHaveBeenNthCalledWith(2, 'test');
   });
 });

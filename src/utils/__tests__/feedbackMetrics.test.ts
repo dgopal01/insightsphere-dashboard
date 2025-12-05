@@ -198,11 +198,7 @@ describe('feedbackMetrics utilities', () => {
     ];
 
     it('should filter by start date only', () => {
-      const result = filterFeedbackByTimePeriod(
-        feedback,
-        '2024-01-10T00:00:00Z',
-        undefined
-      );
+      const result = filterFeedbackByTimePeriod(feedback, '2024-01-10T00:00:00Z', undefined);
 
       expect(result).toHaveLength(2);
       expect(result[0].id).toBe('2');
@@ -210,11 +206,7 @@ describe('feedbackMetrics utilities', () => {
     });
 
     it('should filter by end date only', () => {
-      const result = filterFeedbackByTimePeriod(
-        feedback,
-        undefined,
-        '2024-01-20T00:00:00Z'
-      );
+      const result = filterFeedbackByTimePeriod(feedback, undefined, '2024-01-20T00:00:00Z');
 
       expect(result).toHaveLength(2);
       expect(result[0].id).toBe('1');

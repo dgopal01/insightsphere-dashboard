@@ -51,7 +51,7 @@ function useDebounce<T>(value: T, delay: number): T {
  */
 export const LogFilters: React.FC<LogFiltersProps> = ({ filters, onFilterChange }) => {
   const [expanded, setExpanded] = useState(true);
-  
+
   // Local state for text inputs (for debouncing)
   const [localSearchText, setLocalSearchText] = useState(filters.searchText || '');
   const [localUserId, setLocalUserId] = useState(filters.userId || '');
@@ -148,12 +148,14 @@ export const LogFilters: React.FC<LogFiltersProps> = ({ filters, onFilterChange 
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <FilterList sx={{ mr: 1, color: 'primary.main' }} aria-hidden="true" />
-          <Typography variant="h6" id="filters-heading">Filters</Typography>
+          <Typography variant="h6" id="filters-heading">
+            Filters
+          </Typography>
           {hasActiveFilters && (
             <IconButton
               size="small"
               onClick={handleClearFilters}
-              sx={{ 
+              sx={{
                 ml: 1,
                 '&:focus-visible': {
                   outline: '2px solid',
@@ -167,8 +169,8 @@ export const LogFilters: React.FC<LogFiltersProps> = ({ filters, onFilterChange 
             </IconButton>
           )}
         </Box>
-        <IconButton 
-          size="small" 
+        <IconButton
+          size="small"
           onClick={() => setExpanded(!expanded)}
           aria-label={expanded ? 'Collapse filters' : 'Expand filters'}
           aria-expanded={expanded}

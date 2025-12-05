@@ -45,9 +45,7 @@ interface MetricComparison {
 function calculateAverage(metrics: MetricData[], key: keyof MetricData): number {
   if (metrics.length === 0) return 0;
 
-  const values = metrics
-    .map((m) => m[key])
-    .filter((v): v is number => typeof v === 'number');
+  const values = metrics.map((m) => m[key]).filter((v): v is number => typeof v === 'number');
 
   if (values.length === 0) return 0;
 

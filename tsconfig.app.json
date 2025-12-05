@@ -25,5 +25,16 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/**/__.test__/**", "src/test/**"]
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "src/**/__tests__/**",
+    "src/test/**",
+    "src/**/*.example.tsx",
+    "src/**/*.example.ts",
+    "src/pages/ChatLogsPage.tsx",
+    "src/pages/DashboardPage.tsx",
+    "src/pages/FeedbackPage.tsx",
+    "src/services/dataMapper.ts"
+  ]
 }

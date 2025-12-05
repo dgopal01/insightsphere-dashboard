@@ -52,7 +52,8 @@ function CustomTooltip({ active, payload, label }: any) {
   return (
     <Box
       sx={{
-        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+        backgroundColor:
+          theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.9)' : 'rgba(255, 255, 255, 0.95)',
         border: `1px solid ${theme.palette.divider}`,
         borderRadius: 1,
         padding: 1.5,

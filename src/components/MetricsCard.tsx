@@ -94,7 +94,12 @@ const MetricsCardComponent: React.FC<MetricsCardProps> = ({
     >
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start">
-          <Typography variant="subtitle2" color="text.secondary" gutterBottom id={`metric-title-${title.replace(/\s+/g, '-').toLowerCase()}`}>
+          <Typography
+            variant="subtitle2"
+            color="text.secondary"
+            gutterBottom
+            id={`metric-title-${title.replace(/\s+/g, '-').toLowerCase()}`}
+          >
             {title}
           </Typography>
           {icon && (
@@ -104,9 +109,9 @@ const MetricsCardComponent: React.FC<MetricsCardProps> = ({
           )}
         </Box>
 
-        <Typography 
-          variant="h4" 
-          component="div" 
+        <Typography
+          variant="h4"
+          component="div"
           sx={{ mt: 2, mb: 1, fontWeight: 'bold' }}
           aria-labelledby={`metric-title-${title.replace(/\s+/g, '-').toLowerCase()}`}
         >
@@ -114,7 +119,13 @@ const MetricsCardComponent: React.FC<MetricsCardProps> = ({
         </Typography>
 
         {trend !== undefined && TrendIcon && (
-          <Box display="flex" alignItems="center" gap={0.5} role="status" aria-label={`Trend: ${trend >= 0 ? 'up' : 'down'} ${Math.abs(trend).toFixed(1)} percent compared to previous period`}>
+          <Box
+            display="flex"
+            alignItems="center"
+            gap={0.5}
+            role="status"
+            aria-label={`Trend: ${trend >= 0 ? 'up' : 'down'} ${Math.abs(trend).toFixed(1)} percent compared to previous period`}
+          >
             <TrendIcon sx={{ fontSize: 20, color: trendColor }} aria-hidden="true" />
             <Typography variant="body2" color={trendColor}>
               {Math.abs(trend).toFixed(1)}%

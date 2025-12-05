@@ -37,11 +37,7 @@ export const FeedbackFormExample: React.FC = () => {
         </ul>
 
         <Box sx={{ mt: 4 }}>
-          <FeedbackForm
-            logId="example-log-123"
-            onSubmit={handleSubmit}
-            disabled={isSubmitting}
-          />
+          <FeedbackForm logId="example-log-123" onSubmit={handleSubmit} disabled={isSubmitting} />
         </Box>
       </Box>
     </Container>

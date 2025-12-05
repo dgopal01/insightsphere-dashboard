@@ -1,8 +1,128 @@
-# Deployment Scripts
+# Scripts Directory
 
-This directory contains scripts for building, optimizing, and deploying the InsightSphere Dashboard.
+This directory contains all build, deployment, testing, and utility scripts for the AI Metrics Portal (Chat Logs Review System).
 
 ## Scripts Overview
+
+### Deployment Scripts
+
+#### deploy.js
+Main deployment script for AWS Amplify.
+
+**Usage:**
+```bash
+npm run deploy:dev
+npm run deploy:staging
+npm run deploy:prod
+```
+
+#### deploy.sh / deploy.cmd
+Shell scripts for deployment automation.
+
+**Usage:**
+```bash
+# Linux/Mac
+./scripts/deploy.sh
+
+# Windows
+scripts\deploy.cmd
+```
+
+#### deploy-all.ps1
+PowerShell script to deploy all components.
+
+**Usage:**
+```powershell
+.\scripts\deploy-all.ps1 -Environment prod
+```
+
+#### deploy-cloudformation.ps1
+Deploy CloudFormation infrastructure.
+
+**Usage:**
+```powershell
+.\scripts\deploy-cloudformation.ps1
+```
+
+#### deploy-to-s3-simple.ps1
+Simple S3 deployment script.
+
+**Usage:**
+```powershell
+.\scripts\deploy-to-s3-simple.ps1
+```
+
+#### deploy-chat-logs-review.cmd
+Deploy chat logs review system specifically.
+
+**Usage:**
+```cmd
+scripts\deploy-chat-logs-review.cmd
+```
+
+#### simple-deploy.ps1
+Simplified deployment for quick updates.
+
+**Usage:**
+```powershell
+.\scripts\simple-deploy.ps1
+```
+
+### Backend Management Scripts
+
+#### deploy-backend.ps1
+Deploy AWS Amplify backend resources.
+
+**Usage:**
+```powershell
+.\scripts\deploy-backend.ps1 -Environment dev
+```
+
+#### verify-backend.ps1
+Verify backend deployment status.
+
+**Usage:**
+```powershell
+.\scripts\verify-backend.ps1 -Environment dev
+```
+
+#### update-appsync-tables.ps1
+Update AppSync table configurations.
+
+**Usage:**
+```powershell
+.\scripts\update-appsync-tables.ps1
+```
+
+#### test-appsync-query.sh
+Test AppSync GraphQL queries.
+
+**Usage:**
+```bash
+./scripts/test-appsync-query.sh
+```
+
+### User Management Scripts
+
+#### create-admin-user.ps1
+Create admin users in Cognito.
+
+**Usage:**
+```powershell
+.\scripts\create-admin-user.ps1 -Username admin@example.com
+```
+
+### Environment Management Scripts
+
+#### update-env.ps1
+Update environment variables.
+
+**Usage:**
+```powershell
+.\scripts\update-env.ps1 -Environment prod
+```
+
+### Build & Optimization Scripts
 
 ### build-optimize.js
 

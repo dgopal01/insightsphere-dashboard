@@ -62,7 +62,7 @@ interface TrendDataPoint {
 
 /**
  * FeedbackMetrics Component
- * 
+ *
  * Displays:
  * - Positive/negative feedback ratio with visual indicator (Requirement 4.1)
  * - Average rating with star display (Requirement 4.3)
@@ -119,7 +119,7 @@ export const FeedbackMetrics: React.FC<FeedbackMetricsProps> = ({
    */
   const trendData = useMemo((): TrendDataPoint[] => {
     const feedbackSource = externalFeedback || [];
-    
+
     if (feedbackSource.length === 0) {
       return [];
     }
@@ -133,7 +133,7 @@ export const FeedbackMetrics: React.FC<FeedbackMetricsProps> = ({
 
     // Group by date
     const groupedByDate = new Map<string, Feedback[]>();
-    
+
     filtered.forEach((f) => {
       const date = f.timestamp.split('T')[0]; // Get YYYY-MM-DD
       if (!groupedByDate.has(date)) {
@@ -189,7 +189,8 @@ export const FeedbackMetrics: React.FC<FeedbackMetricsProps> = ({
     const previous = trendData[trendData.length - 2];
 
     const recentRatio = recent.positiveCount / (recent.positiveCount + recent.negativeCount || 1);
-    const previousRatio = previous.positiveCount / (previous.positiveCount + previous.negativeCount || 1);
+    const previousRatio =
+      previous.positiveCount / (previous.positiveCount + previous.negativeCount || 1);
 
     const isImproving = recentRatio > previousRatio;
 
@@ -288,7 +289,15 @@ export const FeedbackMetrics: React.FC<FeedbackMetricsProps> = ({
                       {displayMetrics.ratio.toFixed(2)}
                     </Typography>
                   </Box>
-                  <Box sx={{ position: 'relative', height: 24, borderRadius: 1, overflow: 'hidden', bgcolor: 'error.light' }}>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      height: 24,
+                      borderRadius: 1,
+                      overflow: 'hidden',
+                      bgcolor: 'error.light',
+                    }}
+                  >
                     <Box
                       sx={{
                         position: 'absolute',
@@ -337,16 +346,16 @@ export const FeedbackMetrics: React.FC<FeedbackMetricsProps> = ({
               </Typography>
 
               <Box sx={{ textAlign: 'center', py: 3 }}>
-                <Typography 
-                  variant="h2" 
-                  fontWeight="bold" 
-                  color="primary.main" 
+                <Typography
+                  variant="h2"
+                  fontWeight="bold"
+                  color="primary.main"
                   gutterBottom
                   aria-label={`Average rating: ${displayMetrics.averageRating.toFixed(2)} out of 5`}
                 >
                   {displayMetrics.averageRating.toFixed(2)}
                 </Typography>
-                
+
                 <Rating
                   value={displayMetrics.averageRating}
                   readOnly
@@ -375,7 +384,8 @@ export const FeedbackMetrics: React.FC<FeedbackMetricsProps> = ({
                     if (endDate && f.timestamp > endDate) return false;
                     return f.rating === rating;
                   }).length;
-                  const percentage = displayMetrics.totalCount > 0 ? (count / displayMetrics.totalCount) * 100 : 0;
+                  const percentage =
+                    displayMetrics.totalCount > 0 ? (count / displayMetrics.totalCount) * 100 : 0;
 
                   return (
                     <Box key={rating} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -414,11 +424,7 @@ export const FeedbackMetrics: React.FC<FeedbackMetricsProps> = ({
               <ResponsiveContainer>
                 <AreaChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={formatDate}
-                    style={{ fontSize: 12 }}
-                  />
+                  <XAxis dataKey="date" tickFormatter={formatDate} style={{ fontSize: 12 }} />
                   <YAxis style={{ fontSize: 12 }} />
                   <Tooltip
                     labelFormatter={(label) => `Date: ${formatDate(label as string)}`}
@@ -459,16 +465,8 @@ export const FeedbackMetrics: React.FC<FeedbackMetricsProps> = ({
               <ResponsiveContainer>
                 <LineChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={formatDate}
-                    style={{ fontSize: 12 }}
-                  />
-                  <YAxis
-                    domain={[0, 5]}
-                    ticks={[0, 1, 2, 3, 4, 5]}
-                    style={{ fontSize: 12 }}
-                  />
+                  <XAxis dataKey="date" tickFormatter={formatDate} style={{ fontSize: 12 }} />
+                  <YAxis domain={[0, 5]} ticks={[0, 1, 2, 3, 4, 5]} style={{ fontSize: 12 }} />
                   <Tooltip
                     labelFormatter={(label) => `Date: ${formatDate(label as string)}`}
                     formatter={(value: number) => [value.toFixed(2), 'Rating']}

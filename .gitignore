@@ -42,8 +42,14 @@ amplifytools.xcconfig
 .env.*.local
 
 # Build reports and artifacts
+dist/
+dist-ssr/
+coverage/
 dist/build-report.json
 dist/build-info.json
 
 # Deployment logs
 deployment-logs/
+
+# Temporary cleanup file
+CLEANUP_ACTIONS.md

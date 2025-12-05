@@ -41,7 +41,7 @@ describe('Accessibility Tests', () => {
   describe('FeedbackForm', () => {
     it('should have proper ARIA labels on interactive elements', async () => {
       const { FeedbackForm } = await import('../FeedbackForm');
-      
+
       render(
         <ThemeProvider theme={theme}>
           <FeedbackForm logId="test-log" onSubmit={vi.fn()} />
@@ -56,7 +56,7 @@ describe('Accessibility Tests', () => {
     it('should associate error messages with form fields using aria-describedby', async () => {
       const { FeedbackForm } = await import('../FeedbackForm');
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider theme={theme}>
           <FeedbackForm logId="test-log" onSubmit={vi.fn()} />
@@ -75,7 +75,7 @@ describe('Accessibility Tests', () => {
     it('should support keyboard navigation for thumbs up/down buttons', async () => {
       const { FeedbackForm } = await import('../FeedbackForm');
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider theme={theme}>
           <FeedbackForm logId="test-log" onSubmit={vi.fn()} />
@@ -83,12 +83,12 @@ describe('Accessibility Tests', () => {
       );
 
       const thumbsUpButton = screen.getByLabelText(/mark response as helpful/i);
-      
+
       // Tab to button and press Enter
       await user.tab();
       await user.tab();
       expect(thumbsUpButton).toHaveFocus();
-      
+
       await user.keyboard('{Enter}');
       expect(thumbsUpButton).toHaveAttribute('aria-pressed', 'true');
     });
@@ -97,7 +97,7 @@ describe('Accessibility Tests', () => {
   describe('LogFilters', () => {
     it('should have proper ARIA labels on filter inputs', async () => {
       const { LogFilters } = await import('../LogFilters');
-      
+
       render(
         <ThemeProvider theme={theme}>
           <LogFilters filters={{}} onFilterChange={vi.fn()} />
@@ -112,7 +112,7 @@ describe('Accessibility Tests', () => {
     it('should support keyboard navigation for expand/collapse', async () => {
       const { LogFilters } = await import('../LogFilters');
       const user = userEvent.setup();
-      
+
       render(
         <ThemeProvider theme={theme}>
           <LogFilters filters={{}} onFilterChange={vi.fn()} />
@@ -121,7 +121,7 @@ describe('Accessibility Tests', () => {
 
       const expandButton = screen.getByLabelText(/collapse filters/i);
       await user.click(expandButton);
-      
+
       expect(screen.getByLabelText(/expand filters/i)).toBeInTheDocument();
     });
   });
@@ -129,7 +129,7 @@ describe('Accessibility Tests', () => {
   describe('LogTable', () => {
     it('should have proper ARIA labels on sortable columns', async () => {
       const { LogTable } = await import('../LogTable');
-      
+
       render(
         <ThemeProvider theme={theme}>
           <LogTable logs={[mockChatLog]} loading={false} />
@@ -144,7 +144,7 @@ describe('Accessibility Tests', () => {
       const { LogTable } = await import('../LogTable');
       const user = userEvent.setup();
       const onRowClick = vi.fn();
-      
+
       render(
         <ThemeProvider theme={theme}>
           <LogTable logs={[mockChatLog]} loading={false} onRowClick={onRowClick} />
@@ -152,17 +152,17 @@ describe('Accessibility Tests', () => {
       );
 
       const row = screen.getByRole('row', { name: /chat log from user-1/i });
-      
+
       // Focus and press Enter
       row.focus();
       await user.keyboard('{Enter}');
-      
+
       expect(onRowClick).toHaveBeenCalledWith(mockChatLog);
     });
 
     it('should use semantic HTML time element for timestamps', async () => {
       const { LogTable } = await import('../LogTable');
-      
+
       render(
         <ThemeProvider theme={theme}>
           <LogTable logs={[mockChatLog]} loading={false} />
@@ -177,7 +177,7 @@ describe('Accessibility Tests', () => {
   describe('ErrorDisplay', () => {
     it('should announce errors with aria-live', async () => {
       const { ErrorDisplay } = await import('../ErrorDisplay');
-      
+
       render(
         <ThemeProvider theme={theme}>
           <ErrorDisplay error="Test error" type="network" />
@@ -190,7 +190,7 @@ describe('Accessibility Tests', () => {
 
     it('should have proper ARIA labels on retry button', async () => {
       const { ErrorDisplay } = await import('../ErrorDisplay');
-      
+
       render(
         <ThemeProvider theme={theme}>
           <ErrorDisplay error="Test error" type="network" onRetry={vi.fn()} />
@@ -204,7 +204,7 @@ describe('Accessibility Tests', () => {
   describe('MetricsCard', () => {
     it('should have proper ARIA labels for trend information', async () => {
       const { MetricsCard } = await import('../MetricsCard');
-      
+
       render(
         <ThemeProvider theme={theme}>
           <MetricsCard title="Test Metric" value={100} trend={5.5} />

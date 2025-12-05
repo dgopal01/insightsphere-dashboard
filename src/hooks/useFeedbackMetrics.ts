@@ -39,13 +39,13 @@ export interface UseFeedbackMetricsReturn {
 
 /**
  * Custom hook for fetching and calculating aggregated feedback metrics
- * 
+ *
  * This hook builds on useFeedback to provide calculated metrics including:
  * - Positive/negative feedback ratio (Requirement 4.1)
  * - Time period filtering (Requirement 4.2)
  * - Average rating calculation (Requirement 4.4)
  * - Date range filtering for metrics (Requirement 4.5)
- * 
+ *
  * @param options - Configuration options for filtering and fetching
  * @returns Aggregated feedback metrics with loading and error states
  */

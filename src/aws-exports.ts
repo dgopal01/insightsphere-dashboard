@@ -20,7 +20,9 @@ const awsconfig = {
 console.log('AWS Config Status:', {
   region: awsconfig.aws_project_region,
   hasUserPoolId: !!awsconfig.aws_user_pools_id,
-  userPoolIdPrefix: awsconfig.aws_user_pools_id ? awsconfig.aws_user_pools_id.substring(0, 10) + '...' : 'MISSING',
+  userPoolIdPrefix: awsconfig.aws_user_pools_id
+    ? awsconfig.aws_user_pools_id.substring(0, 10) + '...'
+    : 'MISSING',
   hasClientId: !!awsconfig.aws_user_pools_web_client_id,
   hasIdentityPoolId: !!awsconfig.aws_cognito_identity_pool_id,
   hasGraphQLEndpoint: !!awsconfig.aws_appsync_graphqlEndpoint,
@@ -33,7 +35,10 @@ if (!awsconfig.aws_user_pools_id || !awsconfig.aws_user_pools_web_client_id) {
   console.error('❌ AWS Configuration Error: Missing required Cognito configuration');
   console.error('Required environment variables:');
   console.error('  - VITE_USER_POOL_ID:', awsconfig.aws_user_pools_id ? '✓' : '✗ MISSING');
-  console.error('  - VITE_USER_POOL_CLIENT_ID:', awsconfig.aws_user_pools_web_client_id ? '✓' : '✗ MISSING');
+  console.error(
+    '  - VITE_USER_POOL_CLIENT_ID:',
+    awsconfig.aws_user_pools_web_client_id ? '✓' : '✗ MISSING'
+  );
 }
 
 export default awsconfig;

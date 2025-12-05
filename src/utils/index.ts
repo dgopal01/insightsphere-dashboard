@@ -17,6 +17,25 @@ export {
 } from './sanitization';
 
 export {
+  validateRequired,
+  validateCharacterLimit,
+  validateReviewComment,
+  validateReviewFeedback,
+  validateReviewFields,
+  escapeSpecialCharacters,
+  unescapeSpecialCharacters,
+  validateAlphanumeric,
+  validateReviewCommentComprehensive,
+  validateReviewFeedbackComprehensive,
+  getRemainingCharacters,
+  isApproachingLimit,
+  CHARACTER_LIMITS,
+  VALIDATION_ERRORS,
+} from './validation';
+
+export type { ValidationResult } from './validation';
+
+export {
   classifyError,
   getErrorSeverity,
   getUserFriendlyMessage,

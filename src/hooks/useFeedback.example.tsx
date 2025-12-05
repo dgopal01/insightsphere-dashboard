@@ -154,9 +154,7 @@ export function UserFeedbackExample({ userId }: { userId: string }) {
           </li>
         ))}
       </ul>
-      {hasNextPage && (
-        <button onClick={fetchNextPage}>Load More</button>
-      )}
+      {hasNextPage && <button onClick={fetchNextPage}>Load More</button>}
     </div>
   );
 }

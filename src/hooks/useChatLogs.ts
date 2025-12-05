@@ -1,253 +1,266 @@
 /**
  * useChatLogs Hook
- * Manages chat logs data fetching with React Query
- * Supports pagination, filtering, and real-time subscriptions
+ * Manages Unity AI Assistant chat logs data fetching for the Chat Logs Review System
+ * Supports pagination, filtering, sorting, and review submission
  */
 
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { apiService } from '../services';
-import { listChatLogs, chatLogsByConversation, chatLogsByUser } from '../graphql/queries';
-import { onCreateChatLog } from '../graphql/subscriptions';
+import { listUnityAIAssistantLogs } from '../graphql/queries';
+import { updateUnityAIAssistantLog } from '../graphql/mutations';
 import type {
-  ChatLog,
-  LogFilters,
-  ListChatLogsResponse,
-  OnCreateChatLogSubscription,
+  ChatLogEntry,
+  ChatLogFilters,
+  ReviewData,
+  ListUnityAIAssistantLogsResponse,
+  ModelUnityAIAssistantLogFilterInput,
+  UpdateUnityAIAssistantLogInput,
 } from '../types/graphql';
 
 /**
- * Options for useChatLogs hook
+ * Sort direction for timestamp
  */
-export interface UseChatLogsOptions {
-  filters?: LogFilters;
-  limit?: number;
-  enabled?: boolean;
-}
+export type SortDirection = 'asc' | 'desc';
 
 /**
  * Return type for useChatLogs hook
  */
 export interface UseChatLogsReturn {
-  logs: ChatLog[];
-  isLoading: boolean;
+  logs: ChatLogEntry[];
+  loading: boolean;
   error: Error | null;
-  refetch: () => void;
-  hasNextPage: boolean;
-  fetchNextPage: () => void;
-  isFetchingNextPage: boolean;
+  totalCount: number;
+  nextToken: string | null;
+  fetchLogs: (filters?: ChatLogFilters, sortDirection?: SortDirection) => Promise<void>;
+  fetchNextPage: () => Promise<void>;
+  updateReview: (logId: string, reviewData: ReviewData) => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 /**
- * Build GraphQL filter from LogFilters
+ * Build GraphQL filter from ChatLogFilters
  */
-function buildGraphQLFilter(filters?: LogFilters) {
+function buildGraphQLFilter(filters?: ChatLogFilters): ModelUnityAIAssistantLogFilterInput | undefined {
   if (!filters) return undefined;
 
-  const filter: any = {};
+  const filter: ModelUnityAIAssistantLogFilterInput = {};
+  const andConditions: ModelUnityAIAssistantLogFilterInput[] = [];
 
-  if (filters.userId) {
-    filter.userId = { eq: filters.userId };
+  // Carrier name filter
+  if (filters.carrier_name) {
+    andConditions.push({
+      carrier_name: { eq: filters.carrier_name },
+    });
   }
 
-  if (filters.conversationId) {
-    filter.conversationId = { eq: filters.conversationId };
-  }
-
-  if (filters.sentiment) {
-    filter.sentiment = { eq: filters.sentiment };
-  }
-
+  // Date range filter on timestamp
   if (filters.startDate && filters.endDate) {
-    filter.timestamp = { between: [filters.startDate, filters.endDate] };
+    andConditions.push({
+      timestamp: { ge: filters.startDate },
+    });
+    andConditions.push({
+      timestamp: { le: filters.endDate },
+    });
   } else if (filters.startDate) {
-    filter.timestamp = { ge: filters.startDate };
+    andConditions.push({
+      timestamp: { ge: filters.startDate },
+    });
   } else if (filters.endDate) {
-    filter.timestamp = { le: filters.endDate };
+    andConditions.push({
+      timestamp: { le: filters.endDate },
+    });
   }
 
-  // Note: searchText filtering will be done client-side
-  // as DynamoDB doesn't support full-text search natively
+  // Review status filter
+  if (filters.reviewStatus === 'reviewed') {
+    // Reviewed: has rev_comment OR rev_feedback
+    filter.or = [
+      { rev_comment: { ne: '' } },
+      { rev_feedback: { ne: '' } },
+    ];
+  } else if (filters.reviewStatus === 'pending') {
+    // Pending: both rev_comment AND rev_feedback are empty or null
+    andConditions.push({
+      or: [
+        { rev_comment: { eq: '' } },
+        { rev_comment: { eq: null as any } },
+      ],
+    });
+    andConditions.push({
+      or: [
+        { rev_feedback: { eq: '' } },
+        { rev_feedback: { eq: null as any } },
+      ],
+    });
+  }
+
+  // Combine all AND conditions
+  if (andConditions.length > 0) {
+    filter.and = andConditions;
+  }
 
   return Object.keys(filter).length > 0 ? filter : undefined;
 }
 
 /**
- * Filter logs by search text (client-side)
+ * Sort logs by timestamp
  */
-function filterBySearchText(logs: ChatLog[], searchText?: string): ChatLog[] {
-  if (!searchText || searchText.trim() === '') {
-    return logs;
-  }
-
-  const lowerSearchText = searchText.toLowerCase();
-  return logs.filter(
-    (log) =>
-      log.userMessage.toLowerCase().includes(lowerSearchText) ||
-      log.aiResponse.toLowerCase().includes(lowerSearchText) ||
-      log.conversationId.toLowerCase().includes(lowerSearchText) ||
-      log.userId.toLowerCase().includes(lowerSearchText)
-  );
+function sortLogs(logs: ChatLogEntry[], direction: SortDirection): ChatLogEntry[] {
+  return [...logs].sort((a, b) => {
+    const timeA = new Date(a.timestamp).getTime();
+    const timeB = new Date(b.timestamp).getTime();
+    return direction === 'asc' ? timeA - timeB : timeB - timeA;
+  });
 }
 
 /**
- * Custom hook for fetching and managing chat logs
+ * Custom hook for fetching and managing Unity AI Assistant chat logs
  */
-export function useChatLogs(options: UseChatLogsOptions = {}): UseChatLogsReturn {
-  const { filters, limit = 50, enabled = true } = options;
-  const queryClient = useQueryClient();
-  const [nextToken, setNextToken] = useState<string | undefined>(undefined);
-  const [allLogs, setAllLogs] = useState<ChatLog[]>([]);
+export function useChatLogs(): UseChatLogsReturn {
+  const [logs, setLogs] = useState<ChatLogEntry[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [nextToken, setNextToken] = useState<string | null>(null);
+  const [currentFilters, setCurrentFilters] = useState<ChatLogFilters | undefined>(undefined);
+  const [currentSortDirection, setCurrentSortDirection] = useState<SortDirection>('desc');
+  const [totalCount, setTotalCount] = useState<number>(0);
 
-  // Determine which query to use based on filters
-  const getQueryConfig = useCallback(() => {
-    const graphQLFilter = buildGraphQLFilter(filters);
+  /**
+   * Fetch chat logs with filters and sorting
+   */
+  const fetchLogs = useCallback(
+    async (filters?: ChatLogFilters, sortDirection: SortDirection = 'desc') => {
+      setLoading(true);
+      setError(null);
+      setCurrentFilters(filters);
+      setCurrentSortDirection(sortDirection);
 
-    // Use GSI for conversationId if provided
-    if (filters?.conversationId) {
-      return {
-        query: chatLogsByConversation,
-        variables: {
-          conversationId: filters.conversationId,
+      try {
+        const graphQLFilter = buildGraphQLFilter(filters);
+        const variables = {
           filter: graphQLFilter,
-          limit,
-          nextToken,
-        },
-        queryKey: 'chatLogsByConversation',
-      };
-    }
+          limit: 50,
+        };
 
-    // Use GSI for userId if provided
-    if (filters?.userId) {
-      return {
-        query: chatLogsByUser,
-        variables: {
-          userId: filters.userId,
-          filter: graphQLFilter,
-          limit,
-          nextToken,
-        },
-        queryKey: 'chatLogsByUser',
-      };
-    }
+        const result = await apiService.query<{ listUnityAIAssistantLogs: ListUnityAIAssistantLogsResponse }>(
+          listUnityAIAssistantLogs,
+          variables
+        );
 
-    // Default to listChatLogs
-    return {
-      query: listChatLogs,
-      variables: {
-        filter: graphQLFilter,
-        limit,
-        nextToken,
-      },
-      queryKey: 'listChatLogs',
-    };
-  }, [filters, limit, nextToken]);
+        const response = result.listUnityAIAssistantLogs;
+        const sortedLogs = sortLogs(response.items, sortDirection);
 
-  const queryConfig = getQueryConfig();
-
-  // Fetch chat logs using React Query
-  const {
-    data,
-    isLoading,
-    error,
-    refetch: refetchQuery,
-  } = useQuery<ListChatLogsResponse>({
-    queryKey: ['chatLogs', queryConfig.queryKey, filters, limit, nextToken],
-    queryFn: async () => {
-      const result = await apiService.query<any>(queryConfig.query, queryConfig.variables);
-
-      // Extract the response based on query type
-      if (filters?.conversationId) {
-        return result.chatLogsByConversation;
-      } else if (filters?.userId) {
-        return result.chatLogsByUser;
-      } else {
-        return result.listChatLogs;
+        setLogs(sortedLogs);
+        setNextToken(response.nextToken || null);
+        setTotalCount(response.items.length);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch chat logs';
+        setError(new Error(errorMessage));
+        setLogs([]);
+        setNextToken(null);
+        setTotalCount(0);
+      } finally {
+        setLoading(false);
       }
     },
-    enabled,
-  });
+    []
+  );
 
-  // Update accumulated logs when data changes
-  useEffect(() => {
-    if (data?.items) {
-      if (nextToken) {
-        // Append to existing logs for pagination
-        setAllLogs((prev) => [...prev, ...data.items]);
-      } else {
-        // Replace logs for new query
-        setAllLogs(data.items);
-      }
+  /**
+   * Fetch next page of results
+   */
+  const fetchNextPage = useCallback(async () => {
+    if (!nextToken || loading) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const graphQLFilter = buildGraphQLFilter(currentFilters);
+      const variables = {
+        filter: graphQLFilter,
+        limit: 50,
+        nextToken,
+      };
+
+      const result = await apiService.query<{ listUnityAIAssistantLogs: ListUnityAIAssistantLogsResponse }>(
+        listUnityAIAssistantLogs,
+        variables
+      );
+
+      const response = result.listUnityAIAssistantLogs;
+      const sortedNewLogs = sortLogs(response.items, currentSortDirection);
+
+      setLogs((prevLogs) => [...prevLogs, ...sortedNewLogs]);
+      setNextToken(response.nextToken || null);
+      setTotalCount((prevCount) => prevCount + response.items.length);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch next page';
+      setError(new Error(errorMessage));
+    } finally {
+      setLoading(false);
     }
-  }, [data, nextToken]);
+  }, [nextToken, loading, currentFilters, currentSortDirection]);
 
-  // Reset accumulated logs when filters change
-  useEffect(() => {
-    setAllLogs([]);
-    setNextToken(undefined);
-  }, [filters]);
+  /**
+   * Update review fields for a chat log entry
+   */
+  const updateReview = useCallback(
+    async (logId: string, reviewData: ReviewData) => {
+      setError(null);
 
-  // Apply client-side search text filtering
-  const filteredLogs = filterBySearchText(allLogs, filters?.searchText);
+      try {
+        const input: UpdateUnityAIAssistantLogInput = {
+          log_id: logId,
+          rev_comment: reviewData.rev_comment,
+          rev_feedback: reviewData.rev_feedback,
+        };
 
-  // Fetch next page
-  const fetchNextPage = useCallback(() => {
-    if (data?.nextToken) {
-      setNextToken(data.nextToken);
-    }
-  }, [data?.nextToken]);
+        const result = await apiService.mutate<{ updateUnityAIAssistantLog: ChatLogEntry }>(
+          updateUnityAIAssistantLog,
+          { input }
+        );
 
-  // Refetch from beginning
-  const refetch = useCallback(() => {
-    setNextToken(undefined);
-    setAllLogs([]);
-    refetchQuery();
-  }, [refetchQuery]);
+        const updatedLog = result.updateUnityAIAssistantLog;
 
-  // Set up real-time subscription for new chat logs
-  useEffect(() => {
-    if (!enabled) return;
-
-    const unsubscribe = apiService.subscribe<OnCreateChatLogSubscription>(
-      onCreateChatLog,
-      (subscriptionData) => {
-        const newLog = subscriptionData.onCreateChatLog;
-
-        // Check if the new log matches current filters
-        const matchesFilters =
-          (!filters?.userId || newLog.userId === filters.userId) &&
-          (!filters?.conversationId || newLog.conversationId === filters.conversationId) &&
-          (!filters?.sentiment || newLog.sentiment === filters.sentiment) &&
-          (!filters?.startDate || newLog.timestamp >= filters.startDate) &&
-          (!filters?.endDate || newLog.timestamp <= filters.endDate);
-
-        if (matchesFilters) {
-          // Add new log to the beginning of the list
-          setAllLogs((prev) => [newLog, ...prev]);
-
-          // Invalidate query to ensure consistency
-          queryClient.invalidateQueries({
-            queryKey: ['chatLogs'],
-          });
-        }
-      },
-      (error) => {
-        console.error('Chat logs subscription error:', error);
+        // Update the log in the local state
+        setLogs((prevLogs) =>
+          prevLogs.map((log) =>
+            log.log_id === logId
+              ? {
+                  ...log,
+                  rev_comment: updatedLog.rev_comment,
+                  rev_feedback: updatedLog.rev_feedback,
+                }
+              : log
+          )
+        );
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to update review';
+        const updateError = new Error(errorMessage);
+        setError(updateError);
+        throw updateError;
       }
-    );
+    },
+    []
+  );
 
-    return () => {
-      unsubscribe();
-    };
-  }, [enabled, filters, queryClient]);
+  /**
+   * Refetch current data
+   */
+  const refetch = useCallback(async () => {
+    await fetchLogs(currentFilters, currentSortDirection);
+  }, [fetchLogs, currentFilters, currentSortDirection]);
 
   return {
-    logs: filteredLogs,
-    isLoading,
-    error: error as Error | null,
-    refetch,
-    hasNextPage: !!data?.nextToken,
+    logs,
+    loading,
+    error,
+    totalCount,
+    nextToken,
+    fetchLogs,
     fetchNextPage,
-    isFetchingNextPage: !!nextToken && isLoading,
+    updateReview,
+    refetch,
   };
 }

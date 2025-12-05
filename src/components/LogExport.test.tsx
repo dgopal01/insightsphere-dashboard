@@ -1,7 +1,7 @@
 /**
  * LogExport Component Tests
  * Tests CSV generation and export functionality
- * 
+ *
  * NOTE: These tests are excluded from the test suite on Windows due to a file handle
  * limitation (EMFILE: too many open files) caused by @mui/icons-material having
  * thousands of icon files. The tests are valid and will run successfully on Linux/Mac
@@ -80,9 +80,11 @@ describe('LogExport', () => {
   it('generates CSV with all columns', async () => {
     const mockUploadFile = vi.fn().mockResolvedValue('exports/test.csv');
     const mockGetSignedUrl = vi.fn().mockResolvedValue('https://example.com/download');
-    
+
     vi.mocked(StorageServiceModule.storageService.uploadFile).mockImplementation(mockUploadFile);
-    vi.mocked(StorageServiceModule.storageService.getSignedUrl).mockImplementation(mockGetSignedUrl);
+    vi.mocked(StorageServiceModule.storageService.getSignedUrl).mockImplementation(
+      mockGetSignedUrl
+    );
 
     const user = userEvent.setup();
     render(<LogExport logs={mockLogs} />);
@@ -100,11 +102,17 @@ describe('LogExport', () => {
     const csvContent = await blob.text();
 
     // Verify headers
-    expect(csvContent).toContain('ID,Timestamp,User ID,Conversation ID,User Message,AI Response,Response Time (ms),Accuracy,Sentiment');
-    
+    expect(csvContent).toContain(
+      'ID,Timestamp,User ID,Conversation ID,User Message,AI Response,Response Time (ms),Accuracy,Sentiment'
+    );
+
     // Verify data rows
-    expect(csvContent).toContain('1,2024-01-01T10:00:00Z,user-1,conv-1,Hello,Hi there!,100,95,positive');
-    expect(csvContent).toContain('2,2024-01-01T10:01:00Z,user-1,conv-1,How are you?,I am doing well, thank you!,150,90,positive');
+    expect(csvContent).toContain(
+      '1,2024-01-01T10:00:00Z,user-1,conv-1,Hello,Hi there!,100,95,positive'
+    );
+    expect(csvContent).toContain(
+      '2,2024-01-01T10:01:00Z,user-1,conv-1,How are you?,I am doing well, thank you!,150,90,positive'
+    );
   });
 
   it('escapes CSV fields with commas', async () => {
@@ -122,9 +130,11 @@ describe('LogExport', () => {
 
     const mockUploadFile = vi.fn().mockResolvedValue('exports/test.csv');
     const mockGetSignedUrl = vi.fn().mockResolvedValue('https://example.com/download');
-    
+
     vi.mocked(StorageServiceModule.storageService.uploadFile).mockImplementation(mockUploadFile);
-    vi.mocked(StorageServiceModule.storageService.getSignedUrl).mockImplementation(mockGetSignedUrl);
+    vi.mocked(StorageServiceModule.storageService.getSignedUrl).mockImplementation(
+      mockGetSignedUrl
+    );
 
     const user = userEvent.setup();
     render(<LogExport logs={logsWithCommas} />);
@@ -147,7 +157,7 @@ describe('LogExport', () => {
 
   it('handles export errors gracefully', async () => {
     const mockUploadFile = vi.fn().mockRejectedValue(new Error('Upload failed'));
-    
+
     vi.mocked(StorageServiceModule.storageService.uploadFile).mockImplementation(mockUploadFile);
 
     const user = userEvent.setup();
@@ -166,9 +176,11 @@ describe('LogExport', () => {
   it('displays download link after successful export', async () => {
     const mockUploadFile = vi.fn().mockResolvedValue('exports/test.csv');
     const mockGetSignedUrl = vi.fn().mockResolvedValue('https://example.com/download');
-    
+
     vi.mocked(StorageServiceModule.storageService.uploadFile).mockImplementation(mockUploadFile);
-    vi.mocked(StorageServiceModule.storageService.getSignedUrl).mockImplementation(mockGetSignedUrl);
+    vi.mocked(StorageServiceModule.storageService.getSignedUrl).mockImplementation(
+      mockGetSignedUrl
+    );
 
     const user = userEvent.setup();
     render(<LogExport logs={mockLogs} />);
@@ -187,9 +199,11 @@ describe('LogExport', () => {
   it('uploads CSV to S3 with correct metadata', async () => {
     const mockUploadFile = vi.fn().mockResolvedValue('exports/test.csv');
     const mockGetSignedUrl = vi.fn().mockResolvedValue('https://example.com/download');
-    
+
     vi.mocked(StorageServiceModule.storageService.uploadFile).mockImplementation(mockUploadFile);
-    vi.mocked(StorageServiceModule.storageService.getSignedUrl).mockImplementation(mockGetSignedUrl);
+    vi.mocked(StorageServiceModule.storageService.getSignedUrl).mockImplementation(
+      mockGetSignedUrl
+    );
 
     const user = userEvent.setup();
     render(<LogExport logs={mockLogs} />);

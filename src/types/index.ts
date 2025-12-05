@@ -77,3 +77,20 @@ export interface CognitoUser {
 
 // Export GraphQL-specific types
 export * from './graphql';
+
+// Re-export Chat Logs Review System types for convenience
+export type {
+  ChatLogEntry,
+  FeedbackLogEntry,
+  ReviewData,
+  ChatLogFilters,
+  FeedbackLogFilters,
+  PaginationState,
+  ReviewMetrics,
+  UnityAIAssistantLog,
+  UserFeedback,
+  UpdateUnityAIAssistantLogInput,
+  UpdateUserFeedbackInput,
+  ListUnityAIAssistantLogsResponse,
+  ListUserFeedbacksResponse,
+} from './graphql';

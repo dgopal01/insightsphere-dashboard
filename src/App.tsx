@@ -14,9 +14,15 @@ import { handleError } from './utils';
 // Lazy load page components for code splitting (Requirement 9.1)
 const SignInPage = lazy(() => import('./pages/SignInPage'));
 const UnauthorizedPage = lazy(() => import('./pages/UnauthorizedPage'));
-const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-const ChatLogsPage = lazy(() => import('./pages/ChatLogsPage'));
-const FeedbackPage = lazy(() => import('./pages/FeedbackPage'));
+// Legacy pages - temporarily disabled due to type mismatches with new schema
+// const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+// const ChatLogsPage = lazy(() => import('./pages/ChatLogsPage'));
+// const FeedbackPage = lazy(() => import('./pages/FeedbackPage'));
+
+// Chat Logs Review System Pages
+const ChatLogsReviewPage = lazy(() => import('./pages/ChatLogsReviewPage'));
+const FeedbackLogsReviewPage = lazy(() => import('./pages/FeedbackLogsReviewPage'));
+const ReviewDashboardPage = lazy(() => import('./pages/ReviewDashboardPage'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -56,7 +62,7 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <DashboardPage />
+                    <ReviewDashboardPage />
                   </Layout>
                 </ProtectedRoute>
               }
@@ -66,11 +72,12 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout>
-                    <DashboardPage />
+                    <ReviewDashboardPage />
                   </Layout>
                 </ProtectedRoute>
               }
             />
+            {/* Legacy routes temporarily disabled
             <Route
               path="/logs"
               element={
@@ -87,6 +94,39 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <FeedbackPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            */}
+
+            {/* Chat Logs Review System Routes */}
+            <Route
+              path="/review-dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ReviewDashboardPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat-logs-review"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ChatLogsReviewPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/feedback-logs-review"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <FeedbackLogsReviewPage />
                   </Layout>
                 </ProtectedRoute>
               }

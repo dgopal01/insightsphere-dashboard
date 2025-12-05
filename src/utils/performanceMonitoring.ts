@@ -183,10 +183,11 @@ const storeMetricLocally = (type: string, data: unknown) => {
     const metrics = existing ? JSON.parse(existing) : [];
 
     // Keep only last 100 metrics to avoid storage issues
-    const metricWithTimestamp = typeof data === 'object' && data !== null 
-      ? { ...(data as Record<string, unknown>), timestamp: Date.now() }
-      : { value: data, timestamp: Date.now() };
-    
+    const metricWithTimestamp =
+      typeof data === 'object' && data !== null
+        ? { ...(data as Record<string, unknown>), timestamp: Date.now() }
+        : { value: data, timestamp: Date.now() };
+
     metrics.push(metricWithTimestamp);
     if (metrics.length > 100) {
       metrics.shift();
@@ -256,10 +257,7 @@ export const initPerformanceMonitoring = () => {
 /**
  * Measure API call performance
  */
-export const measureApiCall = async <T,>(
-  apiName: string,
-  apiCall: () => Promise<T>
-): Promise<T> => {
+export const measureApiCall = async <T>(apiName: string, apiCall: () => Promise<T>): Promise<T> => {
   const startTime = performance.now();
 
   try {

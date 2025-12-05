@@ -1,13 +1,26 @@
-import { expect, afterEach, vi } from 'vitest';
+import { expect, afterEach, beforeAll, afterAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import * as fc from 'fast-check';
+import { server, resetStores } from './mswServer';
 
-// Cleanup after each test case
+// Start MSW server before all tests
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'warn' });
+});
+
+// Reset handlers and stores after each test
 afterEach(() => {
+  server.resetHandlers();
+  resetStores();
   cleanup();
   localStorage.clear();
   sessionStorage.clear();
+});
+
+// Stop MSW server after all tests
+afterAll(() => {
+  server.close();
 });
 
 // Configure fast-check to run 100 iterations per property test

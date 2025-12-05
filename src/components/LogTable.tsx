@@ -92,8 +92,7 @@ const columns: Column[] = [
     minWidth: 100,
     align: 'center',
     sortable: true,
-    format: (value: string | number | undefined) =>
-      value !== undefined ? `${value}%` : 'N/A',
+    format: (value: string | number | undefined) => (value !== undefined ? `${value}%` : 'N/A'),
   },
 ];
 
@@ -123,13 +122,16 @@ export const LogTable: React.FC<LogTableProps> = ({ logs, loading = false, onRow
   /**
    * Handle sort request - memoized to prevent unnecessary re-renders
    */
-  const handleRequestSort = useCallback((property: ColumnId) => {
-    setOrder((prevOrder) => {
-      const isAsc = orderBy === property && prevOrder === 'asc';
-      return isAsc ? 'desc' : 'asc';
-    });
-    setOrderBy(property);
-  }, [orderBy]);
+  const handleRequestSort = useCallback(
+    (property: ColumnId) => {
+      setOrder((prevOrder) => {
+        const isAsc = orderBy === property && prevOrder === 'asc';
+        return isAsc ? 'desc' : 'asc';
+      });
+      setOrderBy(property);
+    },
+    [orderBy]
+  );
 
   /**
    * Handle page change - memoized to prevent unnecessary re-renders
@@ -141,30 +143,33 @@ export const LogTable: React.FC<LogTableProps> = ({ logs, loading = false, onRow
   /**
    * Comparator function for sorting - memoized for performance
    */
-  const getComparator = useMemo(() => (order: Order, orderBy: ColumnId) => {
-    return (a: ChatLog, b: ChatLog) => {
-      let aValue: string | number | undefined = a[orderBy];
-      let bValue: string | number | undefined = b[orderBy];
+  const getComparator = useMemo(
+    () => (order: Order, orderBy: ColumnId) => {
+      return (a: ChatLog, b: ChatLog) => {
+        let aValue: string | number | undefined = a[orderBy];
+        let bValue: string | number | undefined = b[orderBy];
 
-      // Handle undefined values
-      if (aValue === undefined) aValue = '';
-      if (bValue === undefined) bValue = '';
+        // Handle undefined values
+        if (aValue === undefined) aValue = '';
+        if (bValue === undefined) bValue = '';
 
-      // Convert to comparable types
-      if (orderBy === 'timestamp') {
-        aValue = new Date(aValue as string).getTime();
-        bValue = new Date(bValue as string).getTime();
-      }
+        // Convert to comparable types
+        if (orderBy === 'timestamp') {
+          aValue = new Date(aValue as string).getTime();
+          bValue = new Date(bValue as string).getTime();
+        }
 
-      if (aValue < bValue) {
-        return order === 'asc' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return order === 'asc' ? 1 : -1;
-      }
-      return 0;
-    };
-  }, []);
+        if (aValue < bValue) {
+          return order === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return order === 'asc' ? 1 : -1;
+        }
+        return 0;
+      };
+    },
+    []
+  );
 
   /**
    * Sort and paginate logs - memoized to avoid expensive operations on every render
@@ -225,12 +230,15 @@ export const LogTable: React.FC<LogTableProps> = ({ logs, loading = false, onRow
   /**
    * Get accuracy color based on value - memoized utility function
    */
-  const getAccuracyColor = useCallback((accuracy?: number): 'success' | 'warning' | 'error' | 'default' => {
-    if (accuracy === undefined) return 'default';
-    if (accuracy >= 80) return 'success';
-    if (accuracy >= 60) return 'warning';
-    return 'error';
-  }, []);
+  const getAccuracyColor = useCallback(
+    (accuracy?: number): 'success' | 'warning' | 'error' | 'default' => {
+      if (accuracy === undefined) return 'default';
+      if (accuracy >= 80) return 'success';
+      if (accuracy >= 60) return 'warning';
+      return 'error';
+    },
+    []
+  );
 
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }} role="region" aria-label="Chat logs table">
@@ -335,7 +343,10 @@ export const LogTable: React.FC<LogTableProps> = ({ logs, loading = false, onRow
                         </Box>
                       </TableCell>
                       <TableCell align="right">
-                        <Typography variant="body2" aria-label={`Response time: ${log.responseTime} milliseconds`}>
+                        <Typography
+                          variant="body2"
+                          aria-label={`Response time: ${log.responseTime} milliseconds`}
+                        >
                           {log.responseTime}
                         </Typography>
                       </TableCell>
@@ -344,7 +355,11 @@ export const LogTable: React.FC<LogTableProps> = ({ logs, loading = false, onRow
                           label={log.accuracy !== undefined ? `${log.accuracy}%` : 'N/A'}
                           color={getAccuracyColor(log.accuracy)}
                           size="small"
-                          aria-label={log.accuracy !== undefined ? `Accuracy: ${log.accuracy} percent` : 'Accuracy not available'}
+                          aria-label={
+                            log.accuracy !== undefined
+                              ? `Accuracy: ${log.accuracy} percent`
+                              : 'Accuracy not available'
+                          }
                         />
                       </TableCell>
                     </TableRow>
@@ -361,7 +376,7 @@ export const LogTable: React.FC<LogTableProps> = ({ logs, loading = false, onRow
           page={page}
           onPageChange={handleChangePage}
           aria-label="Table pagination"
-          labelDisplayedRows={({ from, to, count }) => 
+          labelDisplayedRows={({ from, to, count }) =>
             `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
           }
         />

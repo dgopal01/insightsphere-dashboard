@@ -1,302 +1,119 @@
-# InsightSphere Dashboard
+# AI Metrics Portal - Chat Logs Review System
 
-A comprehensive AI performance and feedback web application that provides real-time insights into AI chatbot performance through log analysis, user feedback collection, and performance metrics visualization.
+A ReactJS web application built with AWS Amplify for reviewing chat logs and user feedback from the Unity AI Assistant.
 
-## Features
+## Quick Start
 
-- **Chat Log Viewing**: Browse and search through AI conversation logs
-- **Feedback Collection**: Submit and view user feedback on AI responses
-- **Performance Metrics**: Real-time dashboard with accuracy, satisfaction, and response time metrics
-- **CSV Export**: Export chat logs for offline analysis
-- **Authentication**: Secure access with AWS Cognito
-- **Real-time Updates**: Live data synchronization via GraphQL subscriptions
-
-## Tech Stack
-
-- **Frontend**: React 19 + TypeScript + Vite
-- **UI Library**: Material-UI (MUI)
-- **State Management**: TanStack React Query
-- **Routing**: React Router v7
-- **Charts**: Recharts
-- **Backend**: AWS Amplify (Cognito, AppSync, DynamoDB, S3)
-- **Code Quality**: ESLint + Prettier + TypeScript Strict Mode
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ and npm
-- AWS Account with Amplify CLI configured
-- AWS Cognito User Pool
-- AWS AppSync GraphQL API
-- DynamoDB tables for ChatLogs and Feedback
-
-### Installation
-
-1. Clone the repository
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Set up AWS backend (see [Backend Setup Guide](docs/BACKEND_SETUP.md)):
-   ```powershell
-   # Windows PowerShell
-   .\scripts\deploy-backend.ps1
-   ```
-   
-   Or manually:
-   ```bash
-   amplify init
-   amplify push
-   ```
-
-4. Copy `.env.example` to `.env` and configure your AWS settings:
-   ```bash
-   cp .env.example .env
-   ```
-
-5. Update the `.env` file with your AWS credentials (generated after `amplify push`):
-   - `VITE_AWS_REGION`: Your AWS region
-   - `VITE_AWS_USER_POOL_ID`: Cognito User Pool ID
-   - `VITE_AWS_USER_POOL_CLIENT_ID`: Cognito User Pool Client ID
-   - `VITE_AWS_GRAPHQL_ENDPOINT`: AppSync GraphQL endpoint
-   - `VITE_AWS_S3_BUCKET`: S3 bucket name for exports
-
-6. Verify backend connectivity:
-   ```powershell
-   # Windows PowerShell
-   .\scripts\verify-backend.ps1
-   ```
-
-### Development
-
-Start the development server:
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-```
 
-The application will be available at `http://localhost:5173`
+# Run tests
+npm test
 
-### Building for Production
-
-```bash
-npm run build
-```
-
-### Code Quality
-
-Run linting:
-```bash
-npm run lint
-```
-
-Fix linting issues:
-```bash
-npm run lint:fix
-```
-
-Format code:
-```bash
-npm run format
-```
-
-Check formatting:
-```bash
-npm run format:check
-```
-
-Type checking:
-```bash
-npm run type-check
+# Build for production
+npm run build:prod
 ```
 
 ## Project Structure
 
-```
-src/
-├── components/     # React components
-├── contexts/       # React contexts
-├── hooks/          # Custom React hooks
-├── pages/          # Page components
-├── services/       # API and service layer
-├── types/          # TypeScript type definitions
-├── utils/          # Utility functions
-├── amplify-config.ts  # AWS Amplify configuration
-├── aws-exports.ts     # AWS configuration exports
-└── main.tsx        # Application entry point
-```
+- `src/` - Application source code
+- `docs/` - Feature-specific documentation
+- `build_docs/` - Build, deployment, and setup documentation
+- `cloudformation/` - AWS infrastructure templates
+- `lambda/` - Lambda function code
+- `scripts/` - Build and deployment scripts
 
-## AWS Backend
+## Documentation
 
-The application uses AWS Amplify for backend services:
+### Build & Deployment Documentation
+All build, deployment, and setup documentation has been moved to the [`build_docs/`](./build_docs/) folder:
 
-### Resources
+- [Setup Guide](./build_docs/SETUP.md)
+- [Build Commands](./build_docs/BUILD_COMMANDS.md)
+- [Cloud Deployment Guide](./build_docs/CLOUD_DEPLOYMENT_GUIDE.md)
+- [Testing Guide](./build_docs/TESTING.md)
+- [Quick Reference](./build_docs/QUICK_REFERENCE.md)
+- [Project Structure](./build_docs/PROJECT_STRUCTURE.md)
+- [User Guide](./build_docs/USER_GUIDE.md)
 
-1. **Cognito User Pool**: Email-based authentication with user groups (admin, viewer)
-2. **AppSync GraphQL API**: Real-time data access with subscriptions
-3. **DynamoDB Tables**:
-   - **ChatLog**: Read-only access to existing chat logs with GSI indexes
-   - **Feedback**: Full CRUD access for user feedback
-4. **S3 Bucket**: Private storage for CSV exports
+### Feature Documentation
+Feature-specific documentation is in the [`docs/`](./docs/) folder:
 
-### Setup
+- [Chat Logs Review System](./docs/chat-logs-review/)
+- [Backend Setup](./docs/BACKEND_SETUP.md)
+- [Authentication](./docs/AUTHENTICATION.md)
+- [Deployment](./docs/DEPLOYMENT.md)
+- [Monitoring Setup](./docs/MONITORING_SETUP.md)
 
-For detailed backend setup instructions, see:
-- [Backend Setup Guide](docs/BACKEND_SETUP.md) - Complete setup walkthrough
-- [Quick Reference](docs/BACKEND_QUICK_REFERENCE.md) - Common commands and queries
+## Technology Stack
 
-### GraphQL Schema
+- **Frontend**: React 19, TypeScript, Material-UI
+- **Backend**: AWS Amplify, AppSync (GraphQL), DynamoDB
+- **Authentication**: AWS Cognito
+- **Build Tool**: Vite
+- **Testing**: Vitest, React Testing Library, fast-check
 
-The GraphQL schema is defined in `amplify/backend/api/insightsphere/schema.graphql` with:
-- ChatLog model with read-only authentication
-- Feedback model with full access
-- Custom queries for aggregated metrics
-- Real-time subscriptions for live updates
+## Key Features
 
-### DynamoDB Indexes
+1. **Chat Logs Review** - Review and annotate AI assistant conversation logs
+2. **Feedback Logs Review** - Review and respond to user feedback
+3. **Review Dashboard** - Monitor review progress with real-time metrics
+4. **Authentication** - Secure access with AWS Cognito
+5. **Filtering & Sorting** - Efficient data navigation and organization
 
-**ChatLog Table:**
-- Primary Key: `id`
-- GSI 1: `byConversation` (conversationId + timestamp)
-- GSI 2: `byUser` (userId + timestamp)
+## Environment Setup
 
-**Feedback Table:**
-- Primary Key: `id`
-- GSI 1: `byLogId` (logId + timestamp)
-- GSI 2: `byUser` (userId + timestamp)
-
-For detailed schema and configuration, refer to `.kiro/specs/insightsphere-dashboard/design.md`.
-
-## Monitoring and Analytics
-
-InsightSphere includes comprehensive monitoring and analytics capabilities:
-
-### Error Tracking (Sentry)
-- Automatic error capture and reporting
-- Session replay for debugging
-- Performance tracing
-- User context tracking
-
-### Performance Monitoring
-- Web Vitals tracking (LCP, INP, CLS, FCP, TTFB)
-- Bundle size monitoring
-- API call performance tracking
-- Component render time measurement
-
-### CloudWatch Integration
-- Custom metrics publishing
-- Log aggregation
-- API performance tracking
-- Error rate monitoring
-
-### User Analytics
-- Session tracking
-- Page view tracking
-- User action tracking
-- Event tracking with multiple types
-
-### Custom Monitoring Dashboard
-- Real-time Web Vitals display
-- Analytics summary cards
-- Recent errors table
-- Recent API calls table
-- Session information
-
-For detailed setup instructions, see [Monitoring Setup Guide](docs/MONITORING_SETUP.md).
-
-## Deployment
-
-InsightSphere Dashboard supports automated deployment to three environments using AWS Amplify and GitHub Actions.
-
-### Quick Deployment
+Copy `.env.example` to `.env` and configure your AWS credentials:
 
 ```bash
-# Deploy to development
-npm run deploy:dev
-
-# Deploy to staging
-npm run deploy:staging
-
-# Deploy to production
-npm run deploy:prod
+cp .env.example .env
 ```
 
-### Environments
+See [Setup Guide](./build_docs/SETUP.md) for detailed configuration instructions.
 
-- **Development**: `https://dev.insightsphere.example.com` (develop branch)
-- **Staging**: `https://staging.insightsphere.example.com` (staging branch)
-- **Production**: `https://insightsphere.example.com` (main branch)
-
-### CI/CD Pipeline
-
-The project uses GitHub Actions for continuous integration and deployment:
-
-- **Pull Requests**: Automated testing, linting, and bundle size analysis
-- **Branch Pushes**: Automatic deployment to corresponding environment
-- **Manual Triggers**: Deploy on-demand via GitHub Actions
-
-### Deployment Documentation
-
-- [Quick Start Guide](docs/DEPLOYMENT_QUICKSTART.md) - Get started quickly
-- [Full Deployment Guide](docs/DEPLOYMENT.md) - Comprehensive deployment instructions
-- [Environment Setup](docs/ENVIRONMENT_SETUP.md) - Environment configuration details
-- [CI/CD Pipeline](docs/CI_CD_PIPELINE.md) - Pipeline architecture and workflows
-- [Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md) - Pre/post-deployment checklist
-
-### Health Checks
-
-Verify deployment health:
+## Development
 
 ```bash
-# Check all environments
-npm run health-check
-
-# Check specific environment
-npm run health-check:dev
-npm run health-check:staging
-npm run health-check:prod
-```
-
-### Custom Domain Configuration
-
-Configure custom domains for your deployment:
-
-```bash
-npm run configure-domain
-```
-
-See [Deployment Guide](docs/DEPLOYMENT.md) for detailed domain setup instructions.
-
-## Testing
-
-### Running Tests
-
-```bash
-# Run all tests
-npm run test
-
-# Run tests with coverage
-npm run test:coverage
+# Start development server
+npm run dev
 
 # Run tests in watch mode
 npm run test:watch
 
-# Run tests with UI
-npm run test:ui
+# Run tests with coverage
+npm run test:coverage
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
+npm run lint:fix
+
+# Format code
+npm run format
 ```
 
-### Test Coverage
+## Deployment
 
-The project maintains comprehensive test coverage including:
-- Unit tests for components and utilities
-- Integration tests for API services
-- Property-based tests for correctness properties
-- Accessibility tests
+```bash
+# Build for specific environment
+npm run build:dev
+npm run build:staging
+npm run build:prod
 
-See [Testing Guide](TESTING.md) for detailed testing documentation.
+# Deploy to specific environment
+npm run deploy:dev
+npm run deploy:staging
+npm run deploy:prod
+```
+
+See [Cloud Deployment Guide](./build_docs/CLOUD_DEPLOYMENT_GUIDE.md) for detailed deployment instructions.
 
 ## License
 
-Private - All rights reserved
+Private - Internal Use Only

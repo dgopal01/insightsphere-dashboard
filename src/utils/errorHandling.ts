@@ -9,7 +9,7 @@ import { APIError } from '../services/APIService';
 /**
  * Error types for classification
  */
-export type ErrorType = 'network' | 'authentication' | 'validation' | 'server' | 'unknown';
+export type ErrorType = 'network' | 'authentication' | 'graphql' | 'validation' | 'application' | 'server' | 'unknown';
 
 /**
  * Error severity levels
@@ -29,9 +29,30 @@ export interface ErrorInfo {
 }
 
 /**
+ * Check if error is a GraphQL error
+ */
+function isGraphQLError(error: unknown): boolean {
+  if (typeof error === 'object' && error !== null) {
+    // Check for GraphQL error structure
+    return (
+      'graphQLErrors' in error ||
+      'networkError' in error ||
+      ('errors' in error && Array.isArray((error as any).errors))
+    );
+  }
+  return false;
+}
+
+/**
  * Classify error based on its characteristics
+ * Requirements: 11.1, 11.2, 11.3
  */
 export function classifyError(error: unknown): ErrorType {
+  // Handle GraphQL errors
+  if (isGraphQLError(error)) {
+    return 'graphql';
+  }
+
   // Handle APIError instances
   if (error instanceof APIError) {
     if (error.statusCode === 401 || error.statusCode === 403) {
@@ -90,6 +111,16 @@ export function classifyError(error: unknown): ErrorType {
     ) {
       return 'server';
     }
+
+    // Application errors (React errors, component errors, etc.)
+    if (
+      message.includes('react') ||
+      message.includes('component') ||
+      message.includes('render') ||
+      message.includes('hook')
+    ) {
+      return 'application';
+    }
   }
 
   return 'unknown';
@@ -128,6 +159,7 @@ export function getErrorSeverity(error: unknown, type: ErrorType): ErrorSeverity
 
 /**
  * Get user-friendly error message
+ * Requirements: 11.1, 11.2, 11.3, 11.4, 11.5
  */
 export function getUserFriendlyMessage(error: unknown, type: ErrorType): string {
   const errorMessage = error instanceof Error ? error.message : String(error);
@@ -137,8 +169,15 @@ export function getUserFriendlyMessage(error: unknown, type: ErrorType): string 
       return 'Unable to connect to the server. Please check your internet connection and try again.';
     case 'authentication':
       return 'Your session has expired or you do not have permission to access this resource. Please sign in again.';
+    case 'graphql':
+      return 'There was an error processing your request. Please try again.';
     case 'validation':
-      return errorMessage || 'The information you provided is invalid. Please check your input and try again.';
+      return (
+        errorMessage ||
+        'The information you provided is invalid. Please check your input and try again.'
+      );
+    case 'application':
+      return 'The application encountered an error. Please refresh the page and try again.';
     case 'server':
       return 'The server encountered an error while processing your request. Please try again later.';
     default:
@@ -149,10 +188,7 @@ export function getUserFriendlyMessage(error: unknown, type: ErrorType): string 
 /**
  * Create structured error information
  */
-export function createErrorInfo(
-  error: unknown,
-  context?: Record<string, any>
-): ErrorInfo {
+export function createErrorInfo(error: unknown, context?: Record<string, any>): ErrorInfo {
   const type = classifyError(error);
   const severity = getErrorSeverity(error, type);
   const message = getUserFriendlyMessage(error, type);
@@ -201,11 +237,14 @@ export function logError(errorInfo: ErrorInfo): void {
       message: errorInfo.message,
       timestamp: errorInfo.timestamp,
       context: errorInfo.context,
-      error: errorInfo.originalError instanceof Error ? {
-        name: errorInfo.originalError.name,
-        message: errorInfo.originalError.message,
-        stack: errorInfo.originalError.stack,
-      } : errorInfo.originalError,
+      error:
+        errorInfo.originalError instanceof Error
+          ? {
+              name: errorInfo.originalError.name,
+              message: errorInfo.originalError.message,
+              stack: errorInfo.originalError.stack,
+            }
+          : errorInfo.originalError,
     });
 
     // TODO: Integrate with error tracking service
@@ -217,10 +256,7 @@ export function logError(errorInfo: ErrorInfo): void {
 /**
  * Handle error with logging and return structured error info
  */
-export function handleError(
-  error: unknown,
-  context?: Record<string, any>
-): ErrorInfo {
+export function handleError(error: unknown, context?: Record<string, any>): ErrorInfo {
   const errorInfo = createErrorInfo(error, context);
   logError(errorInfo);
   return errorInfo;
@@ -266,4 +302,108 @@ export function formatErrorForDisplay(error: unknown): string {
     return error;
   }
   return 'An unexpected error occurred';
+}
+
+/**
+ * Retry options for retry logic
+ */
+export interface RetryOptions {
+  maxAttempts?: number;
+  baseDelay?: number;
+  maxDelay?: number;
+  onRetry?: (attempt: number, error: unknown) => void;
+  shouldRetry?: (error: unknown) => boolean;
+}
+
+/**
+ * Default retry options
+ */
+const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
+  maxAttempts: 3,
+  baseDelay: 1000,
+  maxDelay: 10000,
+  onRetry: () => {},
+  shouldRetry: isRetryableError,
+};
+
+/**
+ * Retry a function with exponential backoff
+ * Requirements: 11.1, 11.2, 11.3, 11.4, 11.5
+ * 
+ * @param fn - The async function to retry
+ * @param options - Retry configuration options
+ * @returns Promise that resolves with the function result or rejects with the last error
+ * 
+ * @example
+ * const result = await retryWithBackoff(
+ *   () => fetchData(),
+ *   { maxAttempts: 3, baseDelay: 1000 }
+ * );
+ */
+export async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  options: RetryOptions = {}
+): Promise<T> {
+  const opts = { ...DEFAULT_RETRY_OPTIONS, ...options };
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < opts.maxAttempts; attempt++) {
+    try {
+      // Try to execute the function
+      return await fn();
+    } catch (error) {
+      lastError = error;
+
+      // Check if we should retry this error
+      if (!opts.shouldRetry(error)) {
+        throw error;
+      }
+
+      // Check if we've exhausted all attempts
+      if (attempt === opts.maxAttempts - 1) {
+        throw error;
+      }
+
+      // Calculate delay with exponential backoff
+      const delay = Math.min(
+        opts.baseDelay * Math.pow(2, attempt),
+        opts.maxDelay
+      );
+
+      // Call retry callback
+      opts.onRetry(attempt + 1, error);
+
+      // Log retry attempt
+      if (import.meta.env.MODE === 'development') {
+        console.warn(
+          `Retry attempt ${attempt + 1}/${opts.maxAttempts} after ${delay}ms`,
+          error
+        );
+      }
+
+      // Wait before retrying
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  // This should never be reached, but TypeScript needs it
+  throw lastError;
+}
+
+/**
+ * Create a retryable version of an async function
+ * 
+ * @param fn - The async function to make retryable
+ * @param options - Retry configuration options
+ * @returns A new function that retries on failure
+ * 
+ * @example
+ * const retryableFetch = createRetryable(fetchData, { maxAttempts: 3 });
+ * const result = await retryableFetch();
+ */
+export function createRetryable<TArgs extends any[], TReturn>(
+  fn: (...args: TArgs) => Promise<TReturn>,
+  options: RetryOptions = {}
+): (...args: TArgs) => Promise<TReturn> {
+  return (...args: TArgs) => retryWithBackoff(() => fn(...args), options);
 }

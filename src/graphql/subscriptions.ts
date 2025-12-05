@@ -1,7 +1,65 @@
 /**
- * GraphQL Subscriptions for InsightSphere Dashboard
+ * GraphQL Subscriptions for InsightSphere Dashboard and Chat Logs Review System
  * Real-time updates for chat logs and feedback
  */
+
+// ============================================================================
+// Chat Logs Review System Subscriptions
+// ============================================================================
+
+/**
+ * Subscribe to Unity AI Assistant Log updates
+ */
+export const onUpdateUnityAIAssistantLog = /* GraphQL */ `
+  subscription OnUpdateUnityAIAssistantLog($log_id: ID) {
+    onUpdateUnityAIAssistantLog(log_id: $log_id) {
+      log_id
+      timestamp
+      carrier_name
+      chat_id
+      citation
+      fi_name
+      guardrail_id
+      guardrail_intervened
+      model_id
+      question
+      response
+      rev_comment
+      rev_feedback
+      session_id
+      user_name
+      usr_comment
+      usr_feedback
+    }
+  }
+`;
+
+/**
+ * Subscribe to User Feedback updates
+ */
+export const onUpdateUserFeedback = /* GraphQL */ `
+  subscription OnUpdateUserFeedback($id: ID) {
+    onUpdateUserFeedback(id: $id) {
+      id
+      datetime
+      carrier
+      comments
+      feedback
+      question
+      response
+      session_id
+      type
+      username
+      user_name
+      rev_comment
+      rev_feedback
+    }
+  }
+`;
+
+// ============================================================================
+// InsightSphere Dashboard Subscriptions (Legacy)
+// ============================================================================
 
 /**
  * Subscribe to new chat log entries

@@ -23,7 +23,14 @@ import { useAuth } from '../contexts/AuthContext';
 const SignInPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, confirmNewPassword, isAuthenticated, isLoading, error: authError, requiresNewPassword } = useAuth();
+  const {
+    signIn,
+    confirmNewPassword,
+    isAuthenticated,
+    isLoading,
+    error: authError,
+    requiresNewPassword,
+  } = useAuth();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -240,56 +247,56 @@ const SignInPage: React.FC = () => {
               </form>
             ) : (
               <form onSubmit={handleSubmit}>
-              <TextField
-                fullWidth
-                label="Username"
-                variant="outlined"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                margin="normal"
-                autoComplete="username"
-                autoFocus
-                disabled={isSubmitting || isLoading}
-                error={!!error && !username.trim()}
-              />
+                <TextField
+                  fullWidth
+                  label="Username"
+                  variant="outlined"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  margin="normal"
+                  autoComplete="username"
+                  autoFocus
+                  disabled={isSubmitting || isLoading}
+                  error={!!error && !username.trim()}
+                />
 
-              <TextField
-                fullWidth
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                variant="outlined"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                margin="normal"
-                autoComplete="current-password"
-                disabled={isSubmitting || isLoading}
-                error={!!error && !password}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={handleTogglePasswordVisibility}
-                        edge="end"
-                        disabled={isSubmitting || isLoading}
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+                <TextField
+                  fullWidth
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  variant="outlined"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  margin="normal"
+                  autoComplete="current-password"
+                  disabled={isSubmitting || isLoading}
+                  error={!!error && !password}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleTogglePasswordVisibility}
+                          edge="end"
+                          disabled={isSubmitting || isLoading}
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
 
-              <Button
-                fullWidth
-                type="submit"
-                variant="contained"
-                size="large"
-                disabled={isSubmitting || isLoading}
-                sx={{ mt: 3, mb: 2 }}
-              >
-                {isSubmitting || isLoading ? 'Signing in...' : 'Sign In'}
-              </Button>
+                <Button
+                  fullWidth
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  disabled={isSubmitting || isLoading}
+                  sx={{ mt: 3, mb: 2 }}
+                >
+                  {isSubmitting || isLoading ? 'Signing in...' : 'Sign In'}
+                </Button>
               </form>
             )}
 

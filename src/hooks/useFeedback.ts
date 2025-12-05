@@ -156,7 +156,16 @@ export function useFeedback(options: UseFeedbackOptions = {}): UseFeedbackReturn
     error,
     refetch: refetchQuery,
   } = useQuery<ListFeedbackResponse>({
-    queryKey: ['feedback', queryConfig.queryKey, logId, userId, startDate, endDate, limit, nextToken],
+    queryKey: [
+      'feedback',
+      queryConfig.queryKey,
+      logId,
+      userId,
+      startDate,
+      endDate,
+      limit,
+      nextToken,
+    ],
     queryFn: async () => {
       const result = await apiService.query<any>(queryConfig.query, queryConfig.variables);
 
