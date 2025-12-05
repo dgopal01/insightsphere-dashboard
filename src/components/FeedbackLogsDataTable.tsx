@@ -108,44 +108,46 @@ export const FeedbackLogsDataTable: React.FC<FeedbackLogsDataTableProps> = ({
         format: (value: string) => new Date(value).toLocaleString(),
       },
       {
-        id: 'carrier',
+        id: 'info',
         label: 'Carrier',
         minWidth: 120,
         sortable: false,
+        format: (_value: any, row: FeedbackLogEntry) => row.info?.carrier || 'N/A',
       },
       {
-        id: 'username',
+        id: 'info',
         label: 'User',
         minWidth: 120,
         sortable: false,
+        format: (_value: any, row: FeedbackLogEntry) => row.info?.username || row.info?.user_name || 'N/A',
       },
       {
-        id: 'comments',
+        id: 'info',
         label: 'User Comments',
         minWidth: 200,
         sortable: false,
-        format: (value: string) => (
+        format: (_value: any, row: FeedbackLogEntry) => (
           <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
             <Comment
               sx={{ fontSize: 16, mr: 1, mt: 0.5, color: 'info.main', flexShrink: 0 }}
               aria-hidden="true"
             />
-            <Typography variant="body2">{sanitizeText(truncateText(value))}</Typography>
+            <Typography variant="body2">{sanitizeText(truncateText(row.info?.comments || ''))}</Typography>
           </Box>
         ),
       },
       {
-        id: 'feedback',
+        id: 'info',
         label: 'User Feedback',
         minWidth: 200,
         sortable: false,
-        format: (value: string) => (
+        format: (_value: any, row: FeedbackLogEntry) => (
           <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
             <FeedbackIcon
               sx={{ fontSize: 16, mr: 1, mt: 0.5, color: 'warning.main', flexShrink: 0 }}
               aria-hidden="true"
             />
-            <Typography variant="body2">{sanitizeText(truncateText(value))}</Typography>
+            <Typography variant="body2">{sanitizeText(truncateText(row.info?.feedback || ''))}</Typography>
           </Box>
         ),
       },
@@ -311,13 +313,13 @@ export const FeedbackLogsDataTable: React.FC<FeedbackLogsDataTableProps> = ({
                             outlineOffset: '-2px',
                           },
                         }}
-                        aria-label={`Feedback from ${log.username} at ${new Date(log.datetime).toLocaleString()}`}
+                        aria-label={`Feedback from ${log.info?.username || 'user'} at ${new Date(log.datetime).toLocaleString()}`}
                       >
-                        {columns.map((column) => {
+                        {columns.map((column, index) => {
                           const value = column.id !== 'actions' ? log[column.id as keyof FeedbackLogEntry] : null;
                           return (
-                            <TableCell key={column.id} align={column.align}>
-                              {column.format ? column.format(value, log) : value}
+                            <TableCell key={`${column.id}-${index}`} align={column.align}>
+                              {column.format ? column.format(value, log) : (typeof value === 'string' || typeof value === 'number' ? value : '')}
                             </TableCell>
                           );
                         })}

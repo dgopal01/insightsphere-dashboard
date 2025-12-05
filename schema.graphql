@@ -1,0 +1,75 @@
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type ChatLog {
+  aiResponse: String!
+  conversationId: String!
+  id: ID!
+  metadata: AWSJSON
+  timestamp: AWSDateTime!
+  userId: String!
+  userMessage: String!
+}
+
+type ChatLogConnection {
+  items: [ChatLog]
+  nextToken: String
+}
+
+type Feedback {
+  comment: String
+  id: ID!
+  logId: String!
+  rating: Int!
+  timestamp: AWSDateTime!
+  userId: String!
+}
+
+type FeedbackConnection {
+  items: [Feedback]
+  nextToken: String
+}
+
+type Mutation {
+  createChatLog(input: CreateChatLogInput!): ChatLog
+  createFeedback(input: CreateFeedbackInput!): Feedback
+  deleteChatLog(id: ID!): ChatLog
+  updateChatLog(input: UpdateChatLogInput!): ChatLog
+}
+
+type Query {
+  getChatLog(id: ID!): ChatLog
+  getChatLogsByConversation(conversationId: String!, limit: Int, nextToken: String): ChatLogConnection
+  getChatLogsByUser(limit: Int, nextToken: String, userId: String!): ChatLogConnection
+  getFeedback(id: ID!): Feedback
+  listChatLogs(limit: Int, nextToken: String): ChatLogConnection
+  listFeedback(limit: Int, nextToken: String): FeedbackConnection
+}
+
+type Subscription {
+  onCreateChatLog: ChatLog @aws_subscribe(mutations : ["createChatLog"])
+  onCreateFeedback: Feedback @aws_subscribe(mutations : ["createFeedback"])
+}
+
+input CreateChatLogInput {
+  aiResponse: String!
+  conversationId: String!
+  metadata: AWSJSON
+  userId: String!
+  userMessage: String!
+}
+
+input CreateFeedbackInput {
+  comment: String
+  logId: String!
+  rating: Int!
+  userId: String!
+}
+
+input UpdateChatLogInput {
+  id: ID!
+  metadata: AWSJSON
+}

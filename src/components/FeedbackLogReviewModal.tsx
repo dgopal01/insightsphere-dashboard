@@ -240,21 +240,21 @@ export const FeedbackLogReviewModal: React.FC<FeedbackLogReviewModalProps> = ({
                 <Typography variant="caption" color="text.secondary">
                   Carrier
                 </Typography>
-                <Typography variant="body2">{log.carrier}</Typography>
+                <Typography variant="body2">{log.info?.carrier || 'N/A'}</Typography>
               </Box>
               <Box sx={{ flex: '1 1 45%' }}>
                 <Typography variant="caption" color="text.secondary">
                   User
                 </Typography>
-                <Typography variant="body2">{log.username || log.user_name || 'N/A'}</Typography>
+                <Typography variant="body2">{log.info?.username || log.info?.user_name || 'N/A'}</Typography>
               </Box>
             </Box>
-            {log.type && (
+            {log.info?.type && (
               <Box>
                 <Typography variant="caption" color="text.secondary">
                   Type
                 </Typography>
-                <Typography variant="body2">{log.type}</Typography>
+                <Typography variant="body2">{log.info?.type}</Typography>
               </Box>
             )}
           </Stack>
@@ -264,46 +264,46 @@ export const FeedbackLogReviewModal: React.FC<FeedbackLogReviewModalProps> = ({
 
         {/* User Feedback Content */}
         <Box sx={{ mb: 3 }}>
-          {log.question && (
+          {log.info?.question && (
             <>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Question
               </Typography>
               <Typography variant="body2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }}>
-                {log.question}
+                {log.info?.question}
               </Typography>
             </>
           )}
 
-          {log.response && (
+          {log.info?.response && (
             <>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 Response
               </Typography>
               <Typography variant="body2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }}>
-                {log.response}
+                {log.info?.response}
               </Typography>
             </>
           )}
 
-          {log.comments && (
+          {log.info?.comments && (
             <>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 User Comments
               </Typography>
               <Typography variant="body2" sx={{ mb: 2, whiteSpace: 'pre-wrap' }}>
-                {log.comments}
+                {log.info?.comments}
               </Typography>
             </>
           )}
 
-          {log.feedback && (
+          {log.info?.feedback && (
             <>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
                 User Feedback
               </Typography>
               <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                {log.feedback}
+                {log.info?.feedback}
               </Typography>
             </>
           )}

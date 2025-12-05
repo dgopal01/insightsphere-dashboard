@@ -5,17 +5,8 @@
  */
 
 import { useState, useCallback } from 'react';
-import { apiService } from '../services';
-import { listFeedback } from '../graphql/queries';
-import { updateUserFeedback } from '../graphql/mutations';
-import type {
-  FeedbackLogEntry,
-  FeedbackLogFilters,
-  ReviewData,
-  ListUserFeedbacksResponse,
-  ModelUserFeedbackFilterInput,
-  UpdateUserFeedbackInput,
-} from '../types/graphql';
+import * as DynamoDBService from '../services/DynamoDBService';
+import type { FeedbackLogFilters, ReviewData } from '../types/graphql';
 
 /**
  * Sort direction for datetime
@@ -26,7 +17,7 @@ export type SortDirection = 'asc' | 'desc';
  * Return type for useFeedbackLogs hook
  */
 export interface UseFeedbackLogsReturn {
-  logs: FeedbackLogEntry[];
+  logs: DynamoDBService.FeedbackLogEntry[];
   loading: boolean;
   error: Error | null;
   totalCount: number;
@@ -38,74 +29,9 @@ export interface UseFeedbackLogsReturn {
 }
 
 /**
- * Build GraphQL filter from FeedbackLogFilters
- */
-function buildGraphQLFilter(filters?: FeedbackLogFilters): ModelUserFeedbackFilterInput | undefined {
-  if (!filters) return undefined;
-
-  const filter: ModelUserFeedbackFilterInput = {};
-  const andConditions: ModelUserFeedbackFilterInput[] = [];
-
-  // Carrier filter
-  if (filters.carrier) {
-    andConditions.push({
-      carrier: { eq: filters.carrier },
-    });
-  }
-
-  // Date range filter on datetime
-  if (filters.startDate && filters.endDate) {
-    andConditions.push({
-      datetime: { ge: filters.startDate },
-    });
-    andConditions.push({
-      datetime: { le: filters.endDate },
-    });
-  } else if (filters.startDate) {
-    andConditions.push({
-      datetime: { ge: filters.startDate },
-    });
-  } else if (filters.endDate) {
-    andConditions.push({
-      datetime: { le: filters.endDate },
-    });
-  }
-
-  // Review status filter
-  if (filters.reviewStatus === 'reviewed') {
-    // Reviewed: has rev_comment OR rev_feedback
-    filter.or = [
-      { rev_comment: { ne: '' } },
-      { rev_feedback: { ne: '' } },
-    ];
-  } else if (filters.reviewStatus === 'pending') {
-    // Pending: both rev_comment AND rev_feedback are empty or null
-    andConditions.push({
-      or: [
-        { rev_comment: { eq: '' } },
-        { rev_comment: { eq: null as any } },
-      ],
-    });
-    andConditions.push({
-      or: [
-        { rev_feedback: { eq: '' } },
-        { rev_feedback: { eq: null as any } },
-      ],
-    });
-  }
-
-  // Combine all AND conditions
-  if (andConditions.length > 0) {
-    filter.and = andConditions;
-  }
-
-  return Object.keys(filter).length > 0 ? filter : undefined;
-}
-
-/**
  * Sort logs by datetime
  */
-function sortLogs(logs: FeedbackLogEntry[], direction: SortDirection): FeedbackLogEntry[] {
+function sortLogs(logs: DynamoDBService.FeedbackLogEntry[], direction: SortDirection): DynamoDBService.FeedbackLogEntry[] {
   return [...logs].sort((a, b) => {
     const timeA = new Date(a.datetime).getTime();
     const timeB = new Date(b.datetime).getTime();
@@ -114,10 +40,45 @@ function sortLogs(logs: FeedbackLogEntry[], direction: SortDirection): FeedbackL
 }
 
 /**
+ * Apply client-side filters to feedback logs
+ */
+function applyFilters(logs: DynamoDBService.FeedbackLogEntry[], filters?: FeedbackLogFilters): DynamoDBService.FeedbackLogEntry[] {
+  if (!filters) return logs;
+
+  return logs.filter((log) => {
+    // Carrier filter
+    if (filters.carrier && log.info?.carrier !== filters.carrier) {
+      return false;
+    }
+
+    // Date range filter
+    if (filters.startDate && log.datetime < filters.startDate) {
+      return false;
+    }
+    if (filters.endDate && log.datetime > filters.endDate) {
+      return false;
+    }
+
+    // Review status filter
+    if (filters.reviewStatus === 'reviewed') {
+      if (!log.rev_comment && !log.rev_feedback) {
+        return false;
+      }
+    } else if (filters.reviewStatus === 'pending') {
+      if (log.rev_comment || log.rev_feedback) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
+/**
  * Custom hook for fetching and managing User Feedback logs
  */
 export function useFeedbackLogs(): UseFeedbackLogsReturn {
-  const [logs, setLogs] = useState<FeedbackLogEntry[]>([]);
+  const [logs, setLogs] = useState<DynamoDBService.FeedbackLogEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const [nextToken, setNextToken] = useState<string | null>(null);
@@ -136,23 +97,18 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
       setCurrentSortDirection(sortDirection);
 
       try {
-        const graphQLFilter = buildGraphQLFilter(filters);
-        const variables = {
-          filter: graphQLFilter,
-          limit: 50,
-        };
-
-        const result = await apiService.query<{ listFeedback: ListUserFeedbacksResponse }>(
-          listFeedback,
-          variables
-        );
-
-        const response = result.listFeedback;
-        const sortedLogs = sortLogs(response.items, sortDirection);
+        // Fetch from DynamoDB
+        const result = await DynamoDBService.listFeedbackLogs(1000);
+        
+        // Apply client-side filters
+        const filteredLogs = applyFilters(result.items, filters);
+        
+        // Sort logs
+        const sortedLogs = sortLogs(filteredLogs, sortDirection);
 
         setLogs(sortedLogs);
-        setNextToken(response.nextToken || null);
-        setTotalCount(response.items.length);
+        setNextToken(null); // Pagination handled client-side for now
+        setTotalCount(sortedLogs.length);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch feedback logs';
         setError(new Error(errorMessage));
@@ -168,39 +124,12 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
 
   /**
    * Fetch next page of results
+   * Note: Pagination is handled client-side for now
    */
   const fetchNextPage = useCallback(async () => {
-    if (!nextToken || loading) return;
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const graphQLFilter = buildGraphQLFilter(currentFilters);
-      const variables = {
-        filter: graphQLFilter,
-        limit: 50,
-        nextToken,
-      };
-
-      const result = await apiService.query<{ listFeedback: ListUserFeedbacksResponse }>(
-        listFeedback,
-        variables
-      );
-
-      const response = result.listFeedback;
-      const sortedNewLogs = sortLogs(response.items, currentSortDirection);
-
-      setLogs((prevLogs) => [...prevLogs, ...sortedNewLogs]);
-      setNextToken(response.nextToken || null);
-      setTotalCount((prevCount) => prevCount + response.items.length);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch next page';
-      setError(new Error(errorMessage));
-    } finally {
-      setLoading(false);
-    }
-  }, [nextToken, loading, currentFilters, currentSortDirection]);
+    // All data is loaded at once, so no pagination needed
+    return Promise.resolve();
+  }, []);
 
   /**
    * Update review fields for a feedback log entry
@@ -210,18 +139,12 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
       setError(null);
 
       try {
-        const input: UpdateUserFeedbackInput = {
-          id: logId,
-          rev_comment: reviewData.rev_comment,
-          rev_feedback: reviewData.rev_feedback,
-        };
-
-        const result = await apiService.mutate<{ updateUserFeedback: FeedbackLogEntry }>(
-          updateUserFeedback,
-          { input }
+        // Update in DynamoDB
+        const updatedLog = await DynamoDBService.updateFeedbackLogReview(
+          logId,
+          reviewData.rev_comment,
+          reviewData.rev_feedback
         );
-
-        const updatedLog = result.updateUserFeedback;
 
         // Update the log in the local state
         setLogs((prevLogs) =>

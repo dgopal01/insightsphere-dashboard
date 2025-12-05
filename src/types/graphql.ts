@@ -62,14 +62,50 @@ export interface ReviewMetrics {
 }
 
 /**
- * ChatLogEntry - Type alias for UnityAIAssistantLog for consistency with design document
+ * ChatLogEntry - Type alias for DynamoDB ChatLogEntry
+ * Using DynamoDB structure directly
  */
-export type ChatLogEntry = UnityAIAssistantLog;
+export type ChatLogEntry = {
+  log_id: string;
+  timestamp: string;
+  carrier_name?: string;
+  chat_id?: string;
+  citation?: string;
+  fi_name?: string;
+  guardrail_id?: string;
+  guardrail_intervened?: boolean;
+  model_id?: string;
+  question?: string;
+  response?: string;
+  rev_comment?: string;
+  rev_feedback?: string;
+  session_id?: string;
+  user_name?: string;
+  usr_comment?: string;
+  usr_feedback?: string;
+};
 
 /**
- * FeedbackLogEntry - Type alias for UserFeedback for consistency with design document
+ * FeedbackLogEntry - Type alias for DynamoDB FeedbackLogEntry
+ * Using DynamoDB structure directly
  */
-export type FeedbackLogEntry = UserFeedback;
+export type FeedbackLogEntry = {
+  id: string;
+  datetime: string;
+  info?: {
+    carrier?: string;
+    feedback?: string;
+    comments?: string;
+    question?: string;
+    response?: string;
+    user_name?: string;
+    session_id?: string;
+    type?: string;
+    username?: string;
+  };
+  rev_comment?: string;
+  rev_feedback?: string;
+};
 
 /**
  * ReviewData - Data submitted when reviewing a log entry

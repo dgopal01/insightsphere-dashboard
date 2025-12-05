@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { apiService } from '../services';
+import * as DynamoDBService from '../services/DynamoDBService';
 import type { ReviewMetrics } from '../types/graphql';
 
 /**
@@ -86,36 +86,14 @@ export function useReviewMetrics(
       setError(null);
 
       // Fetch all chat logs and feedback logs to calculate metrics
-      // Note: Using the actual AppSync resolver names (listChatLogs, listFeedback)
+      // Using DynamoDB directly
       const [chatLogsResponse, feedbackLogsResponse] = await Promise.all([
-        apiService.query<{ listChatLogs: { items: any[] } }>(
-          `query ListChatLogs($limit: Int) {
-            listChatLogs(limit: $limit) {
-              items {
-                id
-                rev_comment
-                rev_feedback
-              }
-            }
-          }`,
-          { limit: 1000 }
-        ),
-        apiService.query<{ listFeedback: { items: any[] } }>(
-          `query ListFeedback($limit: Int) {
-            listFeedback(limit: $limit) {
-              items {
-                id
-                rev_comment
-                rev_feedback
-              }
-            }
-          }`,
-          { limit: 1000 }
-        ),
+        DynamoDBService.listChatLogs(1000),
+        DynamoDBService.listFeedbackLogs(1000),
       ]);
 
-      const chatLogs = chatLogsResponse.listChatLogs.items;
-      const feedbackLogs = feedbackLogsResponse.listFeedback.items;
+      const chatLogs = chatLogsResponse.items;
+      const feedbackLogs = feedbackLogsResponse.items;
 
       // Calculate chat logs metrics
       const totalChatLogs = chatLogs.length;
