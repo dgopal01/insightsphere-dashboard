@@ -182,6 +182,8 @@ const SignInPage: React.FC = () => {
               <form onSubmit={handleNewPasswordSubmit}>
                 <TextField
                   fullWidth
+                  id="new-password"
+                  name="newPassword"
                   label="New Password"
                   type={showNewPassword ? 'text' : 'password'}
                   variant="outlined"
@@ -210,6 +212,8 @@ const SignInPage: React.FC = () => {
 
                 <TextField
                   fullWidth
+                  id="confirm-password"
+                  name="confirmPassword"
                   label="Confirm New Password"
                   type={showConfirmPassword ? 'text' : 'password'}
                   variant="outlined"
@@ -249,6 +253,8 @@ const SignInPage: React.FC = () => {
               <form onSubmit={handleSubmit}>
                 <TextField
                   fullWidth
+                  id="username"
+                  name="username"
                   label="Username"
                   variant="outlined"
                   value={username}
@@ -262,6 +268,8 @@ const SignInPage: React.FC = () => {
 
                 <TextField
                   fullWidth
+                  id="password"
+                  name="password"
                   label="Password"
                   type={showPassword ? 'text' : 'password'}
                   variant="outlined"
