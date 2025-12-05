@@ -6,7 +6,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiService } from '../services';
-import { getReviewMetrics } from '../graphql/queries';
 import type { ReviewMetrics } from '../types/graphql';
 
 /**
@@ -75,6 +74,7 @@ export function useReviewMetrics(
 
   /**
    * Fetch metrics from the API
+   * Since getReviewMetrics resolver doesn't exist, we calculate metrics client-side
    */
   const fetchMetrics = useCallback(async () => {
     if (!enabled) {
@@ -85,26 +85,69 @@ export function useReviewMetrics(
       setLoading(true);
       setError(null);
 
-      // Execute GraphQL query
-      const response = await apiService.query<{ getReviewMetrics: ReviewMetrics }>(
-        getReviewMetrics
-      );
+      // Fetch all chat logs and feedback logs to calculate metrics
+      const [chatLogsResponse, feedbackLogsResponse] = await Promise.all([
+        apiService.query<{ listUnityAIAssistantLogs: { items: any[] } }>(
+          `query ListUnityAIAssistantLogs($limit: Int) {
+            listUnityAIAssistantLogs(limit: $limit) {
+              items {
+                log_id
+                rev_comment
+                rev_feedback
+              }
+            }
+          }`,
+          { limit: 1000 }
+        ),
+        apiService.query<{ listUserFeedbacks: { items: any[] } }>(
+          `query ListUserFeedbacks($limit: Int) {
+            listUserFeedbacks(limit: $limit) {
+              items {
+                id
+                rev_comment
+                rev_feedback
+              }
+            }
+          }`,
+          { limit: 1000 }
+        ),
+      ]);
 
-      const rawMetrics = response.getReviewMetrics;
+      const chatLogs = chatLogsResponse.listUnityAIAssistantLogs.items;
+      const feedbackLogs = feedbackLogsResponse.listUserFeedbacks.items;
+
+      // Calculate chat logs metrics
+      const totalChatLogs = chatLogs.length;
+      const reviewedChatLogs = chatLogs.filter(
+        (log) => log.rev_comment || log.rev_feedback
+      ).length;
+      const pendingChatLogs = totalChatLogs - reviewedChatLogs;
+
+      // Calculate feedback logs metrics
+      const totalFeedbackLogs = feedbackLogs.length;
+      const reviewedFeedbackLogs = feedbackLogs.filter(
+        (log) => log.rev_comment || log.rev_feedback
+      ).length;
+      const pendingFeedbackLogs = totalFeedbackLogs - reviewedFeedbackLogs;
 
       // Calculate percentages
       const chatLogsReviewedPercentage = calculatePercentage(
-        rawMetrics.reviewedChatLogs,
-        rawMetrics.totalChatLogs
+        reviewedChatLogs,
+        totalChatLogs
       );
 
       const feedbackLogsReviewedPercentage = calculatePercentage(
-        rawMetrics.reviewedFeedbackLogs,
-        rawMetrics.totalFeedbackLogs
+        reviewedFeedbackLogs,
+        totalFeedbackLogs
       );
 
       const extendedMetrics: ExtendedReviewMetrics = {
-        ...rawMetrics,
+        totalChatLogs,
+        reviewedChatLogs,
+        pendingChatLogs,
+        totalFeedbackLogs,
+        reviewedFeedbackLogs,
+        pendingFeedbackLogs,
         chatLogsReviewedPercentage,
         feedbackLogsReviewedPercentage,
       };
