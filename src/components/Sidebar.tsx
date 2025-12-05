@@ -15,10 +15,8 @@ import {
   Box,
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
   Chat as ChatIcon,
   Feedback as FeedbackIcon,
-  RateReview as ReviewIcon,
   Assessment as AssessmentIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -37,12 +35,9 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'Chat Logs', icon: <ChatIcon />, path: '/logs' },
-  { text: 'Feedback', icon: <FeedbackIcon />, path: '/feedback' },
-  { text: 'Review Dashboard', icon: <AssessmentIcon />, path: '/review-dashboard' },
-  { text: 'Chat Logs Review', icon: <ReviewIcon />, path: '/chat-logs-review' },
-  { text: 'Feedback Review', icon: <ReviewIcon />, path: '/feedback-logs-review' },
+  { text: 'Review Dashboard', icon: <AssessmentIcon />, path: '/dashboard' },
+  { text: 'Chat Logs Review', icon: <ChatIcon />, path: '/chat-logs-review' },
+  { text: 'Feedback Logs Review', icon: <FeedbackIcon />, path: '/feedback-logs-review' },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onDrawerToggle }) => {
