@@ -53,15 +53,19 @@ export default defineConfig(({ mode }) => {
         output: {
           // Manual chunk splitting for vendor libraries
           manualChunks: (id) => {
-            // React core libraries
-            if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            // Keep React and React-DOM together to avoid duplicate instances
+            if (
+              id.includes('node_modules/react/') || 
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/scheduler/')
+            ) {
               return 'react-vendor';
             }
             // React Router
-            if (id.includes('node_modules/react-router-dom')) {
+            if (id.includes('node_modules/react-router')) {
               return 'router-vendor';
             }
-            // Material-UI and Emotion
+            // Material-UI and Emotion (they depend on React)
             if (
               id.includes('node_modules/@mui') ||
               id.includes('node_modules/@emotion')
@@ -133,6 +137,10 @@ export default defineConfig(({ mode }) => {
       ],
       // Exclude large dependencies that should be loaded on demand
       exclude: ['recharts'],
+    },
+    // Ensure single instance of React
+    resolve: {
+      dedupe: ['react', 'react-dom'],
     },
     // Server configuration for development
     server: {
