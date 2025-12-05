@@ -1,8 +1,10 @@
-# 🚀 START HERE - AI Metrics Portal
+# 🚀 START HERE - InsightSphere Dashboard
+
+Welcome! This guide will get you up and running quickly.
 
 ## Quick Start (Local Development)
 
-The fastest way to get started without AWS deployment:
+The fastest way to start developing:
 
 ### Step 1: Install Dependencies
 
@@ -10,105 +12,109 @@ The fastest way to get started without AWS deployment:
 npm install
 ```
 
-### Step 2: Create Environment File
-
-```bash
-# Copy the example environment file
-copy .env.example .env
-```
-
-### Step 3: Start Development Server
+### Step 2: Start Development Server
 
 ```bash
 npm run dev
 ```
 
-### Step 4: Access the Application
+### Step 3: Access the Application
 
-Open your browser to: **http://localhost:5173**
+Open your browser to: **http://localhost:3000**
+
+**Note:** Without AWS backend configuration, you'll see the UI but data fetching won't work.
 
 ---
 
-## ⚠️ Note About AWS Deployment
+## AWS Amplify Deployment (Production)
 
-The PowerShell deployment scripts have some encoding issues that need to be resolved. 
+Your app is already deployed and configured!
 
-**For now, you have two options:**
+### Current Deployment Status
 
-### Option A: Use the Application Locally (UI Only)
+✅ **App Name:** insightsphere-dashboard  
+✅ **Production URL:** https://d33feletv96fod.amplifyapp.com  
+✅ **Status:** Live and operational  
+✅ **Auto-Deploy:** Enabled on `main` branch
 
-The steps above will start the application locally. You'll see the UI, but without AWS backend configuration, data fetching won't work.
+### How to Deploy Updates
 
-### Option B: Manual AWS Setup
+Simply push to GitHub:
 
-If you need the full AWS backend:
+```bash
+git add .
+git commit -m "Your changes"
+git push origin main
+```
 
-1. **Deploy CloudFormation Stack Manually:**
-   - Go to AWS Console → CloudFormation
-   - Upload `cloudformation/chat-logs-review-stack.yaml`
-   - Fill in parameters (AdminEmail, Environment)
-   - Wait for stack creation (~10 minutes)
+Amplify automatically builds and deploys your changes!
 
-2. **Get Stack Outputs:**
-   ```bash
-   aws cloudformation describe-stacks --stack-name insightsphere-dev --query 'Stacks[0].Outputs'
-   ```
+### Monitor Deployment
 
-3. **Update .env File:**
-   Copy the output values to your `.env` file:
-   ```
-   VITE_AWS_REGION=us-east-1
-   VITE_AWS_USER_POOL_ID=<from stack outputs>
-   VITE_AWS_USER_POOL_CLIENT_ID=<from stack outputs>
-   VITE_AWS_GRAPHQL_ENDPOINT=<from stack outputs>
-   VITE_AWS_S3_BUCKET=<from stack outputs>
-   ```
+```powershell
+# Check deployment status
+.\scripts\check-deployment.ps1
 
-4. **Create Admin User:**
-   ```bash
-   aws cognito-idp admin-create-user \
-     --user-pool-id <YOUR_USER_POOL_ID> \
-     --username admin \
-     --user-attributes Name=email,Value=your@email.com \
-     --temporary-password TempPass123!
-   ```
-
-5. **Restart Dev Server:**
-   ```bash
-   npm run dev
-   ```
+# Or visit AWS Console
+# https://console.aws.amazon.com/amplify/home?region=us-east-1#/d33feletv96fod
+```
 
 ---
 
 ## 📚 Documentation
 
-- **Quick Start:** `QUICK_START.md`
-- **Full Deployment Guide:** `build_docs/DEPLOYMENT_GUIDE.md`
-- **Project README:** `README.md`
-- **Scripts Documentation:** `scripts/README.md`
+### Quick References
+- **[Quick Start Guide](QUICK_START.md)** - Fast setup instructions
+- **[README](README.md)** - Project overview and structure
+
+### Deployment Documentation
+- **[Amplify Status](docs/deployment/AMPLIFY_STATUS.md)** - Current deployment info
+- **[Amplify Deployment Guide](docs/deployment/AMPLIFY_DEPLOYMENT_GUIDE.md)** - Complete deployment guide
+- **[Amplify Console Setup](docs/deployment/AMPLIFY_CONSOLE_SETUP.md)** - Console configuration
+- **[Deployment Fix Summary](docs/deployment/DEPLOYMENT_FIX_SUMMARY.md)** - Recent fixes
+
+### Feature Documentation
+- **[Chat Logs Review](docs/chat-logs-review/)** - Chat logs feature docs
+- **[Backend Setup](docs/BACKEND_SETUP.md)** - AWS backend configuration
+- **[Authentication](docs/AUTHENTICATION.md)** - Cognito authentication
+- **[Monitoring](docs/MONITORING_SETUP.md)** - Monitoring and logging
+
+### Build Documentation
+- **[Build Commands](build_docs/BUILD_COMMANDS.md)** - All build commands
+- **[Cloud Deployment](build_docs/CLOUD_DEPLOYMENT_GUIDE.md)** - Cloud deployment options
+- **[Testing Guide](build_docs/TESTING.md)** - Testing documentation
 
 ---
 
-## 🐛 Known Issues
+## Common Tasks
 
-- PowerShell deployment scripts have encoding issues with special characters
-- Working on fixing the automated deployment scripts
-- Manual AWS deployment works fine
+### Development
+```bash
+npm run dev          # Start dev server
+npm run test         # Run tests
+npm run lint         # Check code quality
+npm run type-check   # TypeScript validation
+```
+
+### Building
+```bash
+npm run build        # Build for production
+npm run build:dev    # Build for development
+npm run preview      # Preview production build
+```
+
+### Deployment
+```bash
+git push origin main # Deploy to production (auto)
+```
 
 ---
 
-## ✅ What Works Now
+## Need Help?
 
-- ✅ Local development server
-- ✅ UI components and pages
-- ✅ Build process
-- ✅ Tests
-- ✅ Manual AWS deployment via Console
-
-## 🔧 What Needs Fixing
-
-- ⏳ PowerShell deployment automation scripts
-- ⏳ One-click deployment
+- **Deployment Issues:** See [docs/deployment/](docs/deployment/)
+- **Build Issues:** See [build_docs/](build_docs/)
+- **Feature Questions:** See [docs/](docs/)
 
 ---
 
