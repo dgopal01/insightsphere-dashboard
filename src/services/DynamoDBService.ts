@@ -152,6 +152,7 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
     const response = await client.send(command);
 
     console.log(`Successfully fetched ${response.Items?.length || 0} feedback logs`);
+    console.log('Sample feedback log:', response.Items?.[0]);
 
     return {
       items: (response.Items as FeedbackLogEntry[]) || [],
@@ -164,6 +165,7 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
       errorMessage: error?.message,
       errorCode: error?.$metadata?.httpStatusCode,
       tableName: FEEDBACK_TABLE,
+      stack: error?.stack,
     });
     throw new Error(`Failed to list feedback logs: ${error?.message || 'Unknown error'}`);
   }
