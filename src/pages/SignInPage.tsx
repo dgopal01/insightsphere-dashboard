@@ -160,10 +160,10 @@ const SignInPage: React.FC = () => {
         <Card sx={{ width: '100%', maxWidth: 450 }}>
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom align="center">
-              InsightSphere
+              EthosAI
             </Typography>
             <Typography variant="body2" color="text.secondary" align="center" mb={4}>
-              Sign in to access AI performance metrics
+              Emphasizing Ethical AI Principles
             </Typography>
 
             {error && (
