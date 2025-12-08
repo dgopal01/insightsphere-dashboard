@@ -153,7 +153,12 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
     const response = await client.send(command);
 
     console.log(`Successfully fetched ${response.Items?.length || 0} feedback logs`);
-    console.log('Sample feedback log:', response.Items?.[0]);
+    
+    // Log first item to verify structure
+    if (response.Items && response.Items.length > 0) {
+      console.log('Sample feedback log (raw):', JSON.stringify(response.Items[0], null, 2));
+      console.log('Sample feedback log info field:', response.Items[0].info);
+    }
 
     return {
       items: (response.Items as FeedbackLogEntry[]) || [],
