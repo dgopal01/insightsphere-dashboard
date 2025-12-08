@@ -191,6 +191,15 @@ export async function updateFeedbackLogReview(
   try {
     const client = await getDynamoDBClient();
 
+    console.log('Updating feedback log with params:', {
+      table: FEEDBACK_TABLE,
+      id,
+      datetime,
+      revComment,
+      revFeedback,
+    });
+
+    // Build update expression
     const updateExpression: string[] = [];
     const expressionAttributeValues: any = {};
     const expressionAttributeNames: any = {};
@@ -204,14 +213,7 @@ export async function updateFeedbackLogReview(
     expressionAttributeValues[':rev_feedback'] = revFeedback || '';
     expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
 
-    console.log('Updating feedback log:', {
-      id,
-      datetime,
-      revComment,
-      revFeedback,
-    });
-
-    const command = new UpdateCommand({
+    const updateParams = {
       TableName: FEEDBACK_TABLE,
       Key: {
         id: id,
@@ -220,15 +222,31 @@ export async function updateFeedbackLogReview(
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
       ExpressionAttributeValues: expressionAttributeValues,
       ExpressionAttributeNames: expressionAttributeNames,
-      ReturnValues: 'ALL_NEW',
-    });
+      ReturnValues: 'ALL_NEW' as const,
+    };
 
+    console.log('DynamoDB UpdateCommand params:', JSON.stringify(updateParams, null, 2));
+
+    const command = new UpdateCommand(updateParams);
     const response = await client.send(command);
+    
     console.log('Update successful:', response.Attributes);
     return response.Attributes as FeedbackLogEntry;
-  } catch (error) {
-    console.error('Error updating feedback log:', error);
-    throw error;
+  } catch (error: any) {
+    console.error('Error updating feedback log:', {
+      error,
+      errorName: error?.name,
+      errorMessage: error?.message,
+      errorCode: error?.$metadata?.httpStatusCode,
+      requestId: error?.$metadata?.requestId,
+    });
+    
+    // Provide more helpful error message
+    if (error?.name === 'ValidationException') {
+      throw new Error(`DynamoDB validation error: ${error.message}. Check that id="${id}" and datetime="${datetime}" are correct.`);
+    }
+    
+    throw new Error(`Failed to update feedback review: ${error?.message || 'Unknown error'}`);
   }
 }
 
