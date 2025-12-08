@@ -159,6 +159,17 @@ const SignInPage: React.FC = () => {
       >
         <Card sx={{ width: '100%', maxWidth: 450 }}>
           <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+              <Box
+                component="img"
+                src="/ethosai-logo.png"
+                alt="EthosAI Logo"
+                sx={{
+                  height: 60,
+                  maxWidth: '100%',
+                }}
+              />
+            </Box>
             <Typography variant="h4" component="h1" gutterBottom align="center">
               EthosAI
             </Typography>

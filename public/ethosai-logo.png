@@ -1,0 +1,444 @@
+<html>  
+    <head>
+        <title> Blocked Page</title>
+        <link rel="stylesheet" href="style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script language="JavaScript">
+            var params = {ldu:{'loginDifferentUser':'<a id="lduBtn" href="javascript:openSessionInNewWindow();" onClick="openSessionInNewWindow();this.blur();return false;" class="submit-btn login"><span id="loginButton">Login</span></a>'},
+                          re:{'exception1':'Request An Exception','exception2':'Reason:','exception3':'<textarea id="rem2" name="rem2" rows="3" cols="40"></textarea>','exception4':'<a id="roBtn" href="javascript:requestOverride();" class="submit-btn exception" onClick="this.blur();"><span id="exceptionButton">Request Exception</span></a>','exception5':'Email:','exception6':'<input type="text" id="rem3" name="rem3">'},
+                          ov:{'ov':'<a href=\"javascript:overrideSite();\" id="ovBtn" class=\"submit-btn login\" onClick=\"this.blur();\">Override Site</a><span id=\"ovError\"></span>'}}
+    
+            var overrideJustificationError = false;
+    
+            // See equivalent in iboss directives
+            var Base64 = {
+                // private property
+                _keyStr: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+    
+                // public method for encoding
+                encode: function (input) {
+                    var output = '';
+                    var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+                    var i = 0;
+    
+                    input = Base64._utf8_encode(input);
+    
+                    while (i < input.length) {
+                        chr1 = input.charCodeAt(i++);
+                        chr2 = input.charCodeAt(i++);
+                        chr3 = input.charCodeAt(i++);
+    
+                        enc1 = chr1 >> 2;
+                        enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+                        enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+                        enc4 = chr3 & 63;
+    
+                        if (isNaN(chr2)) {
+                            enc3 = enc4 = 64;
+                        } else if (isNaN(chr3)) {
+                            enc4 = 64;
+                        }
+    
+                        output = output +
+                            this._keyStr.charAt(enc1) + this._keyStr.charAt(enc2) +
+                            this._keyStr.charAt(enc3) + this._keyStr.charAt(enc4);
+                    }
+                    return output;
+                },
+    
+                // private method for UTF-8 encoding
+                _utf8_encode: function (string) {
+                    string = string.replace(/\r\n/g, '\n');
+                    var utftext = '';
+    
+                    for (var n = 0; n < string.length; n++) {
+    
+                        var c = string.charCodeAt(n);
+    
+                        if (c < 128) {
+                            utftext += String.fromCharCode(c);
+                        }
+                        else if ((c > 127) && (c < 2048)) {
+                            utftext += String.fromCharCode((c >> 6) | 192);
+                            utftext += String.fromCharCode((c & 63) | 128);
+                        }
+                        else {
+                            utftext += String.fromCharCode((c >> 12) | 224);
+                            utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                            utftext += String.fromCharCode((c & 63) | 128);
+                        }
+                    }
+    
+                    return utftext;
+                }
+            };
+    
+            function getParameter(name) {
+                name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+                var regexS = "[\\?&]"+name+"=([^&#]*)",
+                        regex = new RegExp( regexS ),
+                        results = regex.exec( window.location.href );
+                return results == null ? "" : results[1];
+            }
+            
+            function fixProtocol(val) {
+                val = val.replace(/^https?:\/\//i, '');
+                var linkPc = (getParameter('pc') == 1) ? 'https://' : 'http://';
+                return linkPc + val;
+            }
+            
+            function decode(encodedItem) {
+                return decodeURIComponent(encodedItem.replace(/\+/g,  " ")).replace(/(<([^>]+)>)/ig, "");
+            }
+            
+            function populateDom(obj) {
+                for (i in obj) {
+                    if(obj[i] === undefined || obj[i] === null || obj[i] === '') {
+                        if(document.getElementById(i + 'Label') !== null) {
+                            document.getElementById(i + 'Label').className = "hidden";
+                        }
+                    }
+                    else {
+                        if(document.getElementById(i) !== null) {
+                            document.getElementById(i).innerHTML += obj[i];	
+                        }
+                    }
+                }
+            }
+    
+            function createOverrideReasonParam(text){
+                if(text === ''){
+                    return '';
+                } else {
+                    return '&ovReason=' + Base64.encode(text);
+                }
+            }
+    
+            function checkHost() {
+                var name = 'ibip'.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+                var buttonId = document.getElementById("loginDifferentUser");
+                var regexS = "[\\?&]"+name+"=([^&#]*)",
+                        regex = new RegExp( regexS ),
+                        results = regex.exec( window.location.href );
+                var swgHost = results[1];
+                if (swgHost.search('ibosscloud.com') > -1 || swgHost.search('ibosstest.com') > -1 || swgHost.search('boss.cloud') > -1 || swgHost.search('ibosscloud-staging.com') > -1 || swgHost.search('ibossgov.com') > -1 || swgHost.search('iboss.com') > -1) {
+                    buttonId.style.display = 'none';
+                }
+            }
+    
+            function displaySections() {
+                for (var item in params) {
+                    if (getParameter(item) == '1') {
+                        populateDom(params[item]);
+                        if(item == 'ldu'){
+                            document.getElementById('ov').className = "hidden";
+                        }
+                        if(item == 'ov'){
+                            if(false == true){
+                                validateOverrideJustification(document.getElementById('ovReasonText'), false);
+                            }
+                        }
+                    } else {
+                        if (item == 're') {
+                            document.getElementById('exception').className = "hidden";
+                        }
+                        if (item == 'ov') {
+                            document.getElementById('ov').className = "hidden";
+                        }
+                    }
+                }
+                populateDom(general);
+                invokeRules();
+                checkHost();
+            }
+    
+    
+            function overrideSite() {
+                // Encode override justification reason if any
+                var reason = '';
+                var overrideReasonParam = '';
+    
+                if((false == true)){
+                    var reasonTextArea = document.getElementById('ovReasonText');
+                    if(reasonTextArea){
+                        reason = reasonTextArea.value;
+                    }
+                    overrideReasonParam = createOverrideReasonParam(reason);
+                }
+    
+                // If there is currently an error, do not allow override
+                if (overrideJustificationError === true || ((false == true) && overrideReasonParam == '')) {
+                    return;
+                }
+    
+                var orRequest = new XMLHttpRequest(),
+                    pc = /\b(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\b/.test(getParameter('ibip')) ? 'http:' : window.location.protocol;
+                orRequest.onreadystatechange = function() {
+                    document.getElementById('ovError').innerHTML = '';
+                    if(orRequest.readyState === 4) {
+                        if(orRequest.status === 200) {
+                            window.location = ((getParameter('pc') == 1) ? 'https://' : 'http://') + decode(getParameter('bu'));
+                        }
+                        else {
+                            document.getElementById('ovError').innerHTML = 'Failed to Override Site. Contact your system administrator.';
+                        }
+                    }
+                };
+    
+                if (getParameter('sck') != '') {
+                    orRequest.open('GET', pc + '//' + decode(getParameter('ibip')) + '/json/requestOverrideSite?domain=' + decode(getParameter('bu')) + '&rt=sco&ip='+ decode(getParameter('ip')) + overrideReasonParam +'&sck=' + decode(getParameter('sck')) + '&user=' + decode(getParameter('user')), 1);
+                }
+                else if (getParameter('sckuc') != '') {
+                    orRequest.open('GET', pc + '//' + decode(getParameter('ibip')) + '/json/requestOverrideSite?domain=' + decode(getParameter('bu')) + '&rt=uc&ip='+ decode(getParameter('ip')) + overrideReasonParam +'&sck=' + decode(getParameter('sckuc')) + '&user=' + decode(getParameter('user')), 1);
+                }
+                else {
+                    orRequest.open('GET', pc + '//' + decode(getParameter('ibip')) + '/json/requestOverrideSite?domain=' + decode(getParameter('bu')) + '&rt=uc&ip='+ decode(getParameter('ip')) + overrideReasonParam +'&user=' + decode(getParameter('user')), 1);
+                }
+                orRequest.setRequestHeader("Content-Type", "application/json");
+                orRequest.send();
+            }
+            
+            function validateInput (el, isRequired, isEmail) {
+                el.addEventListener('input', validate);
+                function validate () {
+                    var ec = 0,
+                        es = '';
+                    if (el.nextElementSibling) {
+                        el.nextElementSibling.remove();
+                    }
+                    if (isEmail) {
+                        if (/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(el.value) == false) {
+                            ec++;
+                            es = 'Please enter a valid email';
+                        }
+                    }
+                    if (isRequired) {
+                        if (el.value == '') {
+                            ec++;
+                            es = 'This Field is required.';
+                        }
+                    }
+                    if (ec > 0) {
+                        var en = document.createElement('div');
+                        en.style.color = '#ff0000';
+                        en.className = 'en';
+                        en.innerHTML = es;
+                        el.parentNode.insertBefore(en, el.nextSibling);
+                        el.style.borderColor = "#ff0000";
+                    } else {
+                        el.style.borderColor = "#ccc";
+                    }
+                }
+                validate();
+            }
+    
+            function validateOverrideJustification(el, isRequired){
+                el.addEventListener('input', validate);
+                function validate () {
+                    var currentError = document.getElementById('overrideJustificationErr');
+                    if (!checkAlphanumeric(el.value)){
+                        createOverrideJustificationError(el, "Only alphanumeric and punctuation (,.!?) are allowed");
+                        return;
+                    }
+                    if (el.value == '') {
+                        if(isRequired == true){
+                            createOverrideJustificationError(el, "Override reason is required");
+                        } else {
+                            removeOverrideJustificationError(el);
+                        }
+                    } else {
+                        removeOverrideJustificationError(el);
+                    }
+                }
+                validate();
+            }
+    
+            function createOverrideJustificationError(el, errorText){
+                overrideJustificationError = true;
+                var err = document.getElementById('overrideJustificationErr');
+                if(err){
+                     err.innerHTML = errorText;
+                } else {
+                    err = document.createElement('div');
+                    err.id = 'overrideJustificationErr';
+                    err.style.color = '#ff0000';
+                    err.innerHTML = errorText;
+                    el.style.borderColor = '#ff0000';
+                    el.parentNode.insertBefore(err, el.nextSibling);
+                }
+            }
+    
+            function removeOverrideJustificationError(el){
+                overrideJustificationError = false;
+                var currentError = document.getElementById('overrideJustificationErr');
+                if(currentError){
+                    currentError.remove();
+                }
+                el.style.borderColor = '#ccc';
+            }
+    
+            function checkAlphanumeric(str){
+                return /^[\w ,.!?]*$/gi.test(str);
+            }
+    
+            function requestOverride() {
+                validateInput(document.getElementById('rem3'), true, true);
+                validateInput(document.getElementById('rem2'), true);
+                if (document.getElementsByClassName('en').length) {
+                    return;
+                }
+                var form = document.forms[0],
+                    submitIp = decode(getParameter('ipm')) ? decode(getParameter('ipm')) : decode(getParameter('ibip'));
+                form.fullUrl.value = decode(getParameter('bu'));
+                if (getParameter('sck') != '') {
+                    form.sck.value = decode(getParameter('sck'));
+                }
+                else if (getParameter('sckuc') != '') {
+                    form.sck.value = decode(getParameter('sckuc'));
+                }
+                form.button.value = 'requestException';
+                if(document.getElementById("rem2")) {
+                    form.rem.value = document.getElementById("rem2").value;
+                }
+                if(document.getElementById("rem3")) {
+                    form.contactEmail.value = document.getElementById("rem3").value;
+                }
+                form.gn.value = decode(getParameter('fp'));
+                form.un.value = decode(getParameter('user'));
+                var pc = /\b(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\b/.test(submitIp) ? 'http:' : window.location.protocol;
+                form.action = pc + '//' + submitIp + '/page_block_submit';
+                form.submit();
+            }
+    
+            function openSessionInNewWindow() {
+                var pc = /\b(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\b/.test(getParameter('ibip')) ? 'http:' : window.location.protocol;
+                var newWindow = window.open(pc + '//' + getParameter('ibip') + '/user_login_small.html','iBossSessionWindow','toolbar=no, location=no, directories=no, status=no, menubar=no, resizable=yes, scrollbars=yes, width=625, height=650');
+                newWindow.focus();
+                return false;
+            }
+            function openRBI(rbiDomain, urlParam, appendToUrl) {
+    
+                var urlToOpen = decode(getParameter('bu'));
+                var newWindow;
+                if (decode(getParameter('bc')) === 'Not Rated Site')
+                {
+                    urlToOpen = '';
+                }
+    
+                if (appendToUrl) {
+                    newWindow = window.open(rbiDomain + "/" + urlToOpen, 'width=625, height=650');
+                } else {
+                    newWindow = window.open(rbiDomain + '?' + urlParam + '=' + urlToOpen, 'width=625, height=650');
+                }
+                newWindow.focus();
+                return false;
+            }
+            
+            
+            window.onload = function() {
+            var openThis = decode(getParameter('bu'));
+            document.getElementById("myLink").innerHTML=openThis;
+            
+        }
+
+        </script>
+        <script>
+            function invokeRules() {
+            }
+            invokeRules();
+        </script>
+    </head>
+    <body onLoad="updateDynamicContent();">
+        <section>
+            <div class="container"><i></i>
+                <div class="box text">
+                    <div class="ipusername">
+                        <p> 
+                            <span id="ipAddressLabel"><b id="ipAddressName">IP: </b><span id="ipAddress"></span><br></span>
+                            <span id="userLabel"><b id="usernameName">Username: </b><span id="user"></span><br></span>
+                        </p>
+                    </div>
+                    <h1>Page Blocked</h1>
+                    <p>Access to the requested site has been restricted due to its contents.</p>
+                    <p>Please click the link below and enter a business justification to request access.</p>
+                    <a id="dynamicLink" href="https://swbc.service-now.com/sp?id=sc_cat_item&sys_id=c4639b85db2efb80ceec3caf9d961984">
+                        <button class="clickhere">Click Here to Request Access</button>
+                    </a>
+                    <script>
+                        function getParameter(name) {
+                            const urlParams = new URLSearchParams(window.location.search);
+                            return urlParams.get(name);
+                        }
+
+                        function updateDynamicContent() {
+                            const ipAddress = getParameter('ip');
+                            const user = getParameter('user');
+                            const description = getParameter('bc');
+
+                            // Update content on the page
+                            if (ipAddress) {
+                                document.getElementById('ipAddress').textContent = ipAddress;
+                            }
+                            if (user) {
+                                document.getElementById('user').textContent = user;
+                            }
+                            if (description) {
+                                document.getElementById('description').textContent = description;
+                            }
+
+                            // Update the link dynamically
+                            const dynamicLink = document.getElementById('dynamicLink');
+                            const baseUrl = "https://swbc.service-now.com/sp?id=sc_cat_item&sys_id=c4639b85db2efb80ceec3caf9d961984";
+                            const bu = encodeURIComponent(getParameter('bu') || ''); // Fallback to empty string if null
+                            const bc = encodeURIComponent(getParameter('bc') || '');
+                            const userParam = encodeURIComponent(getParameter('user') || '');
+
+                            dynamicLink.href = `${baseUrl}&bu=${bu}&bc=${bc}&user=${userParam}`;
+                        }
+                        // Call the function to update the page content
+                        updateDynamicContent();
+                    </script>
+                    <div class="returndata">
+                        <p>
+                            <span id="descriptionLabel"><b id="descriptionName">Reason: </b><span id="description" style="color: red;"></span><br></span>
+                        </p>
+                    </div>
+                    <div class="servicedesk">
+                        <p>
+                            <span id="servicedesknumber" style="line-height:15px;">Please see our <a href="https://swbc.service-now.com/sp?id=kb_article_view&sysparm_article=KB0010471">Job Aid</a> or contact the IT Service Desk for assistance at (210) 231-7500 | (888) 391-6707 | +52 81 2188-09836</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="boximage">
+                    <img src="Defender.png" width="250px" height=""auto">
+                </div>
+            </div>
+        </section>
+        <div id="exceptionContent">
+            <div class="hidden">
+                <div id="exception" class="exception-content">
+                    <form action="" method="POST" >
+                        <input type="hidden" name="button">
+                        <input type="hidden" name="fullUrl">
+                        <input type="hidden" name="rem">
+                        <input type="hidden" name="contactEmail">
+                        <input type="hidden" name="gn">
+                        <input type="hidden" name="sck">
+                        <input type="hidden" name="un">
+                        <h2><span id="exception1"></span></h2>
+                        <p>
+                            <span id="exception5"></span><br>
+                            <span id="exception6"></span><br>
+                            <span id="exception2"></span><br>
+                            <span id="exception3"></span><br>
+                            <span id="exception4"></span><br>
+                        </p>
+                    </form>
+                    <div id="loginDifferentUser"></div>
+                    <div id="useRemoteIso" class=" hidden"></div>
+                    <div id="ov">
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

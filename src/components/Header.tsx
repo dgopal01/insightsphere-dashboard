@@ -71,20 +71,34 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           <MenuIcon />
         </IconButton>
 
-        <Typography variant="h6" noWrap component="h1" sx={{ flexGrow: 1 }}>
-          EthosAI
-        </Typography>
-        <Typography 
-          variant="caption" 
-          sx={{ 
-            display: { xs: 'none', md: 'block' },
-            mr: 2,
-            opacity: 0.8,
-            fontStyle: 'italic'
-          }}
-        >
-          Emphasizing Ethical AI Principles
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+          <Box
+            component="img"
+            src="/ethosai-logo.png"
+            alt="EthosAI Logo"
+            sx={{
+              height: 40,
+              mr: 2,
+              display: { xs: 'none', sm: 'block' },
+            }}
+          />
+          <Box>
+            <Typography variant="h6" noWrap component="h1">
+              EthosAI
+            </Typography>
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                display: { xs: 'none', md: 'block' },
+                opacity: 0.8,
+                fontStyle: 'italic',
+                lineHeight: 1,
+              }}
+            >
+              Emphasizing Ethical AI Principles
+            </Typography>
+          </Box>
+        </Box>
 
         <Box
           sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
