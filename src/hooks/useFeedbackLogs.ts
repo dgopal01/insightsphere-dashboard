@@ -98,10 +98,13 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
 
       try {
         // Fetch from DynamoDB
+        console.log('Fetching feedback logs...');
         const result = await DynamoDBService.listFeedbackLogs(1000);
+        console.log('Fetched feedback logs:', result.items.length, 'items');
         
         // Apply client-side filters
         const filteredLogs = applyFilters(result.items, filters);
+        console.log('Filtered logs:', filteredLogs.length, 'items');
         
         // Sort logs
         const sortedLogs = sortLogs(filteredLogs, sortDirection);
@@ -110,6 +113,7 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
         setNextToken(null); // Pagination handled client-side for now
         setTotalCount(sortedLogs.length);
       } catch (err) {
+        console.error('Error in fetchLogs:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch feedback logs';
         setError(new Error(errorMessage));
         setLogs([]);

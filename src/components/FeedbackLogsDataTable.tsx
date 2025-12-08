@@ -112,44 +112,74 @@ export const FeedbackLogsDataTable: React.FC<FeedbackLogsDataTableProps> = ({
         label: 'Carrier',
         minWidth: 120,
         sortable: false,
-        format: (_value: any, row: FeedbackLogEntry) => row.info?.carrier || 'N/A',
+        format: (_value: any, row: FeedbackLogEntry) => {
+          try {
+            return row.info?.carrier || 'N/A';
+          } catch (error) {
+            console.error('Error rendering carrier:', error);
+            return 'N/A';
+          }
+        },
       },
       {
         id: 'info',
         label: 'User',
         minWidth: 120,
         sortable: false,
-        format: (_value: any, row: FeedbackLogEntry) => row.info?.username || row.info?.user_name || 'N/A',
+        format: (_value: any, row: FeedbackLogEntry) => {
+          try {
+            return row.info?.username || row.info?.user_name || 'N/A';
+          } catch (error) {
+            console.error('Error rendering user:', error);
+            return 'N/A';
+          }
+        },
       },
       {
         id: 'info',
         label: 'User Comments',
         minWidth: 200,
         sortable: false,
-        format: (_value: any, row: FeedbackLogEntry) => (
-          <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-            <Comment
-              sx={{ fontSize: 16, mr: 1, mt: 0.5, color: 'info.main', flexShrink: 0 }}
-              aria-hidden="true"
-            />
-            <Typography variant="body2">{sanitizeText(truncateText(row.info?.comments || ''))}</Typography>
-          </Box>
-        ),
+        format: (_value: any, row: FeedbackLogEntry) => {
+          try {
+            const comments = row.info?.comments || '';
+            return (
+              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <Comment
+                  sx={{ fontSize: 16, mr: 1, mt: 0.5, color: 'info.main', flexShrink: 0 }}
+                  aria-hidden="true"
+                />
+                <Typography variant="body2">{sanitizeText(truncateText(comments))}</Typography>
+              </Box>
+            );
+          } catch (error) {
+            console.error('Error rendering comments:', error);
+            return <Typography variant="body2">—</Typography>;
+          }
+        },
       },
       {
         id: 'info',
         label: 'User Feedback',
         minWidth: 200,
         sortable: false,
-        format: (_value: any, row: FeedbackLogEntry) => (
-          <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-            <FeedbackIcon
-              sx={{ fontSize: 16, mr: 1, mt: 0.5, color: 'warning.main', flexShrink: 0 }}
-              aria-hidden="true"
-            />
-            <Typography variant="body2">{sanitizeText(truncateText(row.info?.feedback || ''))}</Typography>
-          </Box>
-        ),
+        format: (_value: any, row: FeedbackLogEntry) => {
+          try {
+            const feedback = row.info?.feedback || '';
+            return (
+              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <FeedbackIcon
+                  sx={{ fontSize: 16, mr: 1, mt: 0.5, color: 'warning.main', flexShrink: 0 }}
+                  aria-hidden="true"
+                />
+                <Typography variant="body2">{sanitizeText(truncateText(feedback))}</Typography>
+              </Box>
+            );
+          } catch (error) {
+            console.error('Error rendering feedback:', error);
+            return <Typography variant="body2">—</Typography>;
+          }
+        },
       },
       {
         id: 'id',
