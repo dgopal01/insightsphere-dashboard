@@ -72,31 +72,28 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         </IconButton>
 
         <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-          <Box
-            component="img"
-            src="/ethosai-logo.png"
-            alt="EthosAI Logo"
-            onError={(e: any) => {
-              console.error('Logo failed to load');
-              e.target.style.display = 'none';
-            }}
-            sx={{
-              height: 40,
-              mr: 2,
-              display: { xs: 'none', sm: 'block' },
-            }}
-          />
-          <Box>
-            <Typography variant="h6" noWrap component="h1">
-              EthosAI
-            </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <Box
+              component="img"
+              src="/ethosai-logo.png"
+              alt="EthosAI - Emphasizing Ethical AI Principles"
+              onError={(e: any) => {
+                console.error('Logo failed to load');
+                e.target.style.display = 'none';
+              }}
+              sx={{
+                height: 45,
+                display: { xs: 'none', sm: 'block' },
+              }}
+            />
             <Typography 
               variant="caption" 
               sx={{ 
                 display: { xs: 'none', md: 'block' },
-                opacity: 0.8,
+                opacity: 0.7,
                 fontStyle: 'italic',
-                lineHeight: 1,
+                fontSize: '0.7rem',
+                mt: 0.5,
               }}
             >
               Emphasizing Ethical AI Principles

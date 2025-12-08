@@ -159,27 +159,25 @@ const SignInPage: React.FC = () => {
       >
         <Card sx={{ width: '100%', maxWidth: 450 }}>
           <CardContent sx={{ p: 4 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
               <Box
                 component="img"
                 src="/ethosai-logo.png"
-                alt="EthosAI Logo"
+                alt="EthosAI - Emphasizing Ethical AI Principles"
                 onError={(e: any) => {
                   console.error('Logo failed to load on signin page');
                   e.target.style.display = 'none';
                 }}
                 sx={{
-                  height: 60,
+                  height: 80,
                   maxWidth: '100%',
+                  mb: 2,
                 }}
               />
+              <Typography variant="body2" color="text.secondary" align="center">
+                Emphasizing Ethical AI Principles
+              </Typography>
             </Box>
-            <Typography variant="h4" component="h1" gutterBottom align="center">
-              EthosAI
-            </Typography>
-            <Typography variant="body2" color="text.secondary" align="center" mb={4}>
-              Emphasizing Ethical AI Principles
-            </Typography>
 
             {error && (
               <Alert severity="error" sx={{ mb: 3 }}>
