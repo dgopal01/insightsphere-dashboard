@@ -1,6 +1,6 @@
-# AI Metrics Portal - Chat Logs Review System
+# EthosAI - Emphasizing Ethical AI Principles
 
-A ReactJS web application built with AWS Amplify for reviewing chat logs and user feedback from the Unity AI Assistant.
+A comprehensive ReactJS web application built with AWS Amplify for reviewing and ensuring ethical AI principles in conversational AI systems. Monitor, review, and tag chat logs and user feedback to maintain high standards of AI ethics, accuracy, and safety.
 
 ## Quick Start
 

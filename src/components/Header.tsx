@@ -72,7 +72,18 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         </IconButton>
 
         <Typography variant="h6" noWrap component="h1" sx={{ flexGrow: 1 }}>
-          InsightSphere
+          EthosAI
+        </Typography>
+        <Typography 
+          variant="caption" 
+          sx={{ 
+            display: { xs: 'none', md: 'block' },
+            mr: 2,
+            opacity: 0.8,
+            fontStyle: 'italic'
+          }}
+        >
+          Emphasizing Ethical AI Principles
         </Typography>
 
         <Box
