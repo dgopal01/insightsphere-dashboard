@@ -270,7 +270,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
       {/* Detail Modal */}
       {selectedLog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto bg-card">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
             <CardHeader>
               <CardTitle>Feedback Log Details</CardTitle>
               <CardDescription>Log ID: {selectedLog.id}</CardDescription>
