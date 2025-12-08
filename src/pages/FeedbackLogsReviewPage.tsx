@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ThumbsUp, Filter, RefreshCw, X } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Filter, RefreshCw, X, Save, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -332,43 +332,125 @@ const FeedbackLogsReviewPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Detail Modal */}
+      {/* Editable Review Modal */}
       {selectedLog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
-            <CardHeader>
-              <CardTitle>Feedback Log Details</CardTitle>
-              <CardDescription>Log ID: {selectedLog.id}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Feedback Type:</h3>
-                <Badge variant={getFeedbackVariant(selectedLog.info?.feedback || '')}>
-                  {selectedLog.info?.feedback === 'thumbs_up' ? '👍 Positive' : '👎 Negative'}
-                </Badge>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Question:</h3>
-                <p className="text-sm">{sanitizeText(selectedLog.info?.question || '')}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Response:</h3>
-                <p className="text-sm">{sanitizeText(selectedLog.info?.response || '')}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Timestamp:</h3>
-                <p className="text-sm">{new Date(selectedLog.datetime).toLocaleString()}</p>
-              </div>
-              {selectedLog.rev_comment && (
+          <Card className="w-full max-w-6xl max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold mb-2">Review Comment:</h3>
-                  <p className="text-sm">{selectedLog.rev_comment}</p>
+                  <CardTitle>Review Feedback Log</CardTitle>
+                  <CardDescription>Log ID: {selectedLog.id}</CardDescription>
                 </div>
-              )}
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setSelectedLog(null)}>
-                  Close
+                <Button variant="ghost" size="icon" onClick={() => setSelectedLog(null)}>
+                  <X className="size-5" />
                 </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column - Conversation Transcript */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Conversation Transcript</h3>
+                    
+                    {/* Feedback Type Badge */}
+                    <div className="mb-4">
+                      <Badge 
+                        variant={getFeedbackVariant(selectedLog.info?.feedback || '')}
+                        className="text-base px-3 py-1"
+                      >
+                        {selectedLog.info?.feedback === 'thumbs_up' ? (
+                          <><ThumbsUp className="size-4 mr-1" /> Positive</>
+                        ) : (
+                          <><ThumbsDown className="size-4 mr-1" /> Negative</>
+                        )}
+                      </Badge>
+                    </div>
+
+                    {/* Question */}
+                    <div className="bg-muted/50 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare className="size-4 text-primary" />
+                        <span className="text-sm font-semibold">Question</span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {new Date(selectedLog.datetime).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap">
+                        {sanitizeText(selectedLog.info?.question || '')}
+                      </p>
+                    </div>
+
+                    {/* Response */}
+                    <div className="bg-secondary/10 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare className="size-4 text-secondary" />
+                        <span className="text-sm font-semibold">Response</span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {new Date(selectedLog.datetime).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap">
+                        {sanitizeText(selectedLog.info?.response || '')}
+                      </p>
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="pt-4 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Timestamp:</span>
+                        <span className="font-medium">
+                          {new Date(selectedLog.datetime).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Feedback ID:</span>
+                        <span className="font-medium">{selectedLog.id}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column - Submit Feedback */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Submit Feedback</h3>
+                    
+                    {/* Reviewer Comments */}
+                    <div className="space-y-2 mb-6">
+                      <Label htmlFor="rev_comment">Reviewer Comments</Label>
+                      <textarea
+                        id="rev_comment"
+                        className="w-full min-h-[120px] px-3 py-2 text-sm rounded-md border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="Enter your observations and feedback about this conversation..."
+                        defaultValue={selectedLog.rev_comment || ''}
+                      />
+                    </div>
+
+                    {/* Corrected/Ground Truth Response */}
+                    <div className="space-y-2 mb-6">
+                      <Label htmlFor="rev_feedback">Corrected/Ground Truth Response</Label>
+                      <textarea
+                        id="rev_feedback"
+                        className="w-full min-h-[120px] px-3 py-2 text-sm rounded-md border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="Provide the ideal response or correction (optional)..."
+                        defaultValue={selectedLog.rev_feedback || ''}
+                      />
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 pt-4 border-t">
+                      <Button className="flex-1 bg-secondary hover:bg-secondary/90">
+                        <Save className="size-4 mr-2" />
+                        Submit Feedback
+                      </Button>
+                      <Button variant="outline" className="flex-1">
+                        Save Draft
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

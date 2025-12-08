@@ -4,13 +4,14 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MessageSquare, Filter, RefreshCw, X } from 'lucide-react';
+import { MessageSquare, Filter, RefreshCw, X, Save, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -23,6 +24,16 @@ import { ErrorDisplay } from '../components/ErrorDisplay';
 import { useChatLogs, type SortDirection } from '../hooks/useChatLogs';
 import { classifyError, sanitizeText } from '../utils';
 import type { ChatLogEntry, ChatLogFilters } from '../types';
+
+// Issue tags for chat log review
+const ISSUE_TAGS = [
+  'Accuracy Issue',
+  'Tone/Style Issue',
+  'Safety Concern',
+  'Reasoning Quality',
+  'Incomplete Response',
+  'Hallucination/Fabrication',
+];
 
 /**
  * Truncate long text for display
@@ -320,41 +331,132 @@ const ChatLogsReviewPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* TODO: Add detail modal for selectedLog */}
+      {/* Editable Review Modal */}
       {selectedLog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
-            <CardHeader>
-              <CardTitle>Chat Log Details</CardTitle>
-              <CardDescription>Log ID: {selectedLog.log_id}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Question:</h3>
-                <p className="text-sm">{sanitizeText(selectedLog.question || '')}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Response:</h3>
-                <p className="text-sm">{sanitizeText(selectedLog.response || '')}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Carrier:</h3>
-                <p className="text-sm">{selectedLog.carrier_name || 'N/A'}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Timestamp:</h3>
-                <p className="text-sm">{new Date(selectedLog.timestamp).toLocaleString()}</p>
-              </div>
-              {selectedLog.rev_comment && (
+          <Card className="w-full max-w-6xl max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold mb-2">Review Comment:</h3>
-                  <p className="text-sm">{selectedLog.rev_comment}</p>
+                  <CardTitle>Review Chat Log</CardTitle>
+                  <CardDescription>Log ID: {selectedLog.log_id}</CardDescription>
                 </div>
-              )}
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setSelectedLog(null)}>
-                  Close
+                <Button variant="ghost" size="icon" onClick={() => setSelectedLog(null)}>
+                  <X className="size-5" />
                 </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column - Conversation Transcript */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Conversation Transcript</h3>
+                    
+                    {/* Question */}
+                    <div className="bg-muted/50 rounded-lg p-4 mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare className="size-4 text-primary" />
+                        <span className="text-sm font-semibold">Question</span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {new Date(selectedLog.timestamp).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap">
+                        {sanitizeText(selectedLog.question || '')}
+                      </p>
+                    </div>
+
+                    {/* Response */}
+                    <div className="bg-secondary/10 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <MessageSquare className="size-4 text-secondary" />
+                        <span className="text-sm font-semibold">Response</span>
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {new Date(selectedLog.timestamp).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap">
+                        {sanitizeText(selectedLog.response || '')}
+                      </p>
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="pt-4 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Carrier:</span>
+                        <span className="font-medium">{selectedLog.carrier_name || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Timestamp:</span>
+                        <span className="font-medium">
+                          {new Date(selectedLog.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column - Submit Feedback */}
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Submit Feedback</h3>
+                    
+                    {/* Reviewer Comments */}
+                    <div className="space-y-2 mb-6">
+                      <Label htmlFor="rev_comment">Reviewer Comments</Label>
+                      <textarea
+                        id="rev_comment"
+                        className="w-full min-h-[120px] px-3 py-2 text-sm rounded-md border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="Enter your observations and feedback about this conversation..."
+                        defaultValue={selectedLog.rev_comment || ''}
+                      />
+                    </div>
+
+                    {/* Corrected/Ground Truth Response */}
+                    <div className="space-y-2 mb-6">
+                      <Label htmlFor="rev_feedback">Corrected/Ground Truth Response</Label>
+                      <textarea
+                        id="rev_feedback"
+                        className="w-full min-h-[120px] px-3 py-2 text-sm rounded-md border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="Provide the ideal response or correction (optional)..."
+                        defaultValue={selectedLog.rev_feedback || ''}
+                      />
+                    </div>
+
+                    {/* Issue Tags */}
+                    <div className="space-y-3 mb-6">
+                      <Label className="flex items-center gap-2">
+                        <Tag className="size-4" />
+                        Issue Tags
+                      </Label>
+                      <div className="space-y-2">
+                        {ISSUE_TAGS.map((tag) => (
+                          <div key={tag} className="flex items-center space-x-2">
+                            <Checkbox id={`tag-${tag}`} />
+                            <label
+                              htmlFor={`tag-${tag}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {tag}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 pt-4 border-t">
+                      <Button className="flex-1 bg-secondary hover:bg-secondary/90">
+                        <Save className="size-4 mr-2" />
+                        Submit Feedback
+                      </Button>
+                      <Button variant="outline" className="flex-1">
+                        Save Draft
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
