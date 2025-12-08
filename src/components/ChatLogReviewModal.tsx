@@ -90,8 +90,12 @@ export const ChatLogReviewModal: React.FC<ChatLogReviewModalProps> = ({
           const parsed = typeof existingTags === 'string' ? JSON.parse(existingTags) : existingTags;
           setIssueTags(Array.isArray(parsed) ? parsed : []);
         } catch {
-          // If parsing fails, try comma-separated
-          setIssueTags(existingTags.split(',').map((t: string) => t.trim()).filter(Boolean));
+          // If parsing fails, try comma-separated (only if it's a string)
+          if (typeof existingTags === 'string') {
+            setIssueTags(existingTags.split(',').map((t) => t.trim()).filter(Boolean));
+          } else {
+            setIssueTags([]);
+          }
         }
       } else {
         setIssueTags([]);
