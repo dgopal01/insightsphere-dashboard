@@ -38,7 +38,7 @@ import type { SortDirection } from '../hooks/useFeedbackLogs';
  * Column definitions for the table
  */
 interface Column {
-  id: keyof FeedbackLogEntry | 'actions';
+  id: keyof FeedbackLogEntry | 'actions' | 'info';
   label: string;
   minWidth?: number;
   align?: 'left' | 'right' | 'center';
