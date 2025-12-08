@@ -150,15 +150,17 @@ const SignInPage: React.FC = () => {
   return (
     <Container maxWidth="sm">
       <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-        py={4}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          py: 4,
+        }}
       >
         <Card sx={{ width: '100%', maxWidth: 450 }}>
-          <CardContent sx={{ p: 4 }}>
+          <CardContent sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
               <Box
                 component="img"
@@ -192,7 +194,7 @@ const SignInPage: React.FC = () => {
             )}
 
             {requiresNewPassword ? (
-              <form onSubmit={handleNewPasswordSubmit}>
+              <Box component="form" onSubmit={handleNewPasswordSubmit} sx={{ width: '100%' }}>
                 <TextField
                   fullWidth
                   id="new-password"
@@ -261,9 +263,9 @@ const SignInPage: React.FC = () => {
                 >
                   {isSubmitting || isLoading ? 'Changing Password...' : 'Change Password'}
                 </Button>
-              </form>
+              </Box>
             ) : (
-              <form onSubmit={handleSubmit}>
+              <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
                 <TextField
                   fullWidth
                   id="username"
@@ -318,7 +320,7 @@ const SignInPage: React.FC = () => {
                 >
                   {isSubmitting || isLoading ? 'Signing in...' : 'Sign In'}
                 </Button>
-              </form>
+              </Box>
             )}
 
             <Typography variant="body2" color="text.secondary" align="center" mt={2}>
