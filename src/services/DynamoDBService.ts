@@ -173,13 +173,13 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
  * Update chat log review fields
  * Note: UnityAIAssistantLogs table has single partition key (log_id only)
  * @param logId - The partition key (log_id) for the chat log
- * @param timestamp - Kept for backward compatibility, not used in DynamoDB operation
+ * @param _timestamp - Kept for backward compatibility, not used in DynamoDB operation
  * @param revComment - Review comment to set
  * @param revFeedback - Review feedback to set
  */
 export async function updateChatLogReview(
   logId: string,
-  timestamp: string, // eslint-disable-line @typescript-eslint/no-unused-vars
+  _timestamp: string,
   revComment?: string,
   revFeedback?: string
 ): Promise<ChatLogEntry> {
@@ -247,13 +247,13 @@ export async function updateChatLogReview(
  * Update feedback log review fields
  * Note: userFeedback table has single partition key (id only)
  * @param id - The partition key (id) for the feedback log
- * @param datetime - Kept for backward compatibility, not used in DynamoDB operation
+ * @param _datetime - Kept for backward compatibility, not used in DynamoDB operation
  * @param revComment - Review comment to set
  * @param revFeedback - Review feedback to set
  */
 export async function updateFeedbackLogReview(
   id: string,
-  datetime: string, // eslint-disable-line @typescript-eslint/no-unused-vars
+  _datetime: string,
   revComment?: string,
   revFeedback?: string
 ): Promise<FeedbackLogEntry> {
