@@ -60,6 +60,10 @@ const ChatLogsReviewPage: React.FC = () => {
   });
   const [sortDirection] = useState<SortDirection>('desc');
   const [selectedLog, setSelectedLog] = useState<ChatLogEntry | null>(null);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewFeedback, setReviewFeedback] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     logs,
@@ -84,7 +88,55 @@ const ChatLogsReviewPage: React.FC = () => {
 
   const handleRowClick = useCallback((log: ChatLogEntry) => {
     setSelectedLog(log);
+    setReviewComment(log.rev_comment || '');
+    setReviewFeedback(log.rev_feedback || '');
+    // Parse existing tags if they exist
+    try {
+      const existingTags = log.rev_comment ? JSON.parse(log.rev_comment) : [];
+      if (Array.isArray(existingTags)) {
+        setSelectedTags(existingTags);
+      }
+    } catch {
+      setSelectedTags([]);
+    }
   }, []);
+
+  const handleTagToggle = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!selectedLog) return;
+    
+    setIsSubmitting(true);
+    try {
+      // TODO: Implement actual API call to update DynamoDB
+      // For now, just simulate the update
+      console.log('Submitting feedback:', {
+        log_id: selectedLog.log_id,
+        rev_comment: reviewComment,
+        rev_feedback: reviewFeedback,
+        tags: selectedTags,
+      });
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Close modal and refresh data
+      setSelectedLog(null);
+      setReviewComment('');
+      setReviewFeedback('');
+      setSelectedTags([]);
+      refetch();
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert('Failed to submit feedback. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (error) {
     return (
@@ -257,6 +309,7 @@ const ChatLogsReviewPage: React.FC = () => {
                       <TableHead className="w-[120px]">Carrier</TableHead>
                       <TableHead>Question</TableHead>
                       <TableHead>Response</TableHead>
+                      <TableHead className="w-[200px]">Tags</TableHead>
                       <TableHead className="w-[130px] text-center">Status</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -286,6 +339,25 @@ const ChatLogsReviewPage: React.FC = () => {
                               <span className="text-sm line-clamp-2">
                                 {sanitizeText(truncateText(log.response || ''))}
                               </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {(() => {
+                                try {
+                                  const tags = log.rev_comment ? JSON.parse(log.rev_comment) : [];
+                                  if (Array.isArray(tags) && tags.length > 0) {
+                                    return tags.slice(0, 2).map((tag: string, idx: number) => (
+                                      <Badge key={idx} variant="secondary" className="text-xs">
+                                        {tag}
+                                      </Badge>
+                                    ));
+                                  }
+                                } catch {
+                                  return null;
+                                }
+                                return <span className="text-xs text-muted-foreground">No tags</span>;
+                              })()}
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
@@ -409,7 +481,8 @@ const ChatLogsReviewPage: React.FC = () => {
                         id="rev_comment"
                         className="w-full min-h-[120px] px-3 py-2 text-sm rounded-md border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="Enter your observations and feedback about this conversation..."
-                        defaultValue={selectedLog.rev_comment || ''}
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
                       />
                     </div>
 
@@ -420,7 +493,8 @@ const ChatLogsReviewPage: React.FC = () => {
                         id="rev_feedback"
                         className="w-full min-h-[120px] px-3 py-2 text-sm rounded-md border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="Provide the ideal response or correction (optional)..."
-                        defaultValue={selectedLog.rev_feedback || ''}
+                        value={reviewFeedback}
+                        onChange={(e) => setReviewFeedback(e.target.value)}
                       />
                     </div>
 
@@ -433,10 +507,14 @@ const ChatLogsReviewPage: React.FC = () => {
                       <div className="space-y-2">
                         {ISSUE_TAGS.map((tag) => (
                           <div key={tag} className="flex items-center space-x-2">
-                            <Checkbox id={`tag-${tag}`} />
+                            <Checkbox 
+                              id={`tag-${tag}`}
+                              checked={selectedTags.includes(tag)}
+                              onCheckedChange={() => handleTagToggle(tag)}
+                            />
                             <label
                               htmlFor={`tag-${tag}`}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                             >
                               {tag}
                             </label>
@@ -447,12 +525,29 @@ const ChatLogsReviewPage: React.FC = () => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-4 border-t">
-                      <Button className="flex-1 bg-secondary hover:bg-secondary/90">
-                        <Save className="size-4 mr-2" />
-                        Submit Feedback
+                      <Button 
+                        className="flex-1 bg-secondary hover:bg-secondary/90"
+                        onClick={handleSubmitFeedback}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <RefreshCw className="size-4 mr-2 animate-spin" />
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="size-4 mr-2" />
+                            Submit Feedback
+                          </>
+                        )}
                       </Button>
-                      <Button variant="outline" className="flex-1">
-                        Save Draft
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setSelectedLog(null)}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
                       </Button>
                     </div>
                   </div>
