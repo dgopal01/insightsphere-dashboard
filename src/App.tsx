@@ -6,43 +6,33 @@
 
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
 import { AuthProvider } from './contexts/AuthContext';
-import { ProtectedRoute, Layout, ErrorBoundary } from './components';
+import { ProtectedRoute, ErrorBoundary } from './components';
+import { NewLayout } from './components/layout/NewLayout';
 import { handleError } from './utils';
 
 // Lazy load page components for code splitting (Requirement 9.1)
 const SignInPage = lazy(() => import('./pages/SignInPage'));
 const UnauthorizedPage = lazy(() => import('./pages/UnauthorizedPage'));
-// Legacy pages - temporarily disabled due to type mismatches with new schema
-// const DashboardPage = lazy(() => import('./pages/DashboardPage'));
-// const ChatLogsPage = lazy(() => import('./pages/ChatLogsPage'));
-// const FeedbackPage = lazy(() => import('./pages/FeedbackPage'));
 
 // Chat Logs Review System Pages
 const ChatLogsReviewPage = lazy(() => import('./pages/ChatLogsReviewPage'));
 const FeedbackLogsReviewPage = lazy(() => import('./pages/FeedbackLogsReviewPage'));
 const ReviewDashboardPage = lazy(() => import('./pages/ReviewDashboardPage'));
 const AIMetricsDashboardPage = lazy(() => import('./pages/AIMetricsDashboardPage'));
+const DesignSystemDemo = lazy(() => import('./pages/DesignSystemDemo'));
 
 // Loading fallback component
 const PageLoader = () => (
-  <Box
-    sx={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '100vh',
-    }}
-  >
-    <CircularProgress />
-  </Box>
+  <div className="flex justify-center items-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
 );
 
 function App() {
   return (
     <ErrorBoundary
-      onError={(error, errorInfo) => {
+      onError={(error: Error, errorInfo: { componentStack: string }) => {
         // Log error with context
         handleError(error, {
           componentStack: errorInfo.componentStack,
@@ -62,9 +52,9 @@ function App() {
               path="/"
               element={
                 <ProtectedRoute>
-                  <Layout>
+                  <NewLayout>
                     <ReviewDashboardPage />
-                  </Layout>
+                  </NewLayout>
                 </ProtectedRoute>
               }
             />
@@ -72,9 +62,9 @@ function App() {
               path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Layout>
+                  <NewLayout>
                     <ReviewDashboardPage />
-                  </Layout>
+                  </NewLayout>
                 </ProtectedRoute>
               }
             />
@@ -82,43 +72,21 @@ function App() {
               path="/ai-metrics"
               element={
                 <ProtectedRoute>
-                  <Layout>
+                  <NewLayout>
                     <AIMetricsDashboardPage />
-                  </Layout>
+                  </NewLayout>
                 </ProtectedRoute>
               }
             />
-            {/* Legacy routes temporarily disabled
-            <Route
-              path="/logs"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ChatLogsPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/feedback"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <FeedbackPage />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-            */}
 
             {/* Chat Logs Review System Routes */}
             <Route
               path="/review-dashboard"
               element={
                 <ProtectedRoute>
-                  <Layout>
+                  <NewLayout>
                     <ReviewDashboardPage />
-                  </Layout>
+                  </NewLayout>
                 </ProtectedRoute>
               }
             />
@@ -126,9 +94,9 @@ function App() {
               path="/chat-logs-review"
               element={
                 <ProtectedRoute>
-                  <Layout>
+                  <NewLayout>
                     <ChatLogsReviewPage />
-                  </Layout>
+                  </NewLayout>
                 </ProtectedRoute>
               }
             />
@@ -136,9 +104,19 @@ function App() {
               path="/feedback-logs-review"
               element={
                 <ProtectedRoute>
-                  <Layout>
+                  <NewLayout>
                     <FeedbackLogsReviewPage />
-                  </Layout>
+                  </NewLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/design-demo"
+              element={
+                <ProtectedRoute>
+                  <NewLayout>
+                    <DesignSystemDemo />
+                  </NewLayout>
                 </ProtectedRoute>
               }
             />

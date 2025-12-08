@@ -1,35 +1,15 @@
-/**
- * Review Dashboard Page
- * Displays aggregated metrics for chat logs and feedback logs review progress
- * Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 9.1, 9.2, 9.3, 9.4, 9.5
- */
-
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Paper,
-  Stack,
-  Alert,
-  CircularProgress,
-  Chip,
-} from '@mui/material';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import ChatIcon from '@mui/icons-material/Chat';
-import FeedbackIcon from '@mui/icons-material/Feedback';
+import { BarChart3, MessageSquare, ThumbsUp, RefreshCw } from 'lucide-react';
 import { useReviewMetrics } from '../hooks/useReviewMetrics';
-import { ReviewMetricsCard } from '../components/ReviewMetricsCard';
+import { ReviewMetricsCardNew } from '../components/ReviewMetricsCardNew';
 import { ErrorDisplay } from '../components/ErrorDisplay';
 import { classifyError } from '../utils/errorHandling';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
-/**
- * Format timestamp for display
- */
 function formatLastUpdated(date: Date | null): string {
-  if (!date) {
-    return 'Never';
-  }
+  if (!date) return 'Never';
 
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -45,90 +25,75 @@ function formatLastUpdated(date: Date | null): string {
   }
 }
 
-/**
- * Review Dashboard Page Component
- * Displays metrics for both chat logs and feedback logs with auto-refresh
- */
 const ReviewDashboardPage: React.FC = () => {
-  // Fetch metrics with auto-refresh every 30 seconds
   const { metrics, loading, error, refetch, lastUpdated } = useReviewMetrics({
-    autoRefreshInterval: 30000, // 30 seconds
+    autoRefreshInterval: 30000,
     enabled: true,
   });
 
   return (
-    <Box>
+    <div className="space-y-6">
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Box display="flex" alignItems="center" gap={2}>
-          <AssessmentIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" component="h1">
-            Review Dashboard
-          </Typography>
-        </Box>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <BarChart3 className="size-10 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold">Review Dashboard</h1>
+            <p className="text-muted-foreground">Monitor review progress and metrics</p>
+          </div>
+        </div>
 
-        {/* Last Updated Indicator */}
-        <Box display="flex" alignItems="center" gap={1}>
+        {/* Last Updated */}
+        <div className="flex items-center gap-2">
           {loading && (
-            <CircularProgress size={20} aria-label="Loading metrics" />
+            <RefreshCw className="size-4 animate-spin text-muted-foreground" />
           )}
-          <Chip
-            icon={<RefreshIcon />}
-            label={`Last updated: ${formatLastUpdated(lastUpdated)}`}
-            size="small"
-            variant="outlined"
-            color={loading ? 'default' : 'primary'}
-            aria-live="polite"
-            aria-atomic="true"
-          />
-        </Box>
-      </Box>
+          <Badge variant="outline" className="gap-2">
+            <RefreshCw className="size-3" />
+            Last updated: {formatLastUpdated(lastUpdated)}
+          </Badge>
+        </div>
+      </div>
 
-      {/* Description */}
-      <Paper sx={{ p: 2, mb: 3, bgcolor: 'info.light', color: 'info.contrastText' }}>
-        <Typography variant="body2">
+      <Separator />
+
+      {/* Info Alert */}
+      <Alert variant="info">
+        <AlertDescription>
           Monitor review progress for chat logs and feedback logs. Metrics automatically refresh
           every 30 seconds. Color indicators: <strong>Green</strong> (&gt;80% reviewed),{' '}
           <strong>Yellow</strong> (40-80% reviewed), <strong>Red</strong> (&lt;40% reviewed).
-        </Typography>
-      </Paper>
+        </AlertDescription>
+      </Alert>
 
       {/* Error Display */}
       {error && (
-        <Box mb={3}>
-          <ErrorDisplay
-            error={error}
-            type={classifyError(error)}
-            onRetry={refetch}
-            showDetails={process.env.NODE_ENV === 'development'}
-          />
-        </Box>
+        <ErrorDisplay
+          error={error}
+          type={classifyError(error)}
+          onRetry={refetch}
+          showDetails={process.env.NODE_ENV === 'development'}
+        />
       )}
 
       {/* Loading State */}
       {loading && !metrics && (
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
-          <Box textAlign="center">
-            <CircularProgress size={60} />
-            <Typography variant="body1" sx={{ mt: 2 }}>
-              Loading review metrics...
-            </Typography>
-          </Box>
-        </Box>
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Loading review metrics...</p>
+        </div>
       )}
 
       {/* Metrics Display */}
       {metrics && (
-        <Stack spacing={3}>
+        <div className="space-y-8">
           {/* Chat Logs Metrics */}
-          <Box>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <ChatIcon color="primary" />
-              <Typography variant="h5" component="h2">
-                Chat Logs Review Progress
-              </Typography>
-            </Box>
-            <ReviewMetricsCard
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="size-6 text-primary" />
+              <h2 className="text-2xl font-semibold">Chat Logs Review Progress</h2>
+            </div>
+            <ReviewMetricsCardNew
               title="Chat Logs"
               total={metrics.totalChatLogs}
               reviewed={metrics.reviewedChatLogs}
@@ -136,17 +101,15 @@ const ReviewDashboardPage: React.FC = () => {
               percentage={metrics.chatLogsReviewedPercentage}
               loading={loading}
             />
-          </Box>
+          </div>
 
           {/* Feedback Logs Metrics */}
-          <Box>
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <FeedbackIcon color="primary" />
-              <Typography variant="h5" component="h2">
-                Feedback Logs Review Progress
-              </Typography>
-            </Box>
-            <ReviewMetricsCard
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <ThumbsUp className="size-6 text-primary" />
+              <h2 className="text-2xl font-semibold">Feedback Logs Review Progress</h2>
+            </div>
+            <ReviewMetricsCardNew
               title="Feedback Logs"
               total={metrics.totalFeedbackLogs}
               reviewed={metrics.reviewedFeedbackLogs}
@@ -154,19 +117,20 @@ const ReviewDashboardPage: React.FC = () => {
               percentage={metrics.feedbackLogsReviewedPercentage}
               loading={loading}
             />
-          </Box>
+          </div>
 
-          {/* Summary Alert */}
+          {/* No Data Alert */}
           {metrics.totalChatLogs + metrics.totalFeedbackLogs === 0 && (
-            <Alert severity="info">
-              No logs available for review. Data will appear here once logs are added to the system.
+            <Alert variant="info">
+              <AlertDescription>
+                No logs available for review. Data will appear here once logs are added to the system.
+              </AlertDescription>
             </Alert>
           )}
-        </Stack>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 
 export default ReviewDashboardPage;
-export { ReviewDashboardPage };

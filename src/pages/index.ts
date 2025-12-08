@@ -9,3 +9,4 @@ export { UnauthorizedPage } from './UnauthorizedPage';
 export { ChatLogsReviewPage } from './ChatLogsReviewPage';
 export { FeedbackLogsReviewPage } from './FeedbackLogsReviewPage';
 export { ReviewDashboardPage } from './ReviewDashboardPage';
+export { AIMetricsDashboardPage } from './AIMetricsDashboardPage';

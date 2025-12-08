@@ -29,33 +29,39 @@ npm run build:prod
 
 ## Documentation
 
-### Build & Deployment Documentation
-All build, deployment, and setup documentation has been moved to the [`build_docs/`](./build_docs/) folder:
+📚 **[Complete Documentation Index](./docs/README.md)** - Start here for all documentation
 
+### For New Team Members
+- 🚀 [Developer Onboarding Guide](./docs/onboarding/DEVELOPER_ONBOARDING_GUIDE.md) - Complete setup guide
+- 📋 [Onboarding Summary](./docs/onboarding/ONBOARDING_SUMMARY.md) - Quick reference
+- 🔐 [AWS Developer Permissions](./docs/onboarding/AWS_DEVELOPER_PERMISSIONS.md) - IAM policies
+- 📊 [AWS Monitoring Permissions](./docs/onboarding/AWS_MONITORING_ROLE_PERMISSIONS.md) - Monitoring setup
+
+### Design System Migration
+- ✅ [Migration Complete](./docs/migration/MIGRATION_COMPLETE.md) - 100% complete!
+- 📈 [Migration Status](./docs/migration/MIGRATION_STATUS.md) - Current status
+
+### Build & Deployment
 - [Setup Guide](./build_docs/SETUP.md)
 - [Build Commands](./build_docs/BUILD_COMMANDS.md)
 - [Cloud Deployment Guide](./build_docs/CLOUD_DEPLOYMENT_GUIDE.md)
 - [Testing Guide](./build_docs/TESTING.md)
-- [Quick Reference](./build_docs/QUICK_REFERENCE.md)
-- [Project Structure](./build_docs/PROJECT_STRUCTURE.md)
-- [User Guide](./build_docs/USER_GUIDE.md)
 
 ### Feature Documentation
-Feature-specific documentation is in the [`docs/`](./docs/) folder:
-
 - [Chat Logs Review System](./docs/chat-logs-review/)
 - [Backend Setup](./docs/BACKEND_SETUP.md)
 - [Authentication](./docs/AUTHENTICATION.md)
-- [Deployment](./docs/DEPLOYMENT.md)
 - [Monitoring Setup](./docs/MONITORING_SETUP.md)
 
 ## Technology Stack
 
-- **Frontend**: React 19, TypeScript, Material-UI
+- **Frontend**: React 19.2.0, TypeScript, Tailwind CSS + Radix UI
 - **Backend**: AWS Amplify, AppSync (GraphQL), DynamoDB
 - **Authentication**: AWS Cognito
 - **Build Tool**: Vite
 - **Testing**: Vitest, React Testing Library, fast-check
+
+> **Note**: Design system migration from Material-UI to Tailwind CSS + Radix UI is 100% complete!
 
 ## Key Features
 

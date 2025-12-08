@@ -1,22 +1,18 @@
 /**
- * AI Metrics Dashboard Page (New Design System)
+ * AI Metrics Dashboard Page
  * Displays AI Quality & Responsible Metrics from UnityAIAssistantEvalJob table
  */
 
 import React, { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  CircularProgress,
+  Button,
+} from '@mui/material';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { listAIEvaluationJobs, type AIEvaluationJobEntry } from '../services/DynamoDBService';
 import { ErrorDisplay } from '../components/ErrorDisplay';
 import { classifyError } from '../utils';
@@ -110,7 +106,7 @@ function calculateMetrics(jobs: AIEvaluationJobEntry[]) {
 
   return {
     totalConversations: count,
-    pendingReviews: 0,
+    pendingReviews: 0, // TODO: Calculate based on review status
     correctness: correctnessSum / count,
     helpfulness: helpfulnessSum / count,
     faithfulness: faithfulnessSum / count,
@@ -120,29 +116,6 @@ function calculateMetrics(jobs: AIEvaluationJobEntry[]) {
     completeness: completenessSum / count,
   };
 }
-
-/**
- * Metric Card Component
- */
-interface MetricCardProps {
-  label: string;
-  value: string | number;
-  icon?: React.ReactNode;
-}
-
-const MetricCard: React.FC<MetricCardProps> = ({ label, value, icon }) => (
-  <Card>
-    <CardContent className="pt-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="text-3xl font-bold">{value}</p>
-        </div>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
-      </div>
-    </CardContent>
-  </Card>
-);
 
 /**
  * AI Metrics Dashboard Page Component
@@ -174,116 +147,175 @@ const AIMetricsDashboardPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
-        <p className="text-muted-foreground">Loading AI metrics...</p>
-      </div>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
-          <BarChart3 className="size-10 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">AI Quality & Responsible Metrics</h1>
-            <p className="text-muted-foreground">AI chatbot performance metrics and insights</p>
-          </div>
-        </div>
-        <Separator />
+      <Box>
+        <Typography variant="h4" gutterBottom>
+          AI Quality & Responsible Metrics
+        </Typography>
         <ErrorDisplay
           error={error}
           type={classifyError(error)}
           onRetry={() => window.location.reload()}
           showDetails={process.env.NODE_ENV === 'development'}
         />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <BarChart3 className="size-10 text-primary" />
-        <div>
-          <h1 className="text-3xl font-bold">AI Quality & Responsible Metrics</h1>
-          <p className="text-muted-foreground">AI chatbot performance metrics and insights</p>
-        </div>
-      </div>
+    <Box>
+      <Typography variant="h4" gutterBottom>
+        AI Quality & Responsible Metrics
+      </Typography>
+      <Typography variant="body2" color="text.secondary" paragraph>
+        AI chatbot performance metrics and insights
+      </Typography>
 
-      <Separator />
+      {/* Metrics Cards */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+          gap: 3,
+          mb: 4,
+        }}
+      >
+        {/* Total Conversations */}
+        <Box>
+          <Card>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Total Conversations
+              </Typography>
+              <Typography variant="h4">{metrics.totalConversations.toLocaleString()}</Typography>
+            </CardContent>
+          </Card>
+        </Box>
 
-      {/* Metrics Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <MetricCard
-          label="Total Conversations"
-          value={metrics.totalConversations.toLocaleString()}
-          icon={<TrendingUp className="size-8" />}
-        />
-        <MetricCard
-          label="Correctness (Avg.)"
-          value={metrics.correctness.toFixed(2)}
-          icon={<BarChart3 className="size-8" />}
-        />
-        <MetricCard
-          label="Helpfulness (Avg.)"
-          value={metrics.helpfulness.toFixed(2)}
-          icon={<BarChart3 className="size-8" />}
-        />
-        <MetricCard
-          label="Faithfulness (Avg.)"
-          value={metrics.faithfulness.toFixed(2)}
-          icon={<BarChart3 className="size-8" />}
-        />
-        <MetricCard
-          label="Harmfulness (Avg.)"
-          value={metrics.harmfulness.toFixed(2)}
-          icon={<AlertCircle className="size-8" />}
-        />
-        <MetricCard
-          label="Stereotyping (Avg.)"
-          value={metrics.stereotyping.toFixed(2)}
-          icon={<AlertCircle className="size-8" />}
-        />
-        <MetricCard
-          label="Logical Coherence (Avg.)"
-          value={metrics.logicalCoherence.toFixed(2)}
-          icon={<BarChart3 className="size-8" />}
-        />
-        <MetricCard
-          label="Completeness (Avg.)"
-          value={metrics.completeness.toFixed(2)}
-          icon={<BarChart3 className="size-8" />}
-        />
-      </div>
+        {/* Correctness */}
+        <Box>
+          <Card>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Correctness (Avg.)
+              </Typography>
+              <Typography variant="h4">{metrics.correctness.toFixed(2)}</Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Helpfulness */}
+        <Box>
+          <Card>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Helpfulness (Avg.)
+              </Typography>
+              <Typography variant="h4">{metrics.helpfulness.toFixed(2)}</Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Faithfulness */}
+        <Box>
+          <Card>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Faithfulness (Avg.)
+              </Typography>
+              <Typography variant="h4">{metrics.faithfulness.toFixed(2)}</Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Harmfulness */}
+        <Box>
+          <Card>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Harmfulness (Avg.)
+              </Typography>
+              <Typography variant="h4">{metrics.harmfulness.toFixed(2)}</Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Stereotyping */}
+        <Box>
+          <Card>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Stereotyping (Avg.)
+              </Typography>
+              <Typography variant="h4">{metrics.stereotyping.toFixed(2)}</Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Logical Coherence */}
+        <Box>
+          <Card>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Logical Coherence (Avg.)
+              </Typography>
+              <Typography variant="h4">{metrics.logicalCoherence.toFixed(2)}</Typography>
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Completeness */}
+        <Box>
+          <Card>
+            <CardContent>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Completeness (Avg.)
+              </Typography>
+              <Typography variant="h4">{metrics.completeness.toFixed(2)}</Typography>
+            </CardContent>
+          </Card>
+        </Box>
+      </Box>
 
       {/* Score Distribution Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' },
+          gap: 3,
+          mb: 4,
+        }}
+      >
         {/* Helpfulness Distribution */}
         <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <CardTitle>Helpfulness Score Distribution</CardTitle>
-                <CardDescription>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Helpfulness Score Distribution
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
                   Distribution of conversations by helpfulness score (0.0 - 1.0 scale)
-                </CardDescription>
-              </div>
-              <Button size="sm" variant="outline">
+                </Typography>
+              </Box>
+              <Button size="small" variant="outlined">
                 See Conversations
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+            </Box>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Helpfulness')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
                 <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
                 <Tooltip />
-                <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Conversations" />
+                <Bar dataKey="count" fill="#17a2b8" name="Conversations" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -291,27 +323,27 @@ const AIMetricsDashboardPage: React.FC = () => {
 
         {/* Correctness Distribution */}
         <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <CardTitle>Correctness Score Distribution</CardTitle>
-                <CardDescription>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Correctness Score Distribution
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
                   Distribution of conversations by correctness score (0.0 - 1.0 scale)
-                </CardDescription>
-              </div>
-              <Button size="sm" variant="outline">
+                </Typography>
+              </Box>
+              <Button size="small" variant="outlined">
                 See Conversations
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+            </Box>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Correctness')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
                 <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
                 <Tooltip />
-                <Bar dataKey="count" fill="hsl(var(--chart-2))" name="Conversations" />
+                <Bar dataKey="count" fill="#2c3e50" name="Conversations" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -319,27 +351,27 @@ const AIMetricsDashboardPage: React.FC = () => {
 
         {/* Faithfulness Distribution */}
         <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <CardTitle>Faithfulness Scores</CardTitle>
-                <CardDescription>
-                  How closely AI's answers match the true source (facts without inventing information)
-                </CardDescription>
-              </div>
-              <Button size="sm" variant="outline">
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Faithfulness Scores
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  How closely AI's answers match the true source (facts without inventing information) (0.0 - 1.0 scale)
+                </Typography>
+              </Box>
+              <Button size="small" variant="outlined">
                 See Conversations
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+            </Box>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Faithfulness')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
                 <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
                 <Tooltip />
-                <Bar dataKey="count" fill="hsl(var(--chart-3))" name="Conversations" />
+                <Bar dataKey="count" fill="#28a745" name="Conversations" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -347,27 +379,27 @@ const AIMetricsDashboardPage: React.FC = () => {
 
         {/* Harmfulness Distribution */}
         <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <CardTitle>Harmfulness Scores</CardTitle>
-                <CardDescription>
-                  The potential for AI systems to cause physical, psychological, economic, or social harm
-                </CardDescription>
-              </div>
-              <Button size="sm" variant="outline">
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Harmfulness Scores
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  The potential for AI systems to cause physical, psychological, economic, or social harm (0.0 - 1.0 scale)
+                </Typography>
+              </Box>
+              <Button size="small" variant="outlined">
                 See Conversations
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+            </Box>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Harmfulness')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
                 <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
                 <Tooltip />
-                <Bar dataKey="count" fill="hsl(var(--chart-4))" name="Conversations" />
+                <Bar dataKey="count" fill="#fd7e14" name="Conversations" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -375,34 +407,35 @@ const AIMetricsDashboardPage: React.FC = () => {
 
         {/* Stereotyping Distribution */}
         <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <CardTitle>Stereotyping Score</CardTitle>
-                <CardDescription>
-                  When AI systems reinforce biased, harmful stereotypes about groups of people
-                </CardDescription>
-              </div>
-              <Button size="sm" variant="outline">
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Stereotyping Score
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  When AI systems reinforce biased, harmful stereotypes about groups of people (0.0 - 1.0 scale)
+                </Typography>
+              </Box>
+              <Button size="small" variant="outlined">
                 See Conversations
               </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
+            </Box>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Stereotyping')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
                 <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
                 <Tooltip />
-                <Bar dataKey="count" fill="hsl(var(--chart-5))" name="Conversations" />
+                <Bar dataKey="count" fill="#9b59b6" name="Conversations" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
 export default AIMetricsDashboardPage;
+export { AIMetricsDashboardPage };
