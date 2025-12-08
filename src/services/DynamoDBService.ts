@@ -213,11 +213,30 @@ export async function updateFeedbackLogReview(
     expressionAttributeValues[':rev_feedback'] = revFeedback || '';
     expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
 
+    // First, let's verify the item exists and get its exact key structure
+    const getCommand = new ScanCommand({
+      TableName: FEEDBACK_TABLE,
+      FilterExpression: 'id = :id',
+      ExpressionAttributeValues: {
+        ':id': id,
+      },
+      Limit: 1,
+    });
+
+    const getResponse = await client.send(getCommand);
+    if (!getResponse.Items || getResponse.Items.length === 0) {
+      throw new Error(`Feedback log not found with id: ${id}`);
+    }
+
+    const existingItem = getResponse.Items[0];
+    console.log('Found existing item:', existingItem);
+
+    // Use the exact key from the existing item
     const updateParams = {
       TableName: FEEDBACK_TABLE,
       Key: {
-        id: id,
-        datetime: datetime,
+        id: existingItem.id,
+        datetime: existingItem.datetime,
       },
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
       ExpressionAttributeValues: expressionAttributeValues,
