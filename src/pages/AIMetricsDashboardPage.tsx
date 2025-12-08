@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, AlertCircle } from 'lucide-react';
+import { BarChart3, TrendingUp, AlertCircle, X, MessageSquare } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -17,6 +17,15 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { listAIEvaluationJobs, type AIEvaluationJobEntry } from '../services/DynamoDBService';
 import { ErrorDisplay } from '../components/ErrorDisplay';
 import { classifyError } from '../utils';
@@ -151,6 +160,18 @@ const AIMetricsDashboardPage: React.FC = () => {
   const [jobs, setJobs] = useState<AIEvaluationJobEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
+  const [selectedJobs, setSelectedJobs] = useState<AIEvaluationJobEntry[]>([]);
+
+  const handleSeeConversations = (metricName: string) => {
+    setSelectedMetric(metricName);
+    setSelectedJobs(jobs);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedMetric(null);
+    setSelectedJobs([]);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -271,7 +292,7 @@ const AIMetricsDashboardPage: React.FC = () => {
                   Distribution of conversations by helpfulness score (0.0 - 1.0 scale)
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Helpfulness')}>
                 See Conversations
               </Button>
             </div>
@@ -299,7 +320,7 @@ const AIMetricsDashboardPage: React.FC = () => {
                   Distribution of conversations by correctness score (0.0 - 1.0 scale)
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Correctness')}>
                 See Conversations
               </Button>
             </div>
@@ -327,7 +348,7 @@ const AIMetricsDashboardPage: React.FC = () => {
                   How closely AI's answers match the true source (facts without inventing information)
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Faithfulness')}>
                 See Conversations
               </Button>
             </div>
@@ -355,7 +376,7 @@ const AIMetricsDashboardPage: React.FC = () => {
                   The potential for AI systems to cause physical, psychological, economic, or social harm
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Harmfulness')}>
                 See Conversations
               </Button>
             </div>
@@ -383,7 +404,7 @@ const AIMetricsDashboardPage: React.FC = () => {
                   When AI systems reinforce biased, harmful stereotypes about groups of people
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Stereotyping')}>
                 See Conversations
               </Button>
             </div>
@@ -401,6 +422,93 @@ const AIMetricsDashboardPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Conversations Modal */}
+      {selectedMetric && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-6xl max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <MessageSquare className="size-5" />
+                    Conversations for {selectedMetric}
+                  </CardTitle>
+                  <CardDescription>
+                    Showing {selectedJobs.length} conversations with scores and details
+                  </CardDescription>
+                </div>
+                <Button variant="ghost" size="icon" onClick={handleCloseModal}>
+                  <X className="size-5" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Carrier</TableHead>
+                      <TableHead>Job ID</TableHead>
+                      <TableHead>User Question</TableHead>
+                      <TableHead>Bot Response</TableHead>
+                      <TableHead>Business Response</TableHead>
+                      <TableHead>Scores</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {selectedJobs.map((job, index) => {
+                      const carrierName = job.citations_metadata?.[0]?.carrier_name || 'N/A';
+                      const scores = job.results?.filter(r => r.metricName === selectedMetric) || [];
+                      
+                      return (
+                        <TableRow key={`${job.log_id}-${index}`}>
+                          <TableCell className="font-medium">{carrierName}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {job.job_id.substring(0, 8)}...
+                          </TableCell>
+                          <TableCell className="max-w-xs">
+                            <div className="text-sm line-clamp-3" title={job.prompt_text}>
+                              {job.prompt_text}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-xs">
+                            <div className="text-sm line-clamp-3" title={job.output_text}>
+                              {job.output_text}
+                            </div>
+                          </TableCell>
+                          <TableCell className="max-w-xs">
+                            <div className="text-sm line-clamp-3" title={job.reference_response_text}>
+                              {job.reference_response_text || 'N/A'}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              {scores.map((score, idx) => (
+                                <Badge 
+                                  key={idx} 
+                                  variant={score.result && score.result > 0.7 ? 'default' : 'secondary'}
+                                >
+                                  {score.result?.toFixed(2) || 'N/A'}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+              <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
+                <Button variant="outline" onClick={handleCloseModal}>
+                  Close
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

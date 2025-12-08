@@ -4,11 +4,13 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MessageSquare, Filter, RefreshCw } from 'lucide-react';
+import { MessageSquare, Filter, RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Table,
   TableBody,
@@ -121,39 +123,98 @@ const ChatLogsReviewPage: React.FC = () => {
       {/* Filters Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="size-5" />
-                Filters
-              </CardTitle>
-              <CardDescription>Filter chat logs by review status</CardDescription>
-            </div>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="size-5" />
+            Filters
+          </CardTitle>
+          <CardDescription>Filter chat logs by review status, carrier, and date range</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Review Status Filter */}
+          <div className="space-y-2">
+            <Label>Review Status</Label>
             <div className="flex gap-2">
               <Button
                 variant={filters.reviewStatus === 'all' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilters({ reviewStatus: 'all' })}
+                onClick={() => setFilters({ ...filters, reviewStatus: 'all' })}
               >
                 All
               </Button>
               <Button
                 variant={filters.reviewStatus === 'pending' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilters({ reviewStatus: 'pending' })}
+                onClick={() => setFilters({ ...filters, reviewStatus: 'pending' })}
               >
                 Pending
               </Button>
               <Button
                 variant={filters.reviewStatus === 'reviewed' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilters({ reviewStatus: 'reviewed' })}
+                onClick={() => setFilters({ ...filters, reviewStatus: 'reviewed' })}
               >
                 Reviewed
               </Button>
             </div>
           </div>
-        </CardHeader>
+
+          {/* Carrier Filter */}
+          <div className="space-y-2">
+            <Label htmlFor="carrier">Carrier Name</Label>
+            <div className="flex gap-2">
+              <Input
+                id="carrier"
+                placeholder="Enter carrier name..."
+                value={filters.carrier_name || ''}
+                onChange={(e) => setFilters({ ...filters, carrier_name: e.target.value || undefined })}
+              />
+              {filters.carrier_name && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setFilters({ ...filters, carrier_name: undefined })}
+                >
+                  <X className="size-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="startDate">Start Date</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={filters.startDate || ''}
+                onChange={(e) => setFilters({ ...filters, startDate: e.target.value || undefined })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endDate">End Date</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={filters.endDate || ''}
+                onChange={(e) => setFilters({ ...filters, endDate: e.target.value || undefined })}
+              />
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          {(filters.carrier_name || filters.startDate || filters.endDate) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFilters({ reviewStatus: filters.reviewStatus })}
+              className="w-full"
+            >
+              <X className="size-4 mr-2" />
+              Clear Filters
+            </Button>
+          )}
+        </CardContent>
       </Card>
 
       {/* Data Table Card */}

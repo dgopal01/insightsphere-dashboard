@@ -4,11 +4,20 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { ThumbsUp, Filter, RefreshCw } from 'lucide-react';
+import { ThumbsUp, Filter, RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -53,6 +62,7 @@ function getFeedbackVariant(feedback: string): 'default' | 'secondary' | 'outlin
 const FeedbackLogsReviewPage: React.FC = () => {
   const [filters, setFilters] = useState<FeedbackLogFilters>({
     reviewStatus: 'all',
+    feedbackType: 'all',
   });
   const [sortDirection] = useState<SortDirection>('desc');
   const [selectedLog, setSelectedLog] = useState<FeedbackLogEntry | null>(null);
@@ -130,39 +140,94 @@ const FeedbackLogsReviewPage: React.FC = () => {
       {/* Filters Card */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="size-5" />
-                Filters
-              </CardTitle>
-              <CardDescription>Filter feedback logs by review status</CardDescription>
-            </div>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="size-5" />
+            Filters
+          </CardTitle>
+          <CardDescription>Filter feedback logs by review status, feedback type, and date range</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Review Status Filter */}
+          <div className="space-y-2">
+            <Label>Review Status</Label>
             <div className="flex gap-2">
               <Button
                 variant={filters.reviewStatus === 'all' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilters({ reviewStatus: 'all' })}
+                onClick={() => setFilters({ ...filters, reviewStatus: 'all' })}
               >
                 All
               </Button>
               <Button
                 variant={filters.reviewStatus === 'pending' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilters({ reviewStatus: 'pending' })}
+                onClick={() => setFilters({ ...filters, reviewStatus: 'pending' })}
               >
                 Pending
               </Button>
               <Button
                 variant={filters.reviewStatus === 'reviewed' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setFilters({ reviewStatus: 'reviewed' })}
+                onClick={() => setFilters({ ...filters, reviewStatus: 'reviewed' })}
               >
                 Reviewed
               </Button>
             </div>
           </div>
-        </CardHeader>
+
+          {/* Feedback Type Filter */}
+          <div className="space-y-2">
+            <Label htmlFor="feedbackType">Feedback Type</Label>
+            <Select
+              value={filters.feedbackType || 'all'}
+              onValueChange={(value) => setFilters({ ...filters, feedbackType: value as any })}
+            >
+              <SelectTrigger id="feedbackType">
+                <SelectValue placeholder="Select feedback type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Feedback</SelectItem>
+                <SelectItem value="thumbs_up">👍 Positive</SelectItem>
+                <SelectItem value="thumbs_down">👎 Negative</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="startDate">Start Date</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={filters.startDate || ''}
+                onChange={(e) => setFilters({ ...filters, startDate: e.target.value || undefined })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endDate">End Date</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={filters.endDate || ''}
+                onChange={(e) => setFilters({ ...filters, endDate: e.target.value || undefined })}
+              />
+            </div>
+          </div>
+
+          {/* Clear Filters Button */}
+          {(filters.feedbackType !== 'all' || filters.startDate || filters.endDate) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setFilters({ reviewStatus: filters.reviewStatus, feedbackType: 'all' })}
+              className="w-full"
+            >
+              <X className="size-4 mr-2" />
+              Clear Filters
+            </Button>
+          )}
+        </CardContent>
       </Card>
 
       {/* Data Table Card */}

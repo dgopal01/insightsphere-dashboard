@@ -132,6 +132,7 @@ export interface ChatLogFilters {
  */
 export interface FeedbackLogFilters {
   carrier?: string;
+  feedbackType?: 'all' | 'thumbs_up' | 'thumbs_down';
   startDate?: string;
   endDate?: string;
   reviewStatus?: 'all' | 'reviewed' | 'pending';
