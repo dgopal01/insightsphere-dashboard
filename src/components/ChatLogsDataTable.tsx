@@ -38,7 +38,7 @@ import type { SortDirection } from '../hooks/useChatLogs';
  * Column definitions for the table
  */
 interface Column {
-  id: keyof ChatLogEntry | 'actions';
+  id: keyof ChatLogEntry | 'actions' | 'issue_tags';
   label: string;
   minWidth?: number;
   align?: 'left' | 'right' | 'center';
@@ -60,7 +60,7 @@ export interface ChatLogsDataTableProps {
   onLoadMore: () => void;
   selectedLog: ChatLogEntry | null;
   onCloseDetail: () => void;
-  onReviewSubmit: (logId: string, reviewData: { rev_comment: string; rev_feedback: string }) => Promise<void>;
+  onReviewSubmit: (logId: string, reviewData: { rev_comment: string; rev_feedback: string; issue_tags?: string[] }) => Promise<void>;
 }
 
 /**
@@ -159,6 +159,43 @@ export const ChatLogsDataTable: React.FC<ChatLogsDataTableProps> = ({
               icon={status === 'reviewed' ? <CheckCircle /> : <PendingActions />}
               aria-label={`Review status: ${status}`}
             />
+          );
+        },
+      },
+      {
+        id: 'issue_tags',
+        label: 'Tags',
+        minWidth: 200,
+        sortable: false,
+        format: (value: string[] | string | undefined) => {
+          if (!value) return <Typography variant="body2" color="text.secondary">—</Typography>;
+          
+          let tags: string[] = [];
+          if (typeof value === 'string') {
+            try {
+              tags = JSON.parse(value);
+            } catch {
+              tags = value.split(',').map(t => t.trim()).filter(Boolean);
+            }
+          } else if (Array.isArray(value)) {
+            tags = value;
+          }
+          
+          if (tags.length === 0) return <Typography variant="body2" color="text.secondary">—</Typography>;
+          
+          return (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {tags.map((tag, index) => (
+                <Chip
+                  key={index}
+                  label={tag}
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  sx={{ fontSize: '0.75rem' }}
+                />
+              ))}
+            </Box>
           );
         },
       },

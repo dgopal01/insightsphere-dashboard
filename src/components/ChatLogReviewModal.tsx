@@ -19,11 +19,29 @@ import {
   CircularProgress,
   Chip,
   Stack,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  FormLabel,
 } from '@mui/material';
-import { Close, Save, CheckCircle, PendingActions } from '@mui/icons-material';
+import { Close, Save, CheckCircle, PendingActions, LocalOffer } from '@mui/icons-material';
 import { validateReviewComment, validateReviewFeedback } from '../utils/validation';
 import { sanitizeText } from '../utils/sanitization';
 import type { ChatLogEntry } from '../types';
+
+/**
+ * Available issue tags for chat log review
+ */
+export const ISSUE_TAGS = [
+  'Accuracy Issue',
+  'Tone/Style Issue',
+  'Safety Concern',
+  'Reasoning Quality',
+  'Incomplete Response',
+  'Hallucination/Fabrication',
+] as const;
+
+export type IssueTag = typeof ISSUE_TAGS[number];
 
 /**
  * Props for ChatLogReviewModal component
@@ -32,7 +50,7 @@ export interface ChatLogReviewModalProps {
   open: boolean;
   log: ChatLogEntry | null;
   onClose: () => void;
-  onSubmit: (logId: string, reviewData: { rev_comment: string; rev_feedback: string }) => Promise<void>;
+  onSubmit: (logId: string, reviewData: { rev_comment: string; rev_feedback: string; issue_tags?: string[] }) => Promise<void>;
 }
 
 /**
@@ -53,6 +71,7 @@ export const ChatLogReviewModal: React.FC<ChatLogReviewModalProps> = ({
 }) => {
   const [revComment, setRevComment] = useState('');
   const [revFeedback, setRevFeedback] = useState('');
+  const [issueTags, setIssueTags] = useState<string[]>([]);
   const [commentError, setCommentError] = useState<string | null>(null);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -64,6 +83,19 @@ export const ChatLogReviewModal: React.FC<ChatLogReviewModalProps> = ({
     if (log) {
       setRevComment(log.rev_comment || '');
       setRevFeedback(log.rev_feedback || '');
+      // Parse existing issue tags if they exist (stored as JSON string or comma-separated)
+      const existingTags = log.issue_tags;
+      if (existingTags) {
+        try {
+          const parsed = typeof existingTags === 'string' ? JSON.parse(existingTags) : existingTags;
+          setIssueTags(Array.isArray(parsed) ? parsed : []);
+        } catch {
+          // If parsing fails, try comma-separated
+          setIssueTags(existingTags.split(',').map((t: string) => t.trim()).filter(Boolean));
+        }
+      } else {
+        setIssueTags([]);
+      }
       setCommentError(null);
       setFeedbackError(null);
       setSubmitError(null);
@@ -104,6 +136,16 @@ export const ChatLogReviewModal: React.FC<ChatLogReviewModalProps> = ({
   };
 
   /**
+   * Handle issue tag toggle
+   */
+  const handleTagToggle = (tag: string) => {
+    setIssueTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+    setSubmitSuccess(false);
+  };
+
+  /**
    * Handle form submission
    */
   const handleSubmit = async () => {
@@ -133,6 +175,7 @@ export const ChatLogReviewModal: React.FC<ChatLogReviewModalProps> = ({
       const sanitizedData = {
         rev_comment: sanitizeText(revComment),
         rev_feedback: sanitizeText(revFeedback),
+        issue_tags: issueTags,
       };
 
       await onSubmit(log.log_id, sanitizedData);
@@ -159,8 +202,11 @@ export const ChatLogReviewModal: React.FC<ChatLogReviewModalProps> = ({
       return;
     }
 
+    const existingTags = log.issue_tags ? (typeof log.issue_tags === 'string' ? JSON.parse(log.issue_tags) : log.issue_tags) : [];
     const hasChanges =
-      revComment !== (log.rev_comment || '') || revFeedback !== (log.rev_feedback || '');
+      revComment !== (log.rev_comment || '') || 
+      revFeedback !== (log.rev_feedback || '') ||
+      JSON.stringify(issueTags) !== JSON.stringify(existingTags);
 
     if (hasChanges && !submitSuccess) {
       const confirmed = window.confirm(
@@ -323,11 +369,44 @@ export const ChatLogReviewModal: React.FC<ChatLogReviewModalProps> = ({
               feedbackError || `${revFeedback.length}/5000 characters`
             }
             disabled={submitting || submitSuccess}
+            sx={{ mb: 3 }}
             inputProps={{
               'aria-label': 'Review feedback',
               maxLength: 5000,
             }}
           />
+
+          {/* Issue Tags */}
+          <Box sx={{ mb: 2 }}>
+            <FormLabel component="legend" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LocalOffer fontSize="small" />
+              Issue Tags (Optional)
+            </FormLabel>
+            <FormGroup>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 1 }}>
+                {ISSUE_TAGS.map((tag) => (
+                  <FormControlLabel
+                    key={tag}
+                    control={
+                      <Checkbox
+                        checked={issueTags.includes(tag)}
+                        onChange={() => handleTagToggle(tag)}
+                        disabled={submitting || submitSuccess}
+                        sx={{
+                          '&:focus-visible': {
+                            outline: '2px solid',
+                            outlineColor: 'primary.main',
+                            outlineOffset: '2px',
+                          },
+                        }}
+                      />
+                    }
+                    label={<Typography variant="body2">{tag}</Typography>}
+                  />
+                ))}
+              </Box>
+            </FormGroup>
+          </Box>
 
           <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
             Note: At least one field (comment or feedback) must be filled

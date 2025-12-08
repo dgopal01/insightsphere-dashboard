@@ -150,7 +150,8 @@ export function useChatLogs(): UseChatLogsReturn {
           logId,
           log.timestamp,
           reviewData.rev_comment,
-          reviewData.rev_feedback
+          reviewData.rev_feedback,
+          reviewData.issue_tags
         );
 
         // Update the log in the local state
@@ -161,6 +162,7 @@ export function useChatLogs(): UseChatLogsReturn {
                   ...l,
                   rev_comment: updatedLog.rev_comment,
                   rev_feedback: updatedLog.rev_feedback,
+                  issue_tags: updatedLog.issue_tags,
                 }
               : l
           )

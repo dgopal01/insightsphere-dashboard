@@ -77,7 +77,7 @@ const ChatLogsReviewPage: React.FC = () => {
    * Handle review submission
    */
   const handleReviewSubmit = useCallback(
-    async (logId: string, reviewData: { rev_comment: string; rev_feedback: string }) => {
+    async (logId: string, reviewData: { rev_comment: string; rev_feedback: string; issue_tags?: string[] }) => {
       try {
         await updateReview(logId, reviewData);
         setSelectedLog(null);

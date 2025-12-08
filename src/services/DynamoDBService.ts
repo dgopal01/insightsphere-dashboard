@@ -68,6 +68,7 @@ export interface ChatLogEntry {
   response?: string;
   rev_comment?: string;
   rev_feedback?: string;
+  issue_tags?: string[] | string;
   session_id?: string;
   user_name?: string;
   usr_comment?: string;
@@ -178,12 +179,14 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
  * @param timestamp - The sort key (timestamp) for the chat log
  * @param revComment - Review comment to set
  * @param revFeedback - Review feedback to set
+ * @param issueTags - Array of issue tags to set
  */
 export async function updateChatLogReview(
   logId: string,
   timestamp: string,
   revComment?: string,
-  revFeedback?: string
+  revFeedback?: string,
+  issueTags?: string[]
 ): Promise<ChatLogEntry> {
   try {
     const client = await getDynamoDBClient();
@@ -194,6 +197,7 @@ export async function updateChatLogReview(
       timestamp,
       revComment,
       revFeedback,
+      issueTags,
     });
 
     // Build update expression
@@ -209,6 +213,13 @@ export async function updateChatLogReview(
     updateExpression.push('#rev_feedback = :rev_feedback');
     expressionAttributeValues[':rev_feedback'] = revFeedback || '';
     expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
+
+    // Add issue_tags if provided
+    if (issueTags !== undefined) {
+      updateExpression.push('#issue_tags = :issue_tags');
+      expressionAttributeValues[':issue_tags'] = JSON.stringify(issueTags);
+      expressionAttributeNames['#issue_tags'] = 'issue_tags';
+    }
 
     // Update using composite key (log_id + timestamp)
     const updateParams = {
