@@ -139,23 +139,30 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
       setError(null);
 
       try {
-        // Update in DynamoDB
+        // Find the log to get its datetime (composite key)
+        const log = logs.find((l) => l.id === logId);
+        if (!log) {
+          throw new Error(`Feedback log not found: ${logId}`);
+        }
+
+        // Update in DynamoDB with both id and datetime
         const updatedLog = await DynamoDBService.updateFeedbackLogReview(
           logId,
+          log.datetime,
           reviewData.rev_comment,
           reviewData.rev_feedback
         );
 
         // Update the log in the local state
         setLogs((prevLogs) =>
-          prevLogs.map((log) =>
-            log.id === logId
+          prevLogs.map((l) =>
+            l.id === logId
               ? {
-                  ...log,
+                  ...l,
                   rev_comment: updatedLog.rev_comment,
                   rev_feedback: updatedLog.rev_feedback,
                 }
-              : log
+              : l
           )
         );
       } catch (err) {
@@ -165,7 +172,7 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
         throw updateError;
       }
     },
-    []
+    [logs]
   );
 
   /**

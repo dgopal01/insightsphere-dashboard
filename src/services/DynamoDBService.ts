@@ -180,61 +180,55 @@ export async function updateChatLogReview(
 
 /**
  * Update feedback log review fields
+ * Note: userFeedback table has composite key (id, datetime)
  */
 export async function updateFeedbackLogReview(
   id: string,
+  datetime: string,
   revComment?: string,
   revFeedback?: string
 ): Promise<FeedbackLogEntry> {
-  const client = await getDynamoDBClient();
+  try {
+    const client = await getDynamoDBClient();
 
-  const updateExpression: string[] = [];
-  const expressionAttributeValues: any = {};
-  const expressionAttributeNames: any = {};
+    const updateExpression: string[] = [];
+    const expressionAttributeValues: any = {};
+    const expressionAttributeNames: any = {};
 
-  if (revComment !== undefined) {
+    // Always set both fields to ensure they exist
     updateExpression.push('#rev_comment = :rev_comment');
-    expressionAttributeValues[':rev_comment'] = revComment;
+    expressionAttributeValues[':rev_comment'] = revComment || '';
     expressionAttributeNames['#rev_comment'] = 'rev_comment';
-  }
 
-  if (revFeedback !== undefined) {
     updateExpression.push('#rev_feedback = :rev_feedback');
-    expressionAttributeValues[':rev_feedback'] = revFeedback;
+    expressionAttributeValues[':rev_feedback'] = revFeedback || '';
     expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
+
+    console.log('Updating feedback log:', {
+      id,
+      datetime,
+      revComment,
+      revFeedback,
+    });
+
+    const command = new UpdateCommand({
+      TableName: FEEDBACK_TABLE,
+      Key: {
+        id: id,
+        datetime: datetime,
+      },
+      UpdateExpression: `SET ${updateExpression.join(', ')}`,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ReturnValues: 'ALL_NEW',
+    });
+
+    const response = await client.send(command);
+    console.log('Update successful:', response.Attributes);
+    return response.Attributes as FeedbackLogEntry;
+  } catch (error) {
+    console.error('Error updating feedback log:', error);
+    throw error;
   }
-
-  // Note: userFeedback table has composite key (id, datetime)
-  // We need to get the datetime first
-  const getCommand = new ScanCommand({
-    TableName: FEEDBACK_TABLE,
-    FilterExpression: 'id = :id',
-    ExpressionAttributeValues: {
-      ':id': id,
-    },
-    Limit: 1,
-  });
-
-  const getResponse = await client.send(getCommand);
-  if (!getResponse.Items || getResponse.Items.length === 0) {
-    throw new Error(`Feedback log not found: ${id}`);
-  }
-
-  const existingItem = getResponse.Items[0] as FeedbackLogEntry;
-
-  const command = new UpdateCommand({
-    TableName: FEEDBACK_TABLE,
-    Key: {
-      id: id,
-      datetime: existingItem.datetime,
-    },
-    UpdateExpression: `SET ${updateExpression.join(', ')}`,
-    ExpressionAttributeValues: expressionAttributeValues,
-    ExpressionAttributeNames: expressionAttributeNames,
-    ReturnValues: 'ALL_NEW',
-  });
-
-  const response = await client.send(command);
-  return response.Attributes as FeedbackLogEntry;
 }
 
