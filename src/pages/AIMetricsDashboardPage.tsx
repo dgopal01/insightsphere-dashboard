@@ -17,15 +17,6 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { listAIEvaluationJobs, type AIEvaluationJobEntry } from '../services/DynamoDBService';
 import { ErrorDisplay } from '../components/ErrorDisplay';
 import { classifyError } from '../utils';
@@ -426,8 +417,8 @@ const AIMetricsDashboardPage: React.FC = () => {
       {/* Conversations Modal */}
       {selectedMetric && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-6xl max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
-            <CardHeader>
+          <Card className="w-full max-w-[95vw] max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
+            <CardHeader className="border-b">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="flex items-center gap-2">
@@ -443,64 +434,60 @@ const AIMetricsDashboardPage: React.FC = () => {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0">
               <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Carrier</TableHead>
-                      <TableHead>Job ID</TableHead>
-                      <TableHead>User Question</TableHead>
-                      <TableHead>Bot Response</TableHead>
-                      <TableHead>Business Response</TableHead>
-                      <TableHead>Scores</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                <table className="w-full">
+                  <thead className="bg-muted border-b border-border">
+                    <tr>
+                      <th className="text-left px-6 py-4 text-sm text-muted-foreground font-medium">
+                        Conversation Input
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm text-muted-foreground font-medium">
+                        AI Output
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm text-muted-foreground font-medium">
+                        Retrieved Sources
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm text-muted-foreground font-medium">
+                        Ground Truth
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm text-muted-foreground font-medium">
+                        Score
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
                     {selectedJobs.map((job, index) => {
-                      const carrierName = job.citations_metadata?.[0]?.carrier_name || 'N/A';
+                      const sourcesCount = job.citations_metadata?.length || 0;
                       const scores = job.results?.filter(r => r.metricName === selectedMetric) || [];
+                      const score = scores[0]?.result;
                       
                       return (
-                        <TableRow key={`${job.log_id}-${index}`}>
-                          <TableCell className="font-medium">{carrierName}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {job.job_id.substring(0, 8)}...
-                          </TableCell>
-                          <TableCell className="max-w-xs">
-                            <div className="text-sm line-clamp-3" title={job.prompt_text}>
-                              {job.prompt_text}
-                            </div>
-                          </TableCell>
-                          <TableCell className="max-w-xs">
-                            <div className="text-sm line-clamp-3" title={job.output_text}>
-                              {job.output_text}
-                            </div>
-                          </TableCell>
-                          <TableCell className="max-w-xs">
-                            <div className="text-sm line-clamp-3" title={job.reference_response_text}>
-                              {job.reference_response_text || 'N/A'}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col gap-1">
-                              {scores.map((score, idx) => (
-                                <Badge 
-                                  key={idx} 
-                                  variant={score.result && score.result > 0.7 ? 'default' : 'secondary'}
-                                >
-                                  {score.result?.toFixed(2) || 'N/A'}
-                                </Badge>
-                              ))}
-                            </div>
-                          </TableCell>
-                        </TableRow>
+                        <tr key={`${job.log_id}-${index}`} className="hover:bg-muted/50 transition-colors">
+                          <td className="px-6 py-4 text-sm max-w-md align-top">
+                            {job.prompt_text}
+                          </td>
+                          <td className="px-6 py-4 text-sm max-w-md align-top">
+                            {job.output_text}
+                          </td>
+                          <td className="px-6 py-4 text-sm align-top">
+                            {sourcesCount}
+                          </td>
+                          <td className="px-6 py-4 text-sm max-w-xs align-top">
+                            {job.reference_response_text || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 text-sm align-top">
+                            <span className="font-medium">
+                              {score ? score.toFixed(2) : 'N/A'}
+                            </span>
+                          </td>
+                        </tr>
                       );
                     })}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
               </div>
-              <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
+              <div className="flex justify-end gap-2 p-6 border-t">
                 <Button variant="outline" onClick={handleCloseModal}>
                   Close
                 </Button>
