@@ -62,3 +62,10 @@ customHeaders:
     headers:
       - key: 'Cache-Control'
         value: 'no-cache, no-store, must-revalidate'
+
+# Redirect rules for SPA (Single Page Application)
+# All routes should serve index.html for client-side routing
+redirects:
+  - source: '</^[^.]+$|\.(?!(css|gif|ico|jpg|js|png|txt|svg|woff|woff2|ttf|map|json)$)([^.]+$)/>'
+    target: '/index.html'
+    status: '200'
