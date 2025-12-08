@@ -250,6 +250,22 @@ Resources:
               ForAnyValue:StringLike:
                 cognito-identity.amazonaws.com:amr: authenticated
       Policies:
+        - PolicyName: DynamoDBAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                Resource:
+                  - arn:aws:dynamodb:us-east-1:327052515912:table/UnityAIAssistantLogs
+                  - arn:aws:dynamodb:us-east-1:327052515912:table/userFeedback
+                  - arn:aws:dynamodb:us-east-1:327052515912:table/UnityAIAssistantEvalJob
         - PolicyName: S3Access
           PolicyDocument:
             Version: '2012-10-17'
