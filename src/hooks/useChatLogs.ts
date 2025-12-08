@@ -139,23 +139,30 @@ export function useChatLogs(): UseChatLogsReturn {
       setError(null);
 
       try {
-        // Update in DynamoDB
+        // Find the log to get its timestamp (composite key)
+        const log = logs.find((l) => l.log_id === logId);
+        if (!log) {
+          throw new Error(`Chat log not found: ${logId}`);
+        }
+
+        // Update in DynamoDB with both log_id and timestamp
         const updatedLog = await DynamoDBService.updateChatLogReview(
           logId,
+          log.timestamp,
           reviewData.rev_comment,
           reviewData.rev_feedback
         );
 
         // Update the log in the local state
         setLogs((prevLogs) =>
-          prevLogs.map((log) =>
-            log.log_id === logId
+          prevLogs.map((l) =>
+            l.log_id === logId
               ? {
-                  ...log,
+                  ...l,
                   rev_comment: updatedLog.rev_comment,
                   rev_feedback: updatedLog.rev_feedback,
                 }
-              : log
+              : l
           )
         );
       } catch (err) {
@@ -165,7 +172,7 @@ export function useChatLogs(): UseChatLogsReturn {
         throw updateError;
       }
     },
-    []
+    [logs]
   );
 
   /**

@@ -102,19 +102,34 @@ export async function listChatLogs(limit: number = 50): Promise<{
   items: ChatLogEntry[];
   lastEvaluatedKey?: any;
 }> {
-  const client = await getDynamoDBClient();
+  try {
+    const client = await getDynamoDBClient();
 
-  const command = new ScanCommand({
-    TableName: CHAT_LOG_TABLE,
-    Limit: limit,
-  });
+    console.log('Fetching chat logs from table:', CHAT_LOG_TABLE);
 
-  const response = await client.send(command);
+    const command = new ScanCommand({
+      TableName: CHAT_LOG_TABLE,
+      Limit: limit,
+    });
 
-  return {
-    items: (response.Items as ChatLogEntry[]) || [],
-    lastEvaluatedKey: response.LastEvaluatedKey,
-  };
+    const response = await client.send(command);
+
+    console.log(`Successfully fetched ${response.Items?.length || 0} chat logs`);
+
+    return {
+      items: (response.Items as ChatLogEntry[]) || [],
+      lastEvaluatedKey: response.LastEvaluatedKey,
+    };
+  } catch (error: any) {
+    console.error('Error listing chat logs:', {
+      error,
+      errorName: error?.name,
+      errorMessage: error?.message,
+      errorCode: error?.$metadata?.httpStatusCode,
+      tableName: CHAT_LOG_TABLE,
+    });
+    throw new Error(`Failed to list chat logs: ${error?.message || 'Unknown error'}`);
+  }
 }
 
 /**
@@ -124,77 +139,56 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
   items: FeedbackLogEntry[];
   lastEvaluatedKey?: any;
 }> {
-  const client = await getDynamoDBClient();
+  try {
+    const client = await getDynamoDBClient();
 
-  const command = new ScanCommand({
-    TableName: FEEDBACK_TABLE,
-    Limit: limit,
-  });
+    console.log('Fetching feedback logs from table:', FEEDBACK_TABLE);
 
-  const response = await client.send(command);
+    const command = new ScanCommand({
+      TableName: FEEDBACK_TABLE,
+      Limit: limit,
+    });
 
-  return {
-    items: (response.Items as FeedbackLogEntry[]) || [],
-    lastEvaluatedKey: response.LastEvaluatedKey,
-  };
+    const response = await client.send(command);
+
+    console.log(`Successfully fetched ${response.Items?.length || 0} feedback logs`);
+
+    return {
+      items: (response.Items as FeedbackLogEntry[]) || [],
+      lastEvaluatedKey: response.LastEvaluatedKey,
+    };
+  } catch (error: any) {
+    console.error('Error listing feedback logs:', {
+      error,
+      errorName: error?.name,
+      errorMessage: error?.message,
+      errorCode: error?.$metadata?.httpStatusCode,
+      tableName: FEEDBACK_TABLE,
+    });
+    throw new Error(`Failed to list feedback logs: ${error?.message || 'Unknown error'}`);
+  }
 }
 
 /**
  * Update chat log review fields
+ * Note: UnityAIAssistantLogs table has single partition key (log_id only)
+ * @param logId - The partition key (log_id) for the chat log
+ * @param timestamp - Kept for backward compatibility, not used in DynamoDB operation
+ * @param revComment - Review comment to set
+ * @param revFeedback - Review feedback to set
  */
 export async function updateChatLogReview(
   logId: string,
+  timestamp: string, // eslint-disable-line @typescript-eslint/no-unused-vars
   revComment?: string,
   revFeedback?: string
 ): Promise<ChatLogEntry> {
-  const client = await getDynamoDBClient();
-
-  const updateExpression: string[] = [];
-  const expressionAttributeValues: any = {};
-  const expressionAttributeNames: any = {};
-
-  if (revComment !== undefined) {
-    updateExpression.push('#rev_comment = :rev_comment');
-    expressionAttributeValues[':rev_comment'] = revComment;
-    expressionAttributeNames['#rev_comment'] = 'rev_comment';
-  }
-
-  if (revFeedback !== undefined) {
-    updateExpression.push('#rev_feedback = :rev_feedback');
-    expressionAttributeValues[':rev_feedback'] = revFeedback;
-    expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
-  }
-
-  const command = new UpdateCommand({
-    TableName: CHAT_LOG_TABLE,
-    Key: { log_id: logId },
-    UpdateExpression: `SET ${updateExpression.join(', ')}`,
-    ExpressionAttributeValues: expressionAttributeValues,
-    ExpressionAttributeNames: expressionAttributeNames,
-    ReturnValues: 'ALL_NEW',
-  });
-
-  const response = await client.send(command);
-  return response.Attributes as ChatLogEntry;
-}
-
-/**
- * Update feedback log review fields
- * Note: userFeedback table has composite key (id, datetime)
- */
-export async function updateFeedbackLogReview(
-  id: string,
-  datetime: string,
-  revComment?: string,
-  revFeedback?: string
-): Promise<FeedbackLogEntry> {
   try {
     const client = await getDynamoDBClient();
 
-    console.log('Updating feedback log with params:', {
-      table: FEEDBACK_TABLE,
-      id,
-      datetime,
+    console.log('Updating chat log with params:', {
+      table: CHAT_LOG_TABLE,
+      logId,
       revComment,
       revFeedback,
     });
@@ -213,30 +207,85 @@ export async function updateFeedbackLogReview(
     expressionAttributeValues[':rev_feedback'] = revFeedback || '';
     expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
 
-    // First, let's verify the item exists and get its exact key structure
-    const getCommand = new ScanCommand({
-      TableName: FEEDBACK_TABLE,
-      FilterExpression: 'id = :id',
-      ExpressionAttributeValues: {
-        ':id': id,
+    // Update using only the partition key (log_id)
+    const updateParams = {
+      TableName: CHAT_LOG_TABLE,
+      Key: {
+        log_id: logId,
       },
-      Limit: 1,
+      UpdateExpression: `SET ${updateExpression.join(', ')}`,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ReturnValues: 'ALL_NEW' as const,
+    };
+
+    console.log('DynamoDB UpdateCommand params for chat log:', JSON.stringify(updateParams, null, 2));
+
+    const command = new UpdateCommand(updateParams);
+    const response = await client.send(command);
+
+    console.log('Chat log update successful:', response.Attributes);
+    return response.Attributes as ChatLogEntry;
+  } catch (error: any) {
+    console.error('Error updating chat log:', {
+      error,
+      errorName: error?.name,
+      errorMessage: error?.message,
+      errorCode: error?.$metadata?.httpStatusCode,
+      requestId: error?.$metadata?.requestId,
     });
 
-    const getResponse = await client.send(getCommand);
-    if (!getResponse.Items || getResponse.Items.length === 0) {
-      throw new Error(`Feedback log not found with id: ${id}`);
+    if (error?.name === 'ValidationException') {
+      throw new Error(`DynamoDB validation error: ${error.message}. Check that log_id="${logId}" is correct.`);
     }
 
-    const existingItem = getResponse.Items[0];
-    console.log('Found existing item:', existingItem);
+    throw new Error(`Failed to update chat log review: ${error?.message || 'Unknown error'}`);
+  }
+}
 
-    // Use the exact key from the existing item
+/**
+ * Update feedback log review fields
+ * Note: userFeedback table has single partition key (id only)
+ * @param id - The partition key (id) for the feedback log
+ * @param datetime - Kept for backward compatibility, not used in DynamoDB operation
+ * @param revComment - Review comment to set
+ * @param revFeedback - Review feedback to set
+ */
+export async function updateFeedbackLogReview(
+  id: string,
+  datetime: string, // eslint-disable-line @typescript-eslint/no-unused-vars
+  revComment?: string,
+  revFeedback?: string
+): Promise<FeedbackLogEntry> {
+  try {
+    const client = await getDynamoDBClient();
+
+    console.log('Updating feedback log with params:', {
+      table: FEEDBACK_TABLE,
+      id,
+      revComment,
+      revFeedback,
+    });
+
+    // Build update expression
+    const updateExpression: string[] = [];
+    const expressionAttributeValues: any = {};
+    const expressionAttributeNames: any = {};
+
+    // Always set both fields to ensure they exist
+    updateExpression.push('#rev_comment = :rev_comment');
+    expressionAttributeValues[':rev_comment'] = revComment || '';
+    expressionAttributeNames['#rev_comment'] = 'rev_comment';
+
+    updateExpression.push('#rev_feedback = :rev_feedback');
+    expressionAttributeValues[':rev_feedback'] = revFeedback || '';
+    expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
+
+    // Update using only the partition key (id)
     const updateParams = {
       TableName: FEEDBACK_TABLE,
       Key: {
-        id: existingItem.id,
-        datetime: existingItem.datetime,
+        id: id,
       },
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
       ExpressionAttributeValues: expressionAttributeValues,
@@ -262,7 +311,7 @@ export async function updateFeedbackLogReview(
     
     // Provide more helpful error message
     if (error?.name === 'ValidationException') {
-      throw new Error(`DynamoDB validation error: ${error.message}. Check that id="${id}" and datetime="${datetime}" are correct.`);
+      throw new Error(`DynamoDB validation error: ${error.message}. Check that id="${id}" is correct.`);
     }
     
     throw new Error(`Failed to update feedback review: ${error?.message || 'Unknown error'}`);
