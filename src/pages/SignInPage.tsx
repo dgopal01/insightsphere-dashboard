@@ -164,6 +164,10 @@ const SignInPage: React.FC = () => {
                 component="img"
                 src="/ethosai-logo.png"
                 alt="EthosAI Logo"
+                onError={(e: any) => {
+                  console.error('Logo failed to load on signin page');
+                  e.target.style.display = 'none';
+                }}
                 sx={{
                   height: 60,
                   maxWidth: '100%',

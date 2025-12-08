@@ -76,6 +76,10 @@ export const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
             component="img"
             src="/ethosai-logo.png"
             alt="EthosAI Logo"
+            onError={(e: any) => {
+              console.error('Logo failed to load');
+              e.target.style.display = 'none';
+            }}
             sx={{
               height: 40,
               mr: 2,
