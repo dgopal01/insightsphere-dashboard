@@ -171,15 +171,15 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
 
 /**
  * Update chat log review fields
- * Note: UnityAIAssistantLogs table has single partition key (log_id only)
+ * Note: UnityAIAssistantLogs table has composite key (log_id + timestamp)
  * @param logId - The partition key (log_id) for the chat log
- * @param _timestamp - Kept for backward compatibility, not used in DynamoDB operation
+ * @param timestamp - The sort key (timestamp) for the chat log
  * @param revComment - Review comment to set
  * @param revFeedback - Review feedback to set
  */
 export async function updateChatLogReview(
   logId: string,
-  _timestamp: string,
+  timestamp: string,
   revComment?: string,
   revFeedback?: string
 ): Promise<ChatLogEntry> {
@@ -189,6 +189,7 @@ export async function updateChatLogReview(
     console.log('Updating chat log with params:', {
       table: CHAT_LOG_TABLE,
       logId,
+      timestamp,
       revComment,
       revFeedback,
     });
@@ -207,11 +208,12 @@ export async function updateChatLogReview(
     expressionAttributeValues[':rev_feedback'] = revFeedback || '';
     expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
 
-    // Update using only the partition key (log_id)
+    // Update using composite key (log_id + timestamp)
     const updateParams = {
       TableName: CHAT_LOG_TABLE,
       Key: {
         log_id: logId,
+        timestamp: timestamp,
       },
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
       ExpressionAttributeValues: expressionAttributeValues,
@@ -236,7 +238,7 @@ export async function updateChatLogReview(
     });
 
     if (error?.name === 'ValidationException') {
-      throw new Error(`DynamoDB validation error: ${error.message}. Check that log_id="${logId}" is correct.`);
+      throw new Error(`DynamoDB validation error: ${error.message}. Check that log_id="${logId}" and timestamp="${timestamp}" are correct.`);
     }
 
     throw new Error(`Failed to update chat log review: ${error?.message || 'Unknown error'}`);
@@ -245,15 +247,15 @@ export async function updateChatLogReview(
 
 /**
  * Update feedback log review fields
- * Note: userFeedback table has single partition key (id only)
+ * Note: userFeedback table has composite key (id + datetime)
  * @param id - The partition key (id) for the feedback log
- * @param _datetime - Kept for backward compatibility, not used in DynamoDB operation
+ * @param datetime - The sort key (datetime) for the feedback log
  * @param revComment - Review comment to set
  * @param revFeedback - Review feedback to set
  */
 export async function updateFeedbackLogReview(
   id: string,
-  _datetime: string,
+  datetime: string,
   revComment?: string,
   revFeedback?: string
 ): Promise<FeedbackLogEntry> {
@@ -263,6 +265,7 @@ export async function updateFeedbackLogReview(
     console.log('Updating feedback log with params:', {
       table: FEEDBACK_TABLE,
       id,
+      datetime,
       revComment,
       revFeedback,
     });
@@ -281,11 +284,12 @@ export async function updateFeedbackLogReview(
     expressionAttributeValues[':rev_feedback'] = revFeedback || '';
     expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
 
-    // Update using only the partition key (id)
+    // Update using composite key (id + datetime)
     const updateParams = {
       TableName: FEEDBACK_TABLE,
       Key: {
         id: id,
+        datetime: datetime,
       },
       UpdateExpression: `SET ${updateExpression.join(', ')}`,
       ExpressionAttributeValues: expressionAttributeValues,
@@ -311,7 +315,7 @@ export async function updateFeedbackLogReview(
     
     // Provide more helpful error message
     if (error?.name === 'ValidationException') {
-      throw new Error(`DynamoDB validation error: ${error.message}. Check that id="${id}" is correct.`);
+      throw new Error(`DynamoDB validation error: ${error.message}. Check that id="${id}" and datetime="${datetime}" are correct.`);
     }
     
     throw new Error(`Failed to update feedback review: ${error?.message || 'Unknown error'}`);
