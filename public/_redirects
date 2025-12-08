@@ -1,0 +1,6 @@
+# Redirects for SPA routing
+# This file tells Amplify to serve index.html for all routes
+# so React Router can handle client-side routing
+
+# Serve index.html for all routes that don't match a file
+/*    /index.html   200
