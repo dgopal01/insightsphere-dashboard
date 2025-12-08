@@ -45,7 +45,7 @@ const ChatLogsReviewPage: React.FC = () => {
   const [filters, setFilters] = useState<ChatLogFilters>({
     reviewStatus: 'all',
   });
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortDirection] = useState<SortDirection>('desc');
   const [selectedLog, setSelectedLog] = useState<ChatLogEntry | null>(null);
 
   const {

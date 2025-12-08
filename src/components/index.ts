@@ -1,42 +1,39 @@
 /**
  * Component exports
+ * 
+ * Note: Old Material-UI components have been archived to archive/components/
+ * This file now exports only the new Tailwind CSS + Radix UI components
  */
 
+// Core Components
 export { ProtectedRoute } from './ProtectedRoute';
-export { Header } from './Header';
-export { Sidebar } from './Sidebar';
-export { Layout } from './Layout';
-export { LoadingSpinner } from './LoadingSpinner';
-export { LogTable } from './LogTable';
-// export { VirtualizedLogTable } from './VirtualizedLogTable'; // TODO: Fix react-window import
-export { LogFilters } from './LogFilters';
-export { LogExport } from './LogExport';
-export { LazyImage } from './LazyImage';
-export { FeedbackForm } from './FeedbackForm';
-export { FeedbackList } from './FeedbackList';
-export { FeedbackMetrics } from './FeedbackMetrics';
-export { MetricsCard } from './MetricsCard';
-export { PerformanceChart } from './PerformanceChart';
-export { TrendAnalysis } from './TrendAnalysis';
 export { ErrorBoundary } from './ErrorBoundary';
-export {
-  ErrorDisplay,
-  NetworkError,
-  AuthenticationError,
-  ValidationError,
-  ServerError,
+export { 
+  ErrorDisplay, 
+  NetworkError, 
+  AuthenticationError, 
+  ValidationError, 
+  ServerError 
 } from './ErrorDisplay';
-export { MonitoringDashboard } from './MonitoringDashboard';
 
-// Chat Logs Review System Components
-export { ChatLogsFilters } from './ChatLogsFilters';
-export { ChatLogsDataTable } from './ChatLogsDataTable';
-export { ChatLogReviewModal } from './ChatLogReviewModal';
+// Layout Components
+export { NewLayout } from './layout/NewLayout';
+export { AppSidebar } from './layout/AppSidebar';
 
-// Feedback Logs Review System Components
-export { FeedbackLogsFilters } from './FeedbackLogsFilters';
-export { FeedbackLogsDataTable } from './FeedbackLogsDataTable';
-export { FeedbackLogReviewModal } from './FeedbackLogReviewModal';
-
-// Review Dashboard Components
-export { ReviewMetricsCard } from './ReviewMetricsCard';
+// UI Components (Radix UI primitives)
+export * from './ui/alert';
+export * from './ui/badge';
+export * from './ui/button';
+export * from './ui/card';
+export * from './ui/checkbox';
+export * from './ui/dialog';
+export * from './ui/input';
+export * from './ui/label';
+export * from './ui/progress';
+export * from './ui/select';
+export * from './ui/separator';
+export * from './ui/sheet';
+export * from './ui/sidebar';
+export * from './ui/skeleton';
+export * from './ui/table';
+export * from './ui/tooltip';

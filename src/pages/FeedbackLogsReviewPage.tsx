@@ -54,7 +54,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
   const [filters, setFilters] = useState<FeedbackLogFilters>({
     reviewStatus: 'all',
   });
-  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [sortDirection] = useState<SortDirection>('desc');
   const [selectedLog, setSelectedLog] = useState<FeedbackLogEntry | null>(null);
 
   const {

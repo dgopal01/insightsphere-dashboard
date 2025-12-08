@@ -2,11 +2,11 @@
  * Page exports
  */
 
-export { SignInPage } from './SignInPage';
-export { UnauthorizedPage } from './UnauthorizedPage';
+export { default as SignInPage } from './SignInPage';
+export { default as UnauthorizedPage } from './UnauthorizedPage';
 
 // Chat Logs Review System Pages
-export { ChatLogsReviewPage } from './ChatLogsReviewPage';
-export { FeedbackLogsReviewPage } from './FeedbackLogsReviewPage';
-export { ReviewDashboardPage } from './ReviewDashboardPage';
-export { AIMetricsDashboardPage } from './AIMetricsDashboardPage';
+export { default as ChatLogsReviewPage } from './ChatLogsReviewPage';
+export { default as FeedbackLogsReviewPage } from './FeedbackLogsReviewPage';
+export { default as ReviewDashboardPage } from './ReviewDashboardPage';
+export { default as AIMetricsDashboardPage } from './AIMetricsDashboardPage';

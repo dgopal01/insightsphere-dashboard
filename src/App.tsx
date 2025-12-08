@@ -32,10 +32,10 @@ const PageLoader = () => (
 function App() {
   return (
     <ErrorBoundary
-      onError={(error: Error, errorInfo: { componentStack: string }) => {
+      onError={(error: Error, errorInfo: React.ErrorInfo) => {
         // Log error with context
         handleError(error, {
-          componentStack: errorInfo.componentStack,
+          componentStack: errorInfo.componentStack || '',
           location: window.location.href,
         });
       }}
