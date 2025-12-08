@@ -18,6 +18,7 @@ import {
   Chat as ChatIcon,
   Feedback as FeedbackIcon,
   Assessment as AssessmentIcon,
+  Analytics as AnalyticsIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -36,6 +37,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { text: 'Review Dashboard', icon: <AssessmentIcon />, path: '/dashboard' },
+  { text: 'AI Metrics Dashboard', icon: <AnalyticsIcon />, path: '/ai-metrics' },
   { text: 'Chat Logs Review', icon: <ChatIcon />, path: '/chat-logs-review' },
   { text: 'Feedback Logs Review', icon: <FeedbackIcon />, path: '/feedback-logs-review' },
 ];

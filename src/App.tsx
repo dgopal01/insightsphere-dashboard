@@ -23,6 +23,7 @@ const UnauthorizedPage = lazy(() => import('./pages/UnauthorizedPage'));
 const ChatLogsReviewPage = lazy(() => import('./pages/ChatLogsReviewPage'));
 const FeedbackLogsReviewPage = lazy(() => import('./pages/FeedbackLogsReviewPage'));
 const ReviewDashboardPage = lazy(() => import('./pages/ReviewDashboardPage'));
+const AIMetricsDashboardPage = lazy(() => import('./pages/AIMetricsDashboardPage'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -73,6 +74,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <ReviewDashboardPage />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ai-metrics"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AIMetricsDashboardPage />
                   </Layout>
                 </ProtectedRoute>
               }

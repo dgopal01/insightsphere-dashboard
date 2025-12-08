@@ -11,6 +11,7 @@ import { fetchAuthSession } from 'aws-amplify/auth';
 // Table names from environment variables
 const CHAT_LOG_TABLE = import.meta.env.VITE_CHATLOG_TABLE || 'UnityAIAssistantLogs';
 const FEEDBACK_TABLE = import.meta.env.VITE_FEEDBACK_TABLE || 'userFeedback';
+const EVAL_JOB_TABLE = import.meta.env.VITE_EVAL_JOB_TABLE || 'UnityAIAssistantEvalJob';
 const AWS_REGION = import.meta.env.VITE_AWS_REGION || 'us-east-1';
 
 /**
@@ -340,3 +341,69 @@ export async function updateFeedbackLogReview(
   }
 }
 
+
+/**
+ * AI Evaluation Job Entry interface matching DynamoDB structure
+ */
+export interface AIEvaluationJobEntry {
+  log_id: string;
+  job_id: string;
+  job_arn: string;
+  timestamp: string;
+  knowledgeBaseIdentifier: string;
+  prompt_text: string;
+  output_text: string;
+  reference_response_text: string;
+  source_filename: string;
+  citations_metadata?: Array<{
+    carrier_alias_name?: string;
+    carrier_name?: string;
+    document_page_number?: string;
+    kb_chunk_id?: string;
+    kb_data_source_id?: string;
+    source_uri?: string;
+  }>;
+  results?: Array<{
+    explanation?: string;
+    metricName?: string;
+    modelIdentifier?: string;
+    result?: number;
+  }>;
+}
+
+/**
+ * List AI evaluation jobs from DynamoDB
+ */
+export async function listAIEvaluationJobs(limit: number = 100): Promise<{
+  items: AIEvaluationJobEntry[];
+  lastEvaluatedKey?: any;
+}> {
+  try {
+    const client = await getDynamoDBClient();
+
+    console.log('Fetching AI evaluation jobs from table:', EVAL_JOB_TABLE);
+
+    const command = new ScanCommand({
+      TableName: EVAL_JOB_TABLE,
+      Limit: limit,
+    });
+
+    const response = await client.send(command);
+
+    console.log(`Successfully fetched ${response.Items?.length || 0} AI evaluation jobs`);
+
+    return {
+      items: (response.Items as AIEvaluationJobEntry[]) || [],
+      lastEvaluatedKey: response.LastEvaluatedKey,
+    };
+  } catch (error: any) {
+    console.error('Error listing AI evaluation jobs:', {
+      error,
+      errorName: error?.name,
+      errorMessage: error?.message,
+      errorCode: error?.$metadata?.httpStatusCode,
+      tableName: EVAL_JOB_TABLE,
+    });
+    throw new Error(`Failed to list AI evaluation jobs: ${error?.message || 'Unknown error'}`);
+  }
+}
