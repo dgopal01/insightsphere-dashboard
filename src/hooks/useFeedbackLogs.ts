@@ -54,13 +54,24 @@ function applyFilters(logs: DynamoDBService.FeedbackLogEntry[], filters?: Feedba
     // Feedback type filter
     if (filters.feedbackType && filters.feedbackType !== 'all') {
       const logFeedback = log.info?.feedback;
-      console.log('Filtering feedback:', { 
-        filterValue: filters.feedbackType, 
-        logFeedback, 
-        match: logFeedback === filters.feedbackType 
-      });
-      if (logFeedback !== filters.feedbackType) {
-        return false;
+      
+      // Handle empty/no feedback filter
+      if (filters.feedbackType === 'none') {
+        if (logFeedback) {
+          return false;
+        }
+      } else {
+        // For thumbs_up or thumbs_down, check exact match
+        if (!logFeedback || logFeedback !== filters.feedbackType) {
+          console.log('Filtering out log:', { 
+            logId: log.id,
+            filterValue: filters.feedbackType, 
+            logFeedback, 
+            logFeedbackType: typeof logFeedback,
+            match: logFeedback === filters.feedbackType 
+          });
+          return false;
+        }
       }
     }
 
@@ -117,13 +128,17 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
 
       try {
         // Fetch from DynamoDB
-        console.log('Fetching feedback logs...');
+        console.log('Fetching feedback logs with filters:', filters);
         const result = await DynamoDBService.listFeedbackLogs(1000);
         console.log('Fetched feedback logs:', result.items.length, 'items');
         
+        // Log unique feedback values to understand data structure
+        const uniqueFeedbackValues = new Set(result.items.map(log => log.info?.feedback).filter(Boolean));
+        console.log('Unique feedback values in data:', Array.from(uniqueFeedbackValues));
+        
         // Apply client-side filters
         const filteredLogs = applyFilters(result.items, filters);
-        console.log('Filtered logs:', filteredLogs.length, 'items');
+        console.log('Filtered logs:', filteredLogs.length, 'items', 'Filter:', filters?.feedbackType);
         
         // Sort logs
         const sortedLogs = sortLogs(filteredLogs, sortDirection);

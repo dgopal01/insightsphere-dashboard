@@ -214,7 +214,10 @@ const FeedbackLogsReviewPage: React.FC = () => {
             <Label htmlFor="feedbackType">Feedback Type</Label>
             <Select
               value={filters.feedbackType || 'all'}
-              onValueChange={(value) => setFilters({ ...filters, feedbackType: value as any })}
+              onValueChange={(value) => {
+                console.log('Filter changed to:', value);
+                setFilters({ ...filters, feedbackType: value as any });
+              }}
             >
               <SelectTrigger id="feedbackType" className="w-full bg-white">
                 <SelectValue placeholder="Select feedback type" />
@@ -223,6 +226,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
                 <SelectItem value="all">All Feedback</SelectItem>
                 <SelectItem value="thumbs_up">👍 Positive</SelectItem>
                 <SelectItem value="thumbs_down">👎 Negative</SelectItem>
+                <SelectItem value="none">❓ No Feedback</SelectItem>
               </SelectContent>
             </Select>
           </div>
