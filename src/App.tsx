@@ -15,6 +15,9 @@ import { handleError } from './utils';
 const SignInPage = lazy(() => import('./pages/SignInPage'));
 const UnauthorizedPage = lazy(() => import('./pages/UnauthorizedPage'));
 
+// Landing Page
+const ProductsLandingPage = lazy(() => import('./pages/ProductsLandingPage'));
+
 // Chat Logs Review System Pages
 const ChatLogsReviewPage = lazy(() => import('./pages/ChatLogsReviewPage'));
 const FeedbackLogsReviewPage = lazy(() => import('./pages/FeedbackLogsReviewPage'));
@@ -47,74 +50,71 @@ function App() {
             <Route path="/signin" element={<SignInPage />} />
             <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-            {/* Protected routes with layout */}
+            {/* Landing Page - Products Selection */}
             <Route
               path="/"
               element={
                 <ProtectedRoute>
-                  <NewLayout>
+                  <ProductsLandingPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Unity ISA Product Routes */}
+            <Route
+              path="/unity-isa/dashboard"
+              element={
+                <ProtectedRoute>
+                  <NewLayout productId="unity-isa">
                     <ReviewDashboardPage />
                   </NewLayout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/dashboard"
+              path="/unity-isa/ai-metrics"
               element={
                 <ProtectedRoute>
-                  <NewLayout>
-                    <ReviewDashboardPage />
-                  </NewLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/ai-metrics"
-              element={
-                <ProtectedRoute>
-                  <NewLayout>
+                  <NewLayout productId="unity-isa">
                     <AIMetricsDashboardPage />
                   </NewLayout>
                 </ProtectedRoute>
               }
             />
-
-            {/* Chat Logs Review System Routes */}
             <Route
-              path="/review-dashboard"
+              path="/unity-isa/chat-logs-review"
               element={
                 <ProtectedRoute>
-                  <NewLayout>
-                    <ReviewDashboardPage />
-                  </NewLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/chat-logs-review"
-              element={
-                <ProtectedRoute>
-                  <NewLayout>
+                  <NewLayout productId="unity-isa">
                     <ChatLogsReviewPage />
                   </NewLayout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/feedback-logs-review"
+              path="/unity-isa/feedback-logs-review"
               element={
                 <ProtectedRoute>
-                  <NewLayout>
+                  <NewLayout productId="unity-isa">
                     <FeedbackLogsReviewPage />
                   </NewLayout>
                 </ProtectedRoute>
               }
             />
+
+            {/* Legacy routes - redirect to Unity ISA */}
+            <Route path="/dashboard" element={<Navigate to="/unity-isa/dashboard" replace />} />
+            <Route path="/ai-metrics" element={<Navigate to="/unity-isa/ai-metrics" replace />} />
+            <Route path="/review-dashboard" element={<Navigate to="/unity-isa/dashboard" replace />} />
+            <Route path="/chat-logs-review" element={<Navigate to="/unity-isa/chat-logs-review" replace />} />
+            <Route path="/feedback-logs-review" element={<Navigate to="/unity-isa/feedback-logs-review" replace />} />
+
+            {/* Design Demo */}
             <Route
               path="/design-demo"
               element={
                 <ProtectedRoute>
-                  <NewLayout>
+                  <NewLayout productId="unity-isa">
                     <DesignSystemDemo />
                   </NewLayout>
                 </ProtectedRoute>

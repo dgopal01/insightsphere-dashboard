@@ -23,34 +23,43 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 
-const menuItems = [
-  {
-    id: 'ai-metrics',
-    label: 'AI Metrics',
-    icon: BarChart3,
-    path: '/ai-metrics',
-  },
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    path: '/dashboard',
-  },
-  {
-    id: 'chat-logs',
-    label: 'Chat Logs Review',
-    icon: MessageSquare,
-    path: '/chat-logs-review',
-  },
-  {
-    id: 'feedback-logs',
-    label: 'Feedback Logs',
-    icon: ThumbsUp,
-    path: '/feedback-logs-review',
-  },
-];
+const getMenuItems = (productId?: string) => {
+  const basePath = productId ? `/${productId}` : '';
+  
+  return [
+    {
+      id: 'ai-metrics',
+      label: 'AI Metrics',
+      icon: BarChart3,
+      path: `${basePath}/ai-metrics`,
+    },
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: LayoutDashboard,
+      path: `${basePath}/dashboard`,
+    },
+    {
+      id: 'chat-logs',
+      label: 'Chat Logs Review',
+      icon: MessageSquare,
+      path: `${basePath}/chat-logs-review`,
+    },
+    {
+      id: 'feedback-logs',
+      label: 'Feedback Logs',
+      icon: ThumbsUp,
+      path: `${basePath}/feedback-logs-review`,
+    },
+  ];
+};
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  productId?: string;
+}
+
+export function AppSidebar({ productId }: AppSidebarProps) {
+  const menuItems = getMenuItems(productId);
   const location = useLocation();
   const navigate = useNavigate();
   const { state, toggleSidebar } = useSidebar();
