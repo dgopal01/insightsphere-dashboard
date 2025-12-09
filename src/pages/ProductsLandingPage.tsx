@@ -71,11 +71,15 @@ const ProductsLandingPage: React.FC = () => {
       {/* Header */}
       <div className="border-b bg-white">
         <div className="container mx-auto px-6 py-8">
-          <div className="flex items-center gap-3 mb-2">
-            <LayoutGrid className="size-10 text-primary" />
+          <div className="flex items-center gap-4 mb-2">
+            <img 
+              src="/ethosai-logo.png" 
+              alt="EthosAI Logo" 
+              className="h-12 w-auto"
+            />
             <h1 className="text-4xl font-bold text-foreground">EthosAI Review Portal</h1>
           </div>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-lg ml-16">
             Select a product to access its review and analytics dashboards
           </p>
         </div>
