@@ -2,7 +2,9 @@
 
 A comprehensive ReactJS web application built with AWS Amplify for reviewing and ensuring ethical AI principles in conversational AI systems. Monitor, review, and tag chat logs and user feedback to maintain high standards of AI ethics, accuracy, and safety.
 
-## Quick Start
+## 🚀 Quick Start
+
+**New to the project?** See [QUICK_START.md](./QUICK_START.md) for step-by-step setup instructions.
 
 ```bash
 # Install dependencies
@@ -27,31 +29,35 @@ npm run build:prod
 - `lambda/` - Lambda function code
 - `scripts/` - Build and deployment scripts
 
-## Documentation
+## 📚 Documentation
 
-📚 **[Complete Documentation Index](./docs/README.md)** - Start here for all documentation
+### 🎯 Quick Access
+- 📖 **[Complete Documentation Index](./docs/README.md)** - Start here for all documentation
+- 🏗️ **[Architecture Diagrams](./docs/ARCHITECTURE_DIAGRAM.md)** - System architecture with 11 diagrams
+- 🚀 **[Deployment Guide](./docs/DEPLOYMENT_GUIDE.md)** - Comprehensive deployment (Amplify + EKS)
+- 📊 **[DevOps Backlog](./docs/DEVOPS_BACKLOG.md)** - 5 PBIs for deployment project
 
-### For New Team Members
-- 🚀 [Developer Onboarding Guide](./docs/onboarding/DEVELOPER_ONBOARDING_GUIDE.md) - Complete setup guide
-- 📋 [Onboarding Summary](./docs/onboarding/ONBOARDING_SUMMARY.md) - Quick reference
-- 🔐 [AWS Developer Permissions](./docs/onboarding/AWS_DEVELOPER_PERMISSIONS.md) - IAM policies
-- 📊 [AWS Monitoring Permissions](./docs/onboarding/AWS_MONITORING_ROLE_PERMISSIONS.md) - Monitoring setup
-
-### Design System Migration
-- ✅ [Migration Complete](./docs/migration/MIGRATION_COMPLETE.md) - 100% complete!
-- 📈 [Migration Status](./docs/migration/MIGRATION_STATUS.md) - Current status
-
-### Build & Deployment
-- [Setup Guide](./build_docs/SETUP.md)
-- [Build Commands](./build_docs/BUILD_COMMANDS.md)
-- [Cloud Deployment Guide](./build_docs/CLOUD_DEPLOYMENT_GUIDE.md)
-- [Testing Guide](./build_docs/TESTING.md)
-
-### Feature Documentation
-- [Chat Logs Review System](./docs/chat-logs-review/)
+### 👥 For New Team Members
+- [Developer Onboarding Guide](./docs/onboarding/DEVELOPER_ONBOARDING_GUIDE.md)
+- [Environment Setup](./docs/ENVIRONMENT_SETUP.md)
 - [Backend Setup](./docs/BACKEND_SETUP.md)
-- [Authentication](./docs/AUTHENTICATION.md)
-- [Monitoring Setup](./docs/MONITORING_SETUP.md)
+
+### 🚢 For DevOps Engineers
+- [Deployment Guide](./docs/DEPLOYMENT_GUIDE.md) - **Start Here**
+- [Architecture Diagrams](./docs/ARCHITECTURE_DIAGRAM.md)
+- [DevOps Backlog](./docs/DEVOPS_BACKLOG.md)
+- [Deployment Checklist](./docs/DEPLOYMENT_CHECKLIST.md)
+- [CI/CD Pipeline](./docs/CI_CD_PIPELINE.md)
+
+### 📖 Feature Documentation
+- [Chat Logs Review System](./docs/chat-logs-review/README.md)
+- [User Guide](./docs/chat-logs-review/USER_GUIDE.md)
+- [API Documentation](./docs/chat-logs-review/API_DOCUMENTATION.md)
+
+### 🎨 Design & Architecture
+- [Architecture Diagrams](./docs/ARCHITECTURE_DIAGRAM.md)
+- [Color Scheme](./docs/COLOR_SCHEME.md)
+- [Authentication Flow](./docs/AUTHENTICATION.md)
 
 ## Technology Stack
 

@@ -1,145 +1,190 @@
-# Quick Start Guide
+# EthosAI Review Portal - Quick Start Guide
 
-## Option 1: Local Development (No AWS Required)
+Get up and running with the EthosAI Review Portal in minutes.
 
-Perfect for testing the UI and development:
-
-```powershell
-# Start local development server
-.\scripts\start-local.ps1
-```
-
-Access at: http://localhost:5173
-
-**Note:** Without AWS backend, you'll see the UI but won't be able to fetch real data.
-
----
-
-## Option 2: Full AWS Deployment
+## 🚀 For Developers
 
 ### Prerequisites
+- Node.js 18+ and npm 9+
+- Git
+- AWS account (for deployment)
 
-1. **Install AWS CLI:**
-   ```bash
-   # Download from: https://aws.amazon.com/cli/
-   aws --version
-   ```
-
-2. **Configure AWS Credentials:**
-   ```bash
-   aws configure
-   # Enter: Access Key ID, Secret Access Key, Region (us-east-1), Output format (json)
-   ```
-
-3. **Verify AWS Access:**
-   ```bash
-   aws sts get-caller-identity
-   ```
-
-### Deploy
-
-```powershell
-cd scripts
-
-# Deploy everything (replace with your email)
-.\deploy-all.ps1 -AdminEmail "your-email@example.com" -Environment dev
-```
-
-**What it does:**
-- Creates Cognito User Pool for authentication
-- Sets up AppSync GraphQL API
-- Creates DynamoDB tables
-- Deploys Lambda functions
-- Creates admin user
-- Configures environment files
-
-**Time:** 10-15 minutes
-
-### After Deployment
-
-1. **Start the app:**
-   ```bash
-   npm run dev
-   ```
-
-2. **Access:** http://localhost:5173
-
-3. **Login:**
-   - Username: `admin`
-   - Password: `TempPass123!`
-   - You'll be prompted to change the password
-
----
-
-## Option 3: Just Build (No Server)
+### Local Development Setup
 
 ```bash
-# Build for production
-npm run build:prod
+# 1. Clone repository
+git clone https://github.com/your-org/ethosai-portal.git
+cd ethosai-portal
 
-# Build output in dist/
-```
-
----
-
-## Troubleshooting
-
-### AWS CLI Not Found
-```bash
-# Windows: Download installer from https://aws.amazon.com/cli/
-# Or use: choco install awscli
-```
-
-### AWS Credentials Not Configured
-```bash
-aws configure
-# You need: Access Key ID and Secret Access Key from AWS Console
-```
-
-### PowerShell Script Execution Error
-```powershell
-# Run PowerShell as Administrator
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-```
-
-### Port 5173 Already in Use
-```bash
-# Kill the process using the port
-# Or the dev server will automatically use the next available port
-```
-
----
-
-## Next Steps
-
-- **Documentation:** See `build_docs/` for detailed guides
-- **Scripts:** See `scripts/README.md` for all available scripts
-- **Deployment:** See `build_docs/DEPLOYMENT_GUIDE.md` for full deployment options
-
----
-
-## Quick Commands
-
-```bash
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Start development
+# 3. Copy environment file
+cp .env.example .env
+
+# 4. Configure environment variables
+# Edit .env with your AWS credentials
+
+# 5. Start development server
 npm run dev
 
-# Run tests
-npm test
-
-# Build for production
-npm run build:prod
-
-# Type check
-npm run type-check
-
-# Lint code
-npm run lint
+# 6. Open browser
+# Navigate to http://localhost:5173
 ```
+
+### Common Commands
+
+```bash
+# Development
+npm run dev              # Start dev server
+npm run build            # Build for production
+npm test                 # Run tests
+npm run lint             # Check code quality
+
+# Deployment
+npm run build:prod       # Build production bundle
+npm run deploy:prod      # Deploy to production
+```
+
+### Next Steps
+- 📖 [Complete Developer Onboarding](./docs/onboarding/DEVELOPER_ONBOARDING_GUIDE.md)
+- 🔧 [Backend Setup Guide](./docs/BACKEND_SETUP.md)
+- 📚 [Full Documentation](./docs/README.md)
 
 ---
 
-**Ready to start?** Run `.\scripts\start-local.ps1` for local development!
+## 🚢 For DevOps Engineers
+
+### Deployment Options
+
+**Option 1: AWS Amplify (Recommended for Quick Start)**
+```bash
+# 1. Create Amplify app
+aws amplify create-app --name ethosai-portal
+
+# 2. Connect GitHub repository
+# Use Amplify Console
+
+# 3. Configure environment variables
+# Set in Amplify Console
+
+# 4. Deploy
+# Automatic on git push
+```
+
+**Option 2: Amazon EKS (For Production)**
+```bash
+# 1. Create EKS cluster
+eksctl create cluster -f eks-cluster.yaml
+
+# 2. Build and push Docker image
+docker build -t ethosai-portal .
+docker push <ecr-repo>/ethosai-portal
+
+# 3. Deploy to Kubernetes
+kubectl apply -f k8s/
+
+# 4. Verify deployment
+kubectl get pods -n ethosai
+```
+
+### Infrastructure Setup
+
+**Required AWS Services:**
+1. Amazon Cognito (Authentication)
+2. DynamoDB (3 tables)
+3. AWS Amplify or EKS (Hosting)
+4. CloudWatch (Monitoring)
+
+### Next Steps
+- 📖 [Complete Deployment Guide](./docs/DEPLOYMENT_GUIDE.md)
+- 🏗️ [Architecture Diagrams](./docs/ARCHITECTURE_DIAGRAM.md)
+- 📊 [DevOps Backlog](./docs/DEVOPS_BACKLOG.md)
+
+---
+
+## 📖 For Product Owners
+
+### Accessing the Application
+
+1. **Navigate to Application URL**
+   - Development: Provided by DevOps team
+   - Production: https://your-domain.com
+
+2. **Sign In**
+   - Use Cognito credentials provided by admin
+   - First-time users will need to change temporary password
+
+3. **Select Product**
+   - Click on "Unity ISA" tile on landing page
+
+4. **Navigate Features**
+   - AI Metrics Dashboard
+   - Review Dashboard
+   - Chat Logs Review
+   - Feedback Logs Review
+
+### Key Features
+
+- **Chat Logs Review**: Review AI conversation logs, add comments, and tag issues
+- **Feedback Logs Review**: Review user feedback and provide responses
+- **AI Metrics Dashboard**: View AI performance metrics and quality scores
+- **Review Dashboard**: Monitor review progress and team metrics
+
+### Next Steps
+- 📖 [User Guide](./docs/chat-logs-review/USER_GUIDE.md)
+- 📊 [DevOps Backlog](./docs/DEVOPS_BACKLOG.md)
+
+---
+
+## 🎯 Common Tasks
+
+### Adding a New User
+```bash
+aws cognito-idp admin-create-user \
+  --user-pool-id <pool-id> \
+  --username user@example.com \
+  --user-attributes Name=email,Value=user@example.com
+```
+
+### Viewing Logs
+```bash
+# Amplify logs
+aws amplify get-job --app-id <app-id> --branch-name main --job-id <job-id>
+
+# EKS logs
+kubectl logs -n ethosai <pod-name>
+
+# CloudWatch logs
+aws logs tail /aws/amplify/<app-id> --follow
+```
+
+### Troubleshooting
+- Check [Troubleshooting Guide](./docs/chat-logs-review/TROUBLESHOOTING.md)
+- Review [Error Handling](./docs/ERROR_HANDLING.md)
+- Contact DevOps team
+
+---
+
+## 📞 Support
+
+- **Documentation**: [docs/README.md](./docs/README.md)
+- **DevOps Team**: devops@example.com
+- **Development Team**: dev@example.com
+- **Issues**: Create GitHub issue
+
+---
+
+## 🔗 Important Links
+
+| Resource | Link |
+|----------|------|
+| Full Documentation | [docs/README.md](./docs/README.md) |
+| Deployment Guide | [docs/DEPLOYMENT_GUIDE.md](./docs/DEPLOYMENT_GUIDE.md) |
+| Architecture | [docs/ARCHITECTURE_DIAGRAM.md](./docs/ARCHITECTURE_DIAGRAM.md) |
+| DevOps Backlog | [docs/DEVOPS_BACKLOG.md](./docs/DEVOPS_BACKLOG.md) |
+| User Guide | [docs/chat-logs-review/USER_GUIDE.md](./docs/chat-logs-review/USER_GUIDE.md) |
+
+---
+
+**Need more details?** See the [Complete Documentation Index](./docs/README.md)
