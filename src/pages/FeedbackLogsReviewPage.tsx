@@ -216,10 +216,10 @@ const FeedbackLogsReviewPage: React.FC = () => {
               value={filters.feedbackType || 'all'}
               onValueChange={(value) => setFilters({ ...filters, feedbackType: value as any })}
             >
-              <SelectTrigger id="feedbackType">
+              <SelectTrigger id="feedbackType" className="w-full">
                 <SelectValue placeholder="Select feedback type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-50">
                 <SelectItem value="all">All Feedback</SelectItem>
                 <SelectItem value="thumbs_up">👍 Positive</SelectItem>
                 <SelectItem value="thumbs_down">👎 Negative</SelectItem>
@@ -372,8 +372,8 @@ const FeedbackLogsReviewPage: React.FC = () => {
 
       {/* Editable Review Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-6xl max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <Card className="w-full max-w-6xl my-8 bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
             <CardHeader className="border-b">
               <div className="flex items-center justify-between">
                 <div>
@@ -482,9 +482,11 @@ const FeedbackLogsReviewPage: React.FC = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-3 pt-4 border-t">
+                    <div className="flex gap-3 pt-4 border-t mt-6">
                       <Button 
-                        className="flex-1 bg-secondary hover:bg-secondary/90 text-white"
+                        type="button"
+                        className="flex-1"
+                        style={{ backgroundColor: '#00818F', color: '#ffffff' }}
                         onClick={handleSubmitFeedback}
                         disabled={isSubmitting}
                       >
@@ -501,6 +503,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
                         )}
                       </Button>
                       <Button 
+                        type="button"
                         variant="outline" 
                         onClick={() => setSelectedLog(null)}
                         disabled={isSubmitting}
