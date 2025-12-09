@@ -51,12 +51,25 @@ function applyFilters(logs: DynamoDBService.FeedbackLogEntry[], filters?: Feedba
       return false;
     }
 
-    // Date range filter
-    if (filters.startDate && log.datetime < filters.startDate) {
-      return false;
+    // Feedback type filter
+    if (filters.feedbackType && filters.feedbackType !== 'all') {
+      if (log.info?.feedback !== filters.feedbackType) {
+        return false;
+      }
     }
-    if (filters.endDate && log.datetime > filters.endDate) {
-      return false;
+
+    // Date range filter
+    if (filters.startDate) {
+      const logDate = new Date(log.datetime).toISOString().split('T')[0];
+      if (logDate < filters.startDate) {
+        return false;
+      }
+    }
+    if (filters.endDate) {
+      const logDate = new Date(log.datetime).toISOString().split('T')[0];
+      if (logDate > filters.endDate) {
+        return false;
+      }
     }
 
     // Review status filter

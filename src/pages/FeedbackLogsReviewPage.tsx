@@ -66,6 +66,9 @@ const FeedbackLogsReviewPage: React.FC = () => {
   });
   const [sortDirection] = useState<SortDirection>('desc');
   const [selectedLog, setSelectedLog] = useState<FeedbackLogEntry | null>(null);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewFeedback, setReviewFeedback] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     logs,
@@ -90,7 +93,38 @@ const FeedbackLogsReviewPage: React.FC = () => {
 
   const handleRowClick = useCallback((log: FeedbackLogEntry) => {
     setSelectedLog(log);
+    setReviewComment(log.rev_comment || '');
+    setReviewFeedback(log.rev_feedback || '');
   }, []);
+
+  const handleSubmitFeedback = async () => {
+    if (!selectedLog) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Import DynamoDB service
+      const { updateFeedbackLogReview } = await import('../services/DynamoDBService');
+      
+      // Update in DynamoDB with composite key (id + datetime)
+      await updateFeedbackLogReview(
+        selectedLog.id,
+        selectedLog.datetime,
+        reviewComment,
+        reviewFeedback
+      );
+      
+      // Close modal and refresh data
+      setSelectedLog(null);
+      setReviewComment('');
+      setReviewFeedback('');
+      refetch();
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert(`Failed to submit feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   if (error) {
     return (
@@ -275,9 +309,13 @@ const FeedbackLogsReviewPage: React.FC = () => {
                             {new Date(log.datetime).toLocaleString()}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={getFeedbackVariant(log.info?.feedback || '')}>
-                              {log.info?.feedback === 'thumbs_up' ? '👍 Positive' : '👎 Negative'}
-                            </Badge>
+                            {log.info?.feedback ? (
+                              <Badge variant={getFeedbackVariant(log.info.feedback)}>
+                                {log.info.feedback === 'thumbs_up' ? '👍 Positive' : '👎 Negative'}
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">No feedback</span>
+                            )}
                           </TableCell>
                           <TableCell className="max-w-[300px]">
                             <span className="text-sm line-clamp-2">
@@ -355,18 +393,20 @@ const FeedbackLogsReviewPage: React.FC = () => {
                     <h3 className="text-lg font-semibold mb-4">Conversation Transcript</h3>
                     
                     {/* Feedback Type Badge */}
-                    <div className="mb-4">
-                      <Badge 
-                        variant={getFeedbackVariant(selectedLog.info?.feedback || '')}
-                        className="text-base px-3 py-1"
-                      >
-                        {selectedLog.info?.feedback === 'thumbs_up' ? (
-                          <><ThumbsUp className="size-4 mr-1" /> Positive</>
-                        ) : (
-                          <><ThumbsDown className="size-4 mr-1" /> Negative</>
-                        )}
-                      </Badge>
-                    </div>
+                    {selectedLog.info?.feedback && (
+                      <div className="mb-4">
+                        <Badge 
+                          variant={getFeedbackVariant(selectedLog.info.feedback)}
+                          className="text-base px-3 py-1"
+                        >
+                          {selectedLog.info.feedback === 'thumbs_up' ? (
+                            <><ThumbsUp className="size-4 mr-1" /> Positive</>
+                          ) : (
+                            <><ThumbsDown className="size-4 mr-1" /> Negative</>
+                          )}
+                        </Badge>
+                      </div>
+                    )}
 
                     {/* Question */}
                     <div className="bg-muted/50 rounded-lg p-4 mb-4">
@@ -424,7 +464,8 @@ const FeedbackLogsReviewPage: React.FC = () => {
                         id="rev_comment"
                         className="w-full min-h-[120px] px-3 py-2 text-sm rounded-md border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="Enter your observations and feedback about this conversation..."
-                        defaultValue={selectedLog.rev_comment || ''}
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
                       />
                     </div>
 
@@ -435,18 +476,36 @@ const FeedbackLogsReviewPage: React.FC = () => {
                         id="rev_feedback"
                         className="w-full min-h-[120px] px-3 py-2 text-sm rounded-md border border-input bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring"
                         placeholder="Provide the ideal response or correction (optional)..."
-                        defaultValue={selectedLog.rev_feedback || ''}
+                        value={reviewFeedback}
+                        onChange={(e) => setReviewFeedback(e.target.value)}
                       />
                     </div>
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-4 border-t">
-                      <Button className="flex-1 bg-secondary hover:bg-secondary/90">
-                        <Save className="size-4 mr-2" />
-                        Submit Feedback
+                      <Button 
+                        className="flex-1 bg-secondary hover:bg-secondary/90 text-white"
+                        onClick={handleSubmitFeedback}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <RefreshCw className="size-4 mr-2 animate-spin" />
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="size-4 mr-2" />
+                            Submit Feedback
+                          </>
+                        )}
                       </Button>
-                      <Button variant="outline" className="flex-1">
-                        Save Draft
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setSelectedLog(null)}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
                       </Button>
                     </div>
                   </div>

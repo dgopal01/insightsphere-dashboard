@@ -25,16 +25,16 @@ import { Button } from '@/components/ui/button';
 
 const menuItems = [
   {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    path: '/dashboard',
-  },
-  {
     id: 'ai-metrics',
     label: 'AI Metrics',
     icon: BarChart3,
     path: '/ai-metrics',
+  },
+  {
+    id: 'dashboard',
+    label: 'Dashboard',
+    icon: LayoutDashboard,
+    path: '/dashboard',
   },
   {
     id: 'chat-logs',

@@ -112,17 +112,17 @@ const ChatLogsReviewPage: React.FC = () => {
     
     setIsSubmitting(true);
     try {
-      // TODO: Implement actual API call to update DynamoDB
-      // For now, just simulate the update
-      console.log('Submitting feedback:', {
-        log_id: selectedLog.log_id,
-        rev_comment: reviewComment,
-        rev_feedback: reviewFeedback,
-        tags: selectedTags,
-      });
+      // Import DynamoDB service
+      const { updateChatLogReview } = await import('../services/DynamoDBService');
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Update in DynamoDB with composite key (log_id + timestamp)
+      await updateChatLogReview(
+        selectedLog.log_id,
+        selectedLog.timestamp,
+        reviewComment,
+        reviewFeedback,
+        selectedTags
+      );
       
       // Close modal and refresh data
       setSelectedLog(null);
@@ -132,7 +132,7 @@ const ChatLogsReviewPage: React.FC = () => {
       refetch();
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      alert('Failed to submit feedback. Please try again.');
+      alert(`Failed to submit feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -526,7 +526,7 @@ const ChatLogsReviewPage: React.FC = () => {
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-4 border-t">
                       <Button 
-                        className="flex-1 bg-secondary hover:bg-secondary/90"
+                        className="flex-1 bg-secondary hover:bg-secondary/90 text-white"
                         onClick={handleSubmitFeedback}
                         disabled={isSubmitting}
                       >
