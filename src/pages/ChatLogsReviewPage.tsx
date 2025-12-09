@@ -90,12 +90,17 @@ const ChatLogsReviewPage: React.FC = () => {
     setSelectedLog(log);
     setReviewComment(log.rev_comment || '');
     setReviewFeedback(log.rev_feedback || '');
-    // Parse existing tags if they exist
+    // Parse existing tags from issue_tags field
     try {
-      const existingTags = log.rev_comment ? JSON.parse(log.rev_comment) : [];
-      if (Array.isArray(existingTags)) {
-        setSelectedTags(existingTags);
+      let existingTags: string[] = [];
+      if (log.issue_tags) {
+        if (typeof log.issue_tags === 'string') {
+          existingTags = JSON.parse(log.issue_tags);
+        } else if (Array.isArray(log.issue_tags)) {
+          existingTags = log.issue_tags;
+        }
       }
+      setSelectedTags(existingTags);
     } catch {
       setSelectedTags([]);
     }
@@ -345,8 +350,15 @@ const ChatLogsReviewPage: React.FC = () => {
                             <div className="flex flex-wrap gap-1">
                               {(() => {
                                 try {
-                                  const tags = log.rev_comment ? JSON.parse(log.rev_comment) : [];
-                                  if (Array.isArray(tags) && tags.length > 0) {
+                                  let tags: string[] = [];
+                                  if (log.issue_tags) {
+                                    if (typeof log.issue_tags === 'string') {
+                                      tags = JSON.parse(log.issue_tags);
+                                    } else if (Array.isArray(log.issue_tags)) {
+                                      tags = log.issue_tags;
+                                    }
+                                  }
+                                  if (tags.length > 0) {
                                     return tags.slice(0, 2).map((tag: string, idx: number) => (
                                       <Badge key={idx} variant="secondary" className="text-xs">
                                         {tag}

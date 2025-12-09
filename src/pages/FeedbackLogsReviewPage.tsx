@@ -216,10 +216,10 @@ const FeedbackLogsReviewPage: React.FC = () => {
               value={filters.feedbackType || 'all'}
               onValueChange={(value) => setFilters({ ...filters, feedbackType: value as any })}
             >
-              <SelectTrigger id="feedbackType" className="w-full">
+              <SelectTrigger id="feedbackType" className="w-full bg-white">
                 <SelectValue placeholder="Select feedback type" />
               </SelectTrigger>
-              <SelectContent className="z-50">
+              <SelectContent className="z-[100] bg-white border shadow-lg">
                 <SelectItem value="all">All Feedback</SelectItem>
                 <SelectItem value="thumbs_up">👍 Positive</SelectItem>
                 <SelectItem value="thumbs_down">👎 Negative</SelectItem>

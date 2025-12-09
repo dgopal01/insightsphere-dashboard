@@ -53,7 +53,13 @@ function applyFilters(logs: DynamoDBService.FeedbackLogEntry[], filters?: Feedba
 
     // Feedback type filter
     if (filters.feedbackType && filters.feedbackType !== 'all') {
-      if (log.info?.feedback !== filters.feedbackType) {
+      const logFeedback = log.info?.feedback;
+      console.log('Filtering feedback:', { 
+        filterValue: filters.feedbackType, 
+        logFeedback, 
+        match: logFeedback === filters.feedbackType 
+      });
+      if (logFeedback !== filters.feedbackType) {
         return false;
       }
     }
