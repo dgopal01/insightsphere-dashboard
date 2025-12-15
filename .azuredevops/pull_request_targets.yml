@@ -1,0 +1,4 @@
+pull_request_targets:
+  - integration
+  - release
+  - master
