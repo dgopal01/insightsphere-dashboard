@@ -1,0 +1,55 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Amplify CLI (not used - using CloudFormation instead)
+amplify/
+amplify-backup/
+aws-exports.js
+awsconfiguration.json
+amplifyconfiguration.json
+amplifyconfiguration.dart
+amplify-build-config.json
+amplify-gradle-config.json
+amplifytools.xcconfig
+.secret-*
+**.sample
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build reports and artifacts
+dist/
+dist-ssr/
+coverage/
+dist/build-report.json
+dist/build-info.json
+
+# Deployment logs
+deployment-logs/
+
+# Temporary cleanup file
+CLEANUP_ACTIONS.md

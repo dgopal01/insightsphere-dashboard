@@ -1,0 +1,5 @@
+# Lambda function dependencies for GetReviewMetrics
+# boto3 is provided by the Lambda runtime, but listed here for local testing
+
+boto3>=1.28.0
+hypothesis>=6.0.0
