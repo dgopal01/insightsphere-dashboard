@@ -47,10 +47,10 @@ function calculatePercentage(reviewed: number, total: number): number {
 
 /**
  * Custom hook for fetching and managing review metrics
- * 
+ *
  * @param options - Configuration options for the hook
  * @returns Metrics data, loading state, error state, refetch function, and last updated timestamp
- * 
+ *
  * @example
  * ```tsx
  * const { metrics, loading, error, refetch, lastUpdated } = useReviewMetrics({
@@ -58,9 +58,7 @@ function calculatePercentage(reviewed: number, total: number): number {
  * });
  * ```
  */
-export function useReviewMetrics(
-  options: UseReviewMetricsOptions = {}
-): UseReviewMetricsReturn {
+export function useReviewMetrics(options: UseReviewMetricsOptions = {}): UseReviewMetricsReturn {
   const { autoRefreshInterval = 0, enabled = true } = options;
 
   const [metrics, setMetrics] = useState<ExtendedReviewMetrics | null>(null);
@@ -97,9 +95,7 @@ export function useReviewMetrics(
 
       // Calculate chat logs metrics
       const totalChatLogs = chatLogs.length;
-      const reviewedChatLogs = chatLogs.filter(
-        (log) => log.rev_comment || log.rev_feedback
-      ).length;
+      const reviewedChatLogs = chatLogs.filter((log) => log.rev_comment || log.rev_feedback).length;
       const pendingChatLogs = totalChatLogs - reviewedChatLogs;
 
       // Calculate feedback logs metrics
@@ -110,10 +106,7 @@ export function useReviewMetrics(
       const pendingFeedbackLogs = totalFeedbackLogs - reviewedFeedbackLogs;
 
       // Calculate percentages
-      const chatLogsReviewedPercentage = calculatePercentage(
-        reviewedChatLogs,
-        totalChatLogs
-      );
+      const chatLogsReviewedPercentage = calculatePercentage(reviewedChatLogs, totalChatLogs);
 
       const feedbackLogsReviewedPercentage = calculatePercentage(
         reviewedFeedbackLogs,

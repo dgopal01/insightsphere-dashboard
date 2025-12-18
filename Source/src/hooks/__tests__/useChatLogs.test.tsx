@@ -241,7 +241,7 @@ describe('useChatLogs', () => {
     };
 
     await expect(result.current.updateReview('1', reviewData)).rejects.toThrow(errorMessage);
-    
+
     await waitFor(() => {
       expect(result.current.error?.message).toBe(errorMessage);
     });

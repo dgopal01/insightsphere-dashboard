@@ -8,7 +8,14 @@ import { AlertCircle, WifiOff, Lock, RefreshCw, Server, AlertTriangle } from 'lu
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Button } from './ui/button';
 
-export type ErrorType = 'network' | 'authentication' | 'graphql' | 'validation' | 'application' | 'server' | 'unknown';
+export type ErrorType =
+  | 'network'
+  | 'authentication'
+  | 'graphql'
+  | 'validation'
+  | 'application'
+  | 'server'
+  | 'unknown';
 
 export interface ErrorDisplayProps {
   error: Error | string;
@@ -21,32 +28,38 @@ export interface ErrorDisplayProps {
 /**
  * ErrorDisplay component for showing error messages
  */
-export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ 
-  error, 
-  type, 
-  onRetry, 
+export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
+  error,
+  type,
+  onRetry,
   showDetails = false,
-  className 
+  className,
 }) => {
   const errorMessage = typeof error === 'string' ? error : error.message;
   const errorStack = typeof error === 'string' ? undefined : error.stack;
-  
-  // Determine error type if not provided
-  const errorType = type || (
-    errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch') 
-      ? 'network'
-      : errorMessage.toLowerCase().includes('auth') || errorMessage.toLowerCase().includes('unauthorized')
-      ? 'authentication'
-      : errorMessage.toLowerCase().includes('server')
-      ? 'server'
-      : 'unknown'
-  );
 
-  const Icon = errorType === 'network' ? WifiOff 
-    : errorType === 'authentication' ? Lock 
-    : errorType === 'server' ? Server
-    : errorType === 'validation' ? AlertTriangle
-    : AlertCircle;
+  // Determine error type if not provided
+  const errorType =
+    type ||
+    (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('fetch')
+      ? 'network'
+      : errorMessage.toLowerCase().includes('auth') ||
+          errorMessage.toLowerCase().includes('unauthorized')
+        ? 'authentication'
+        : errorMessage.toLowerCase().includes('server')
+          ? 'server'
+          : 'unknown');
+
+  const Icon =
+    errorType === 'network'
+      ? WifiOff
+      : errorType === 'authentication'
+        ? Lock
+        : errorType === 'server'
+          ? Server
+          : errorType === 'validation'
+            ? AlertTriangle
+            : AlertCircle;
 
   return (
     <Alert variant="destructive" className={className}>
@@ -56,12 +69,7 @@ export const ErrorDisplay: React.FC<ErrorDisplayProps> = ({
         <div className="flex items-center justify-between">
           <span>{errorMessage}</span>
           {onRetry && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRetry}
-              className="ml-4 gap-2"
-            >
+            <Button variant="outline" size="sm" onClick={onRetry} className="ml-4 gap-2">
               <RefreshCw className="h-3 w-3" />
               Retry
             </Button>
@@ -86,12 +94,10 @@ export const AuthenticationError: React.FC<Omit<ErrorDisplayProps, 'error'>> = (
   <ErrorDisplay error="Authentication failed. Please sign in again." {...props} />
 );
 
-export const ValidationError: React.FC<{ message: string } & Omit<ErrorDisplayProps, 'error'>> = ({ 
-  message, 
-  ...props 
-}) => (
-  <ErrorDisplay error={`Validation error: ${message}`} {...props} />
-);
+export const ValidationError: React.FC<{ message: string } & Omit<ErrorDisplayProps, 'error'>> = ({
+  message,
+  ...props
+}) => <ErrorDisplay error={`Validation error: ${message}`} {...props} />;
 
 export const ServerError: React.FC<Omit<ErrorDisplayProps, 'error'>> = (props) => (
   <ErrorDisplay error="Server error. Please try again later." {...props} />

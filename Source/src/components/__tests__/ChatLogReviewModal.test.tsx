@@ -39,12 +39,7 @@ describe('ChatLogReviewModal', () => {
 
   it('renders modal when open with log data', () => {
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     expect(screen.getByText('Review Chat Log')).toBeInTheDocument();
@@ -68,12 +63,7 @@ describe('ChatLogReviewModal', () => {
 
   it('displays review comment textarea with character counter', () => {
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const commentField = screen.getByLabelText('Review comment');
@@ -83,12 +73,7 @@ describe('ChatLogReviewModal', () => {
 
   it('displays review feedback textarea with character counter', () => {
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const feedbackField = screen.getByLabelText('Review feedback');
@@ -98,12 +83,7 @@ describe('ChatLogReviewModal', () => {
   it('updates character counter when typing in comment field', async () => {
     const user = userEvent.setup();
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const commentField = screen.getByLabelText('Review comment');
@@ -117,17 +97,12 @@ describe('ChatLogReviewModal', () => {
   it('validates character limit for comment field', async () => {
     const user = userEvent.setup();
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const commentField = screen.getByLabelText('Review comment');
     const longText = 'a'.repeat(5001);
-    
+
     // Type text that exceeds limit (field has maxLength attribute)
     await user.type(commentField, longText);
 
@@ -139,12 +114,7 @@ describe('ChatLogReviewModal', () => {
 
   it('disables submit button when both fields are empty', () => {
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const submitButton = screen.getByRole('button', { name: /submit review/i });
@@ -154,12 +124,7 @@ describe('ChatLogReviewModal', () => {
   it('enables submit button when comment field has content', async () => {
     const user = userEvent.setup();
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const commentField = screen.getByLabelText('Review comment');
@@ -174,12 +139,7 @@ describe('ChatLogReviewModal', () => {
   it('enables submit button when feedback field has content', async () => {
     const user = userEvent.setup();
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const feedbackField = screen.getByLabelText('Review feedback');
@@ -196,12 +156,7 @@ describe('ChatLogReviewModal', () => {
     mockOnSubmit.mockResolvedValue(undefined);
 
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const commentField = screen.getByLabelText('Review comment');
@@ -226,12 +181,7 @@ describe('ChatLogReviewModal', () => {
     mockOnSubmit.mockResolvedValue(undefined);
 
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const commentField = screen.getByLabelText('Review comment');
@@ -250,12 +200,7 @@ describe('ChatLogReviewModal', () => {
     mockOnSubmit.mockRejectedValue(new Error('Network error'));
 
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const commentField = screen.getByLabelText('Review comment');
@@ -274,12 +219,7 @@ describe('ChatLogReviewModal', () => {
     mockOnSubmit.mockRejectedValue(new Error('Network error'));
 
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const commentField = screen.getByLabelText('Review comment');
@@ -309,12 +249,7 @@ describe('ChatLogReviewModal', () => {
     mockOnSubmit.mockReturnValue(submitPromise);
 
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const commentField = screen.getByLabelText('Review comment');
@@ -334,12 +269,7 @@ describe('ChatLogReviewModal', () => {
 
   it('displays all log fields in detail view', () => {
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     // Check that key fields are displayed
@@ -353,12 +283,7 @@ describe('ChatLogReviewModal', () => {
 
   it('shows pending status chip for unreviewed log', () => {
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     expect(screen.getByText('Pending')).toBeInTheDocument();
@@ -385,12 +310,7 @@ describe('ChatLogReviewModal', () => {
   it('calls onClose when cancel button is clicked', async () => {
     const user = userEvent.setup();
     render(
-      <ChatLogReviewModal
-        open={true}
-        log={mockLog}
-        onClose={mockOnClose}
-        onSubmit={mockOnSubmit}
-      />
+      <ChatLogReviewModal open={true} log={mockLog} onClose={mockOnClose} onSubmit={mockOnSubmit} />
     );
 
     const cancelButton = screen.getByRole('button', { name: /cancel/i });

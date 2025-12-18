@@ -231,7 +231,6 @@ describe('formatErrorForDisplay', () => {
   });
 });
 
-
 describe('retryWithBackoff', () => {
   it('succeeds on first attempt', async () => {
     const fn = vi.fn().mockResolvedValue('success');

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: swbc-ethos-ai
+  labels:
+    name: swbc-ethos-ai
+    environment: production

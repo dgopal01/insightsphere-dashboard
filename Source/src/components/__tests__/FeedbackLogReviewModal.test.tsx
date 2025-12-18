@@ -247,7 +247,7 @@ describe('FeedbackLogReviewModal', () => {
 
     const commentField = screen.getByLabelText('Review comment');
     const feedbackField = screen.getByLabelText('Review feedback');
-    
+
     fireEvent.change(commentField, { target: { value: 'Test comment' } });
     fireEvent.change(feedbackField, { target: { value: 'Test feedback' } });
 

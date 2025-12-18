@@ -5,7 +5,14 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutGrid, ArrowRight, BarChart3, MessageSquare, ThumbsUp, LayoutDashboard } from 'lucide-react';
+import {
+  LayoutGrid,
+  ArrowRight,
+  BarChart3,
+  MessageSquare,
+  ThumbsUp,
+  LayoutDashboard,
+} from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +34,8 @@ const products: Product[] = [
   {
     id: 'unity-isa',
     name: 'Unity ISA',
-    description: 'Unity Intelligent Sales Agent - AI-powered sales assistant for vehicle warranty coverage',
+    description:
+      'Unity Intelligent Sales Agent - AI-powered sales assistant for vehicle warranty coverage',
     icon: <MessageSquare className="size-8" />,
     color: 'bg-secondary',
     sections: [
@@ -60,7 +68,7 @@ const ProductsLandingPage: React.FC = () => {
 
   const handleProductClick = (productId: string) => {
     // Navigate to the first section of the product
-    const product = products.find(p => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (product && product.sections.length > 0) {
       navigate(product.sections[0].path);
     }
@@ -72,11 +80,7 @@ const ProductsLandingPage: React.FC = () => {
       <div className="border-b bg-white">
         <div className="container mx-auto px-6 py-8">
           <div className="flex items-center gap-4 mb-2">
-            <img 
-              src="/ethosai-logo.png" 
-              alt="EthosAI Logo" 
-              className="h-12 w-auto"
-            />
+            <img src="/ethosai-logo.png" alt="EthosAI Logo" className="h-12 w-auto" />
             <h1 className="text-4xl font-bold text-foreground">EthosAI Review Portal</h1>
           </div>
           <p className="text-muted-foreground text-lg ml-16">

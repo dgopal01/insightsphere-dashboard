@@ -28,25 +28,16 @@ export const NewLayout: React.FC<NewLayoutProps> = ({ children, productId }) => 
           <Separator orientation="vertical" className="mr-2 h-4" />
           <div className="flex items-center gap-2 flex-1">
             {productId && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/')}
-                className="gap-2"
-              >
+              <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="gap-2">
                 <ArrowLeft className="size-4" />
                 Back to Products
               </Button>
             )}
             <Separator orientation="vertical" className="h-4" />
-            <h1 className="text-lg font-semibold">
-              {productName} - Ethical AI Principles
-            </h1>
+            <h1 className="text-lg font-semibold">{productName} - Ethical AI Principles</h1>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
-          {children}
-        </div>
+        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );

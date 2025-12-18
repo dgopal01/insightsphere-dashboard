@@ -63,26 +63,20 @@ export const handlers = [
   // List Unity AI Assistant Logs (Chat Logs)
   graphql.query('ListUnityAIAssistantLogs', ({ variables }) => {
     const { filter, limit = 50 } = variables as any;
-    
+
     let filteredLogs = [...chatLogsStore];
 
     // Apply carrier_name filter
     if (filter?.carrier_name?.eq) {
-      filteredLogs = filteredLogs.filter(
-        (log) => log.carrier_name === filter.carrier_name.eq
-      );
+      filteredLogs = filteredLogs.filter((log) => log.carrier_name === filter.carrier_name.eq);
     }
 
     // Apply review status filter
     if (filter?.reviewStatus) {
       if (filter.reviewStatus === 'reviewed') {
-        filteredLogs = filteredLogs.filter(
-          (log) => log.rev_comment || log.rev_feedback
-        );
+        filteredLogs = filteredLogs.filter((log) => log.rev_comment || log.rev_feedback);
       } else if (filter.reviewStatus === 'pending') {
-        filteredLogs = filteredLogs.filter(
-          (log) => !log.rev_comment && !log.rev_feedback
-        );
+        filteredLogs = filteredLogs.filter((log) => !log.rev_comment && !log.rev_feedback);
       }
     }
 
@@ -103,26 +97,20 @@ export const handlers = [
   // List User Feedbacks (Feedback Logs)
   graphql.query('ListUserFeedbacks', ({ variables }) => {
     const { filter, limit = 50 } = variables as any;
-    
+
     let filteredLogs = [...feedbackLogsStore];
 
     // Apply carrier filter
     if (filter?.carrier?.eq) {
-      filteredLogs = filteredLogs.filter(
-        (log) => log.carrier === filter.carrier.eq
-      );
+      filteredLogs = filteredLogs.filter((log) => log.carrier === filter.carrier.eq);
     }
 
     // Apply review status filter
     if (filter?.reviewStatus) {
       if (filter.reviewStatus === 'reviewed') {
-        filteredLogs = filteredLogs.filter(
-          (log) => log.rev_comment || log.rev_feedback
-        );
+        filteredLogs = filteredLogs.filter((log) => log.rev_comment || log.rev_feedback);
       } else if (filter.reviewStatus === 'pending') {
-        filteredLogs = filteredLogs.filter(
-          (log) => !log.rev_comment && !log.rev_feedback
-        );
+        filteredLogs = filteredLogs.filter((log) => !log.rev_comment && !log.rev_feedback);
       }
     }
 
@@ -174,39 +162,48 @@ export const handlers = [
     const { log_id, rev_comment, rev_feedback } = input;
 
     const logIndex = chatLogsStore.findIndex((log) => log.log_id === log_id);
-    
+
     if (logIndex === -1) {
-      return HttpResponse.json({
-        errors: [
-          {
-            message: 'Chat log not found',
-            errorType: 'NotFoundError',
-          },
-        ],
-      }, { status: 404 });
+      return HttpResponse.json(
+        {
+          errors: [
+            {
+              message: 'Chat log not found',
+              errorType: 'NotFoundError',
+            },
+          ],
+        },
+        { status: 404 }
+      );
     }
 
     // Validate character limits
     if (rev_comment && rev_comment.length > 5000) {
-      return HttpResponse.json({
-        errors: [
-          {
-            message: 'Validation error: rev_comment exceeds maximum length of 5000 characters',
-            errorType: 'ValidationError',
-          },
-        ],
-      }, { status: 400 });
+      return HttpResponse.json(
+        {
+          errors: [
+            {
+              message: 'Validation error: rev_comment exceeds maximum length of 5000 characters',
+              errorType: 'ValidationError',
+            },
+          ],
+        },
+        { status: 400 }
+      );
     }
 
     if (rev_feedback && rev_feedback.length > 5000) {
-      return HttpResponse.json({
-        errors: [
-          {
-            message: 'Validation error: rev_feedback exceeds maximum length of 5000 characters',
-            errorType: 'ValidationError',
-          },
-        ],
-      }, { status: 400 });
+      return HttpResponse.json(
+        {
+          errors: [
+            {
+              message: 'Validation error: rev_feedback exceeds maximum length of 5000 characters',
+              errorType: 'ValidationError',
+            },
+          ],
+        },
+        { status: 400 }
+      );
     }
 
     // Update the log
@@ -229,39 +226,48 @@ export const handlers = [
     const { id, rev_comment, rev_feedback } = input;
 
     const logIndex = feedbackLogsStore.findIndex((log) => log.id === id);
-    
+
     if (logIndex === -1) {
-      return HttpResponse.json({
-        errors: [
-          {
-            message: 'Feedback log not found',
-            errorType: 'NotFoundError',
-          },
-        ],
-      }, { status: 404 });
+      return HttpResponse.json(
+        {
+          errors: [
+            {
+              message: 'Feedback log not found',
+              errorType: 'NotFoundError',
+            },
+          ],
+        },
+        { status: 404 }
+      );
     }
 
     // Validate character limits
     if (rev_comment && rev_comment.length > 5000) {
-      return HttpResponse.json({
-        errors: [
-          {
-            message: 'Validation error: rev_comment exceeds maximum length of 5000 characters',
-            errorType: 'ValidationError',
-          },
-        ],
-      }, { status: 400 });
+      return HttpResponse.json(
+        {
+          errors: [
+            {
+              message: 'Validation error: rev_comment exceeds maximum length of 5000 characters',
+              errorType: 'ValidationError',
+            },
+          ],
+        },
+        { status: 400 }
+      );
     }
 
     if (rev_feedback && rev_feedback.length > 5000) {
-      return HttpResponse.json({
-        errors: [
-          {
-            message: 'Validation error: rev_feedback exceeds maximum length of 5000 characters',
-            errorType: 'ValidationError',
-          },
-        ],
-      }, { status: 400 });
+      return HttpResponse.json(
+        {
+          errors: [
+            {
+              message: 'Validation error: rev_feedback exceeds maximum length of 5000 characters',
+              errorType: 'ValidationError',
+            },
+          ],
+        },
+        { status: 400 }
+      );
     }
 
     // Update the log

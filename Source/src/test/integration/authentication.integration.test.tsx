@@ -61,7 +61,7 @@ describe('Authentication Integration Tests', () => {
   describe('Sign-in Flow', () => {
     it('should display sign-in page for unauthenticated users', () => {
       const authContext = createMockAuthContext(false);
-      
+
       render(<TestApp authContext={authContext} />);
 
       // Should show sign-in page
@@ -190,7 +190,7 @@ describe('Authentication Integration Tests', () => {
 
     it('should clear local storage on logout', async () => {
       const authContext = createMockAuthContext(true);
-      
+
       // Set some auth data in localStorage
       localStorage.setItem('authToken', 'test-token');
       localStorage.setItem('userId', 'test-user');

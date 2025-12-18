@@ -31,7 +31,10 @@ export interface UseFeedbackLogsReturn {
 /**
  * Sort logs by datetime
  */
-function sortLogs(logs: DynamoDBService.FeedbackLogEntry[], direction: SortDirection): DynamoDBService.FeedbackLogEntry[] {
+function sortLogs(
+  logs: DynamoDBService.FeedbackLogEntry[],
+  direction: SortDirection
+): DynamoDBService.FeedbackLogEntry[] {
   return [...logs].sort((a, b) => {
     const timeA = new Date(a.datetime).getTime();
     const timeB = new Date(b.datetime).getTime();
@@ -42,7 +45,10 @@ function sortLogs(logs: DynamoDBService.FeedbackLogEntry[], direction: SortDirec
 /**
  * Apply client-side filters to feedback logs
  */
-function applyFilters(logs: DynamoDBService.FeedbackLogEntry[], filters?: FeedbackLogFilters): DynamoDBService.FeedbackLogEntry[] {
+function applyFilters(
+  logs: DynamoDBService.FeedbackLogEntry[],
+  filters?: FeedbackLogFilters
+): DynamoDBService.FeedbackLogEntry[] {
   if (!filters) return logs;
 
   return logs.filter((log) => {
@@ -54,7 +60,7 @@ function applyFilters(logs: DynamoDBService.FeedbackLogEntry[], filters?: Feedba
     // Feedback type filter
     if (filters.feedbackType && filters.feedbackType !== 'all') {
       const logFeedback = log.info?.feedback;
-      
+
       // Handle empty/no feedback filter
       if (filters.feedbackType === 'none') {
         if (logFeedback) {
@@ -63,12 +69,12 @@ function applyFilters(logs: DynamoDBService.FeedbackLogEntry[], filters?: Feedba
       } else {
         // For thumbs_up or thumbs_down, check exact match
         if (!logFeedback || logFeedback !== filters.feedbackType) {
-          console.log('Filtering out log:', { 
+          console.log('Filtering out log:', {
             logId: log.id,
-            filterValue: filters.feedbackType, 
-            logFeedback, 
+            filterValue: filters.feedbackType,
+            logFeedback,
             logFeedbackType: typeof logFeedback,
-            match: logFeedback === filters.feedbackType 
+            match: logFeedback === filters.feedbackType,
           });
           return false;
         }
@@ -131,15 +137,23 @@ export function useFeedbackLogs(): UseFeedbackLogsReturn {
         console.log('Fetching feedback logs with filters:', filters);
         const result = await DynamoDBService.listFeedbackLogs(1000);
         console.log('Fetched feedback logs:', result.items.length, 'items');
-        
+
         // Log unique feedback values to understand data structure
-        const uniqueFeedbackValues = new Set(result.items.map(log => log.info?.feedback).filter(Boolean));
+        const uniqueFeedbackValues = new Set(
+          result.items.map((log) => log.info?.feedback).filter(Boolean)
+        );
         console.log('Unique feedback values in data:', Array.from(uniqueFeedbackValues));
-        
+
         // Apply client-side filters
         const filteredLogs = applyFilters(result.items, filters);
-        console.log('Filtered logs:', filteredLogs.length, 'items', 'Filter:', filters?.feedbackType);
-        
+        console.log(
+          'Filtered logs:',
+          filteredLogs.length,
+          'items',
+          'Filter:',
+          filters?.feedbackType
+        );
+
         // Sort logs
         const sortedLogs = sortLogs(filteredLogs, sortDirection);
 

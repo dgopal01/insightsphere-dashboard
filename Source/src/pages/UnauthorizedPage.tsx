@@ -41,18 +41,10 @@ const UnauthorizedPage: React.FC = () => {
 
             {/* Actions */}
             <div className="flex gap-3 w-full">
-              <Button
-                variant="default"
-                className="flex-1"
-                onClick={() => navigate('/')}
-              >
+              <Button variant="default" className="flex-1" onClick={() => navigate('/')}>
                 Go to Dashboard
               </Button>
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => navigate(-1)}
-              >
+              <Button variant="outline" className="flex-1" onClick={() => navigate(-1)}>
                 Go Back
               </Button>
             </div>

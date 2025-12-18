@@ -54,9 +54,7 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
-    expect(
-      screen.getByText(/We're sorry, but something unexpected happened/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/We're sorry, but something unexpected happened/)).toBeInTheDocument();
   });
 
   it('shows recovery buttons', () => {

@@ -58,8 +58,7 @@ describe('Testing Infrastructure - Chat Logs Review System', () => {
         fc.property(reviewedChatLogEntryArbitrary(), (entry) => {
           // Reviewed entries should have at least one review field
           const hasReviewComment = entry.rev_comment !== undefined && entry.rev_comment !== '';
-          const hasReviewFeedback =
-            entry.rev_feedback !== undefined && entry.rev_feedback !== '';
+          const hasReviewFeedback = entry.rev_feedback !== undefined && entry.rev_feedback !== '';
           return hasReviewComment || hasReviewFeedback;
         })
       );
@@ -108,9 +107,7 @@ describe('Testing Infrastructure - Chat Logs Review System', () => {
           expect(metrics.reviewedChatLogs).toBeLessThanOrEqual(metrics.totalChatLogs);
           expect(metrics.reviewedFeedbackLogs).toBeLessThanOrEqual(metrics.totalFeedbackLogs);
           // Pending counts should be correct
-          expect(metrics.pendingChatLogs).toBe(
-            metrics.totalChatLogs - metrics.reviewedChatLogs
-          );
+          expect(metrics.pendingChatLogs).toBe(metrics.totalChatLogs - metrics.reviewedChatLogs);
           expect(metrics.pendingFeedbackLogs).toBe(
             metrics.totalFeedbackLogs - metrics.reviewedFeedbackLogs
           );
@@ -153,7 +150,12 @@ describe('Testing Infrastructure - Chat Logs Review System', () => {
           expect(typeof payload).toBe('string');
           // Should contain script-like content
           const hasScriptTag = payload.includes('<script') || payload.includes('javascript:');
-          const hasEventHandler = payload.includes('onerror=') || payload.includes('onload=') || payload.includes('onfocus=') || payload.includes('onstart=') || payload.includes('ontoggle=');
+          const hasEventHandler =
+            payload.includes('onerror=') ||
+            payload.includes('onload=') ||
+            payload.includes('onfocus=') ||
+            payload.includes('onstart=') ||
+            payload.includes('ontoggle=');
           const hasHtmlTag = payload.includes('<') && payload.includes('>');
           return hasScriptTag || hasEventHandler || hasHtmlTag;
         })

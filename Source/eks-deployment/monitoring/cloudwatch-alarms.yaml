@@ -1,0 +1,173 @@
+# CloudWatch Alarms for EKS Application Monitoring
+# These alarms monitor key metrics for the Swbc.Ethos.Ai application
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudwatch-alarms-config
+  namespace: swbc-ethos-ai
+data:
+  setup-alarms.sh: |
+    #!/bin/bash
+    
+    # Set variables
+    CLUSTER_NAME="swbc-ethos-ai-cluster"
+    NAMESPACE="swbc-ethos-ai"
+    APP_NAME="ethos-ai-frontend"
+    SNS_TOPIC_ARN="arn:aws:sns:us-east-1:ACCOUNT_ID:swbc-ethos-ai-alerts"
+    
+    echo "Setting up CloudWatch Alarms for $APP_NAME..."
+    
+    # High CPU Usage Alarm
+    aws cloudwatch put-metric-alarm \
+      --alarm-name "${APP_NAME}-high-cpu" \
+      --alarm-description "High CPU usage for EKS pods" \
+      --metric-name CPUUtilization \
+      --namespace AWS/EKS \
+      --statistic Average \
+      --period 300 \
+      --threshold 80 \
+      --comparison-operator GreaterThanThreshold \
+      --evaluation-periods 2 \
+      --alarm-actions $SNS_TOPIC_ARN \
+      --dimensions Name=ClusterName,Value=$CLUSTER_NAME Name=Namespace,Value=$NAMESPACE
+    
+    # High Memory Usage Alarm
+    aws cloudwatch put-metric-alarm \
+      --alarm-name "${APP_NAME}-high-memory" \
+      --alarm-description "High memory usage for EKS pods" \
+      --metric-name MemoryUtilization \
+      --namespace AWS/EKS \
+      --statistic Average \
+      --period 300 \
+      --threshold 80 \
+      --comparison-operator GreaterThanThreshold \
+      --evaluation-periods 2 \
+      --alarm-actions $SNS_TOPIC_ARN \
+      --dimensions Name=ClusterName,Value=$CLUSTER_NAME Name=Namespace,Value=$NAMESPACE
+    
+    # Pod Restart Alarm
+    aws cloudwatch put-metric-alarm \
+      --alarm-name "${APP_NAME}-pod-restarts" \
+      --alarm-description "High pod restart rate" \
+      --metric-name pod_restart_total \
+      --namespace ContainerInsights \
+      --statistic Sum \
+      --period 300 \
+      --threshold 5 \
+      --comparison-operator GreaterThanThreshold \
+      --evaluation-periods 1 \
+      --alarm-actions $SNS_TOPIC_ARN \
+      --dimensions Name=ClusterName,Value=$CLUSTER_NAME Name=Namespace,Value=$NAMESPACE
+    
+    # Application Load Balancer Target Health
+    aws cloudwatch put-metric-alarm \
+      --alarm-name "${APP_NAME}-unhealthy-targets" \
+      --alarm-description "Unhealthy ALB targets" \
+      --metric-name UnHealthyHostCount \
+      --namespace AWS/ApplicationELB \
+      --statistic Average \
+      --period 300 \
+      --threshold 1 \
+      --comparison-operator GreaterThanOrEqualToThreshold \
+      --evaluation-periods 2 \
+      --alarm-actions $SNS_TOPIC_ARN \
+      --dimensions Name=LoadBalancer,Value=app/swbc-ethos-ai-alb/LOAD_BALANCER_ID
+    
+    # High Response Time Alarm
+    aws cloudwatch put-metric-alarm \
+      --alarm-name "${APP_NAME}-high-response-time" \
+      --alarm-description "High response time from ALB" \
+      --metric-name TargetResponseTime \
+      --namespace AWS/ApplicationELB \
+      --statistic Average \
+      --period 300 \
+      --threshold 2.0 \
+      --comparison-operator GreaterThanThreshold \
+      --evaluation-periods 2 \
+      --alarm-actions $SNS_TOPIC_ARN \
+      --dimensions Name=LoadBalancer,Value=app/swbc-ethos-ai-alb/LOAD_BALANCER_ID
+    
+    # HTTP 5xx Error Rate Alarm
+    aws cloudwatch put-metric-alarm \
+      --alarm-name "${APP_NAME}-high-5xx-errors" \
+      --alarm-description "High 5xx error rate" \
+      --metric-name HTTPCode_Target_5XX_Count \
+      --namespace AWS/ApplicationELB \
+      --statistic Sum \
+      --period 300 \
+      --threshold 10 \
+      --comparison-operator GreaterThanThreshold \
+      --evaluation-periods 2 \
+      --alarm-actions $SNS_TOPIC_ARN \
+      --dimensions Name=LoadBalancer,Value=app/swbc-ethos-ai-alb/LOAD_BALANCER_ID
+    
+    # DynamoDB Throttling Alarm
+    aws cloudwatch put-metric-alarm \
+      --alarm-name "${APP_NAME}-dynamodb-throttles" \
+      --alarm-description "DynamoDB throttling detected" \
+      --metric-name ThrottledRequests \
+      --namespace AWS/DynamoDB \
+      --statistic Sum \
+      --period 300 \
+      --threshold 5 \
+      --comparison-operator GreaterThanThreshold \
+      --evaluation-periods 1 \
+      --alarm-actions $SNS_TOPIC_ARN \
+      --dimensions Name=TableName,Value=UnityAIAssistantLogs
+    
+    # DynamoDB High Error Rate
+    aws cloudwatch put-metric-alarm \
+      --alarm-name "${APP_NAME}-dynamodb-errors" \
+      --alarm-description "High DynamoDB error rate" \
+      --metric-name SystemErrors \
+      --namespace AWS/DynamoDB \
+      --statistic Sum \
+      --period 300 \
+      --threshold 10 \
+      --comparison-operator GreaterThanThreshold \
+      --evaluation-periods 2 \
+      --alarm-actions $SNS_TOPIC_ARN \
+      --dimensions Name=TableName,Value=UnityAIAssistantLogs
+    
+    echo "CloudWatch Alarms setup complete!"
+
+---
+# Job to set up CloudWatch Alarms
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: setup-cloudwatch-alarms
+  namespace: swbc-ethos-ai
+spec:
+  template:
+    spec:
+      serviceAccountName: cloudwatch-setup
+      containers:
+      - name: setup-alarms
+        image: amazon/aws-cli:latest
+        command: ["/bin/bash"]
+        args: ["/scripts/setup-alarms.sh"]
+        env:
+        - name: AWS_DEFAULT_REGION
+          value: "us-east-1"
+        volumeMounts:
+        - name: alarm-scripts
+          mountPath: /scripts
+      volumes:
+      - name: alarm-scripts
+        configMap:
+          name: cloudwatch-alarms-config
+          defaultMode: 0755
+      restartPolicy: OnFailure
+
+---
+# Service Account for CloudWatch setup
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloudwatch-setup
+  namespace: swbc-ethos-ai
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/CloudWatchSetupRole

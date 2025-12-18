@@ -29,7 +29,10 @@ export const conversationIdArbitrary = () => fc.uuid().map((id) => `conv-${id}`)
  */
 export const timestampArbitrary = () =>
   fc
-    .integer({ min: Date.parse('2020-01-01T00:00:00.000Z'), max: Date.parse('2025-12-31T23:59:59.999Z') })
+    .integer({
+      min: Date.parse('2020-01-01T00:00:00.000Z'),
+      max: Date.parse('2025-12-31T23:59:59.999Z'),
+    })
     .map((timestamp) => new Date(timestamp).toISOString());
 
 /**
@@ -162,8 +165,7 @@ export const reviewCommentArbitrary = () => fc.string({ maxLength: 5000 });
 /**
  * Generate an invalid review comment (> 5000 characters)
  */
-export const invalidReviewCommentArbitrary = () =>
-  fc.string({ minLength: 5001, maxLength: 6000 });
+export const invalidReviewCommentArbitrary = () => fc.string({ minLength: 5001, maxLength: 6000 });
 
 /**
  * Generate a valid review feedback (0-5000 characters)
@@ -173,8 +175,7 @@ export const reviewFeedbackArbitrary = () => fc.string({ maxLength: 5000 });
 /**
  * Generate an invalid review feedback (> 5000 characters)
  */
-export const invalidReviewFeedbackArbitrary = () =>
-  fc.string({ minLength: 5001, maxLength: 6000 });
+export const invalidReviewFeedbackArbitrary = () => fc.string({ minLength: 5001, maxLength: 6000 });
 
 /**
  * Generate a complete UnityAIAssistantLog (ChatLogEntry) object
@@ -205,13 +206,15 @@ export const chatLogEntryArbitrary = () =>
  */
 export const reviewedChatLogEntryArbitrary = () =>
   chatLogEntryArbitrary().chain((log) =>
-    fc.record({
-      rev_comment: fc.string({ minLength: 1, maxLength: 5000 }),
-      rev_feedback: fc.string({ minLength: 1, maxLength: 5000 }),
-    }).map((review) => ({
-      ...log,
-      ...review,
-    }))
+    fc
+      .record({
+        rev_comment: fc.string({ minLength: 1, maxLength: 5000 }),
+        rev_feedback: fc.string({ minLength: 1, maxLength: 5000 }),
+      })
+      .map((review) => ({
+        ...log,
+        ...review,
+      }))
   );
 
 /**
@@ -249,13 +252,15 @@ export const feedbackLogEntryArbitrary = () =>
  */
 export const reviewedFeedbackLogEntryArbitrary = () =>
   feedbackLogEntryArbitrary().chain((log) =>
-    fc.record({
-      rev_comment: fc.string({ minLength: 1, maxLength: 5000 }),
-      rev_feedback: fc.string({ minLength: 1, maxLength: 5000 }),
-    }).map((review) => ({
-      ...log,
-      ...review,
-    }))
+    fc
+      .record({
+        rev_comment: fc.string({ minLength: 1, maxLength: 5000 }),
+        rev_feedback: fc.string({ minLength: 1, maxLength: 5000 }),
+      })
+      .map((review) => ({
+        ...log,
+        ...review,
+      }))
   );
 
 /**
@@ -327,8 +332,11 @@ export const reviewMetricsArbitrary = () =>
       reviewedChatLogs: Math.min(metrics.reviewedChatLogs, metrics.totalChatLogs),
       reviewedFeedbackLogs: Math.min(metrics.reviewedFeedbackLogs, metrics.totalFeedbackLogs),
       // Calculate pending counts
-      pendingChatLogs: metrics.totalChatLogs - Math.min(metrics.reviewedChatLogs, metrics.totalChatLogs),
-      pendingFeedbackLogs: metrics.totalFeedbackLogs - Math.min(metrics.reviewedFeedbackLogs, metrics.totalFeedbackLogs),
+      pendingChatLogs:
+        metrics.totalChatLogs - Math.min(metrics.reviewedChatLogs, metrics.totalChatLogs),
+      pendingFeedbackLogs:
+        metrics.totalFeedbackLogs -
+        Math.min(metrics.reviewedFeedbackLogs, metrics.totalFeedbackLogs),
     }));
 
 /**
@@ -361,7 +369,7 @@ export const specialCharsArbitrary = () =>
     "'; DROP TABLE users; --",
     '" OR "1"="1',
     "' OR '1'='1",
-    '\'; DROP TABLE logs; --',
+    "'; DROP TABLE logs; --",
     '<>&"\'\`',
     '\\n\\r\\t',
     '${alert("XSS")}',

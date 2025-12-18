@@ -227,8 +227,8 @@ describe('validation utilities', () => {
     });
 
     it('should handle multiple special characters', () => {
-      const result = escapeSpecialCharacters("It's a \"test\"\nwith\\backslash");
-      expect(result).toBe("It\\'s a \\\"test\\\"\\nwith\\\\backslash");
+      const result = escapeSpecialCharacters('It\'s a "test"\nwith\\backslash');
+      expect(result).toBe('It\\\'s a \\"test\\"\\nwith\\\\backslash');
     });
 
     it('should return empty string for null', () => {
@@ -269,7 +269,7 @@ describe('validation utilities', () => {
     });
 
     it('should round-trip escape and unescape', () => {
-      const original = "It's a \"test\"\nwith\\backslash";
+      const original = 'It\'s a "test"\nwith\\backslash';
       const escaped = escapeSpecialCharacters(original);
       const unescaped = unescapeSpecialCharacters(escaped);
       expect(unescaped).toBe(original);

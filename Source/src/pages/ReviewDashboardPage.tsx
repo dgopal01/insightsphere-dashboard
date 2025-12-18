@@ -45,9 +45,7 @@ const ReviewDashboardPage: React.FC = () => {
 
         {/* Last Updated */}
         <div className="flex items-center gap-2">
-          {loading && (
-            <RefreshCw className="size-4 animate-spin text-muted-foreground" />
-          )}
+          {loading && <RefreshCw className="size-4 animate-spin text-muted-foreground" />}
           <Badge variant="outline" className="gap-2">
             <RefreshCw className="size-3" />
             Last updated: {formatLastUpdated(lastUpdated)}
@@ -123,7 +121,8 @@ const ReviewDashboardPage: React.FC = () => {
           {metrics.totalChatLogs + metrics.totalFeedbackLogs === 0 && (
             <Alert variant="info">
               <AlertDescription>
-                No logs available for review. Data will appear here once logs are added to the system.
+                No logs available for review. Data will appear here once logs are added to the
+                system.
               </AlertDescription>
             </Alert>
           )}

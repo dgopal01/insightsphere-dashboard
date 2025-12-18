@@ -65,16 +65,8 @@ const ChatLogsReviewPage: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    logs,
-    loading,
-    error,
-    totalCount,
-    nextToken,
-    fetchLogs,
-    fetchNextPage,
-    refetch,
-  } = useChatLogs();
+  const { logs, loading, error, totalCount, nextToken, fetchLogs, fetchNextPage, refetch } =
+    useChatLogs();
 
   useEffect(() => {
     fetchLogs(filters, sortDirection);
@@ -107,19 +99,19 @@ const ChatLogsReviewPage: React.FC = () => {
   }, []);
 
   const handleTagToggle = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
   };
 
   const handleSubmitFeedback = async () => {
     if (!selectedLog) return;
-    
+
     setIsSubmitting(true);
     try {
       // Import DynamoDB service
       const { updateChatLogReview } = await import('../services/DynamoDBService');
-      
+
       // Update in DynamoDB with composite key (log_id + timestamp)
       await updateChatLogReview(
         selectedLog.log_id,
@@ -128,7 +120,7 @@ const ChatLogsReviewPage: React.FC = () => {
         reviewFeedback,
         selectedTags
       );
-      
+
       // Close modal and refresh data
       setSelectedLog(null);
       setReviewComment('');
@@ -137,7 +129,9 @@ const ChatLogsReviewPage: React.FC = () => {
       refetch();
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      alert(`Failed to submit feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(
+        `Failed to submit feedback: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -195,7 +189,9 @@ const ChatLogsReviewPage: React.FC = () => {
             <Filter className="size-5" />
             Filters
           </CardTitle>
-          <CardDescription>Filter chat logs by review status, carrier, and date range</CardDescription>
+          <CardDescription>
+            Filter chat logs by review status, carrier, and date range
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Review Status Filter */}
@@ -234,7 +230,9 @@ const ChatLogsReviewPage: React.FC = () => {
                 id="carrier"
                 placeholder="Enter carrier name..."
                 value={filters.carrier_name || ''}
-                onChange={(e) => setFilters({ ...filters, carrier_name: e.target.value || undefined })}
+                onChange={(e) =>
+                  setFilters({ ...filters, carrier_name: e.target.value || undefined })
+                }
               />
               {filters.carrier_name && (
                 <Button
@@ -289,9 +287,7 @@ const ChatLogsReviewPage: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Chat Logs ({logs.length})</CardTitle>
-          <CardDescription>
-            Click on a row to view details and add review comments
-          </CardDescription>
+          <CardDescription>Click on a row to view details and add review comments</CardDescription>
         </CardHeader>
         <CardContent>
           {loading && logs.length === 0 ? (
@@ -368,7 +364,9 @@ const ChatLogsReviewPage: React.FC = () => {
                                 } catch {
                                   return null;
                                 }
-                                return <span className="text-xs text-muted-foreground">No tags</span>;
+                                return (
+                                  <span className="text-xs text-muted-foreground">No tags</span>
+                                );
                               })()}
                             </div>
                           </TableCell>
@@ -394,11 +392,7 @@ const ChatLogsReviewPage: React.FC = () => {
               {/* Load More Button */}
               {nextToken && (
                 <div className="flex justify-center mt-6">
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={loading}
-                  >
+                  <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
                     {loading ? (
                       <>
                         <RefreshCw className="size-4 mr-2 animate-spin" />
@@ -418,7 +412,10 @@ const ChatLogsReviewPage: React.FC = () => {
       {/* Editable Review Modal */}
       {selectedLog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <Card className="w-full max-w-6xl my-8 bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
+          <Card
+            className="w-full max-w-6xl my-8 bg-white shadow-2xl"
+            style={{ backgroundColor: '#ffffff' }}
+          >
             <CardHeader className="border-b">
               <div className="flex items-center justify-between">
                 <div>
@@ -436,7 +433,7 @@ const ChatLogsReviewPage: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Conversation Transcript</h3>
-                    
+
                     {/* Question */}
                     <div className="bg-muted/50 rounded-lg p-4 mb-4">
                       <div className="flex items-center gap-2 mb-2">
@@ -485,7 +482,7 @@ const ChatLogsReviewPage: React.FC = () => {
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Submit Feedback</h3>
-                    
+
                     {/* Reviewer Comments */}
                     <div className="space-y-2 mb-6">
                       <Label htmlFor="rev_comment">Reviewer Comments</Label>
@@ -519,7 +516,7 @@ const ChatLogsReviewPage: React.FC = () => {
                       <div className="space-y-2">
                         {ISSUE_TAGS.map((tag) => (
                           <div key={tag} className="flex items-center space-x-2">
-                            <Checkbox 
+                            <Checkbox
                               id={`tag-${tag}`}
                               checked={selectedTags.includes(tag)}
                               onCheckedChange={() => handleTagToggle(tag)}
@@ -537,7 +534,7 @@ const ChatLogsReviewPage: React.FC = () => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-4 border-t mt-6">
-                      <Button 
+                      <Button
                         type="button"
                         className="flex-1"
                         style={{ backgroundColor: '#00818F', color: '#ffffff' }}
@@ -556,9 +553,9 @@ const ChatLogsReviewPage: React.FC = () => {
                           </>
                         )}
                       </Button>
-                      <Button 
+                      <Button
                         type="button"
-                        variant="outline" 
+                        variant="outline"
                         onClick={() => setSelectedLog(null)}
                         disabled={isSubmitting}
                       >

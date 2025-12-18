@@ -9,7 +9,14 @@ import { APIError } from '../services/APIService';
 /**
  * Error types for classification
  */
-export type ErrorType = 'network' | 'authentication' | 'graphql' | 'validation' | 'application' | 'server' | 'unknown';
+export type ErrorType =
+  | 'network'
+  | 'authentication'
+  | 'graphql'
+  | 'validation'
+  | 'application'
+  | 'server'
+  | 'unknown';
 
 /**
  * Error severity levels
@@ -329,11 +336,11 @@ const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
 /**
  * Retry a function with exponential backoff
  * Requirements: 11.1, 11.2, 11.3, 11.4, 11.5
- * 
+ *
  * @param fn - The async function to retry
  * @param options - Retry configuration options
  * @returns Promise that resolves with the function result or rejects with the last error
- * 
+ *
  * @example
  * const result = await retryWithBackoff(
  *   () => fetchData(),
@@ -365,20 +372,14 @@ export async function retryWithBackoff<T>(
       }
 
       // Calculate delay with exponential backoff
-      const delay = Math.min(
-        opts.baseDelay * Math.pow(2, attempt),
-        opts.maxDelay
-      );
+      const delay = Math.min(opts.baseDelay * Math.pow(2, attempt), opts.maxDelay);
 
       // Call retry callback
       opts.onRetry(attempt + 1, error);
 
       // Log retry attempt
       if (import.meta.env.MODE === 'development') {
-        console.warn(
-          `Retry attempt ${attempt + 1}/${opts.maxAttempts} after ${delay}ms`,
-          error
-        );
+        console.warn(`Retry attempt ${attempt + 1}/${opts.maxAttempts} after ${delay}ms`, error);
       }
 
       // Wait before retrying
@@ -392,11 +393,11 @@ export async function retryWithBackoff<T>(
 
 /**
  * Create a retryable version of an async function
- * 
+ *
  * @param fn - The async function to make retryable
  * @param options - Retry configuration options
  * @returns A new function that retries on failure
- * 
+ *
  * @example
  * const retryableFetch = createRetryable(fetchData, { maxAttempts: 3 });
  * const result = await retryableFetch();

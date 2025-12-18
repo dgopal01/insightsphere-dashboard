@@ -105,9 +105,18 @@ function App() {
             {/* Legacy routes - redirect to Unity ISA */}
             <Route path="/dashboard" element={<Navigate to="/unity-isa/dashboard" replace />} />
             <Route path="/ai-metrics" element={<Navigate to="/unity-isa/ai-metrics" replace />} />
-            <Route path="/review-dashboard" element={<Navigate to="/unity-isa/dashboard" replace />} />
-            <Route path="/chat-logs-review" element={<Navigate to="/unity-isa/chat-logs-review" replace />} />
-            <Route path="/feedback-logs-review" element={<Navigate to="/unity-isa/feedback-logs-review" replace />} />
+            <Route
+              path="/review-dashboard"
+              element={<Navigate to="/unity-isa/dashboard" replace />}
+            />
+            <Route
+              path="/chat-logs-review"
+              element={<Navigate to="/unity-isa/chat-logs-review" replace />}
+            />
+            <Route
+              path="/feedback-logs-review"
+              element={<Navigate to="/unity-isa/feedback-logs-review" replace />}
+            />
 
             {/* Design Demo */}
             <Route

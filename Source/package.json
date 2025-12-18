@@ -31,7 +31,12 @@
     "test": "vitest --run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --run --coverage"
+    "test:coverage": "vitest --run --coverage",
+    "setup:dynamodb": "node eks-deployment/scripts/setup-dynamodb.js",
+    "setup:cloudwatch": "bash eks-deployment/scripts/setup-cloudwatch.sh",
+    "deploy:eks": "chmod +x eks-deployment/scripts/deploy.sh && ./eks-deployment/scripts/deploy.sh",
+    "build:docker": "docker build -t swbc-ethos-ai:latest .",
+    "k8s:status": "kubectl get all -n swbc-ethos-ai"
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.13.1",

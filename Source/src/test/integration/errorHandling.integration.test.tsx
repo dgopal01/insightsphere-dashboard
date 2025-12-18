@@ -46,9 +46,7 @@ function TestAppWithErrorBoundary({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
+        <ErrorBoundary>{children}</ErrorBoundary>
       </BrowserRouter>
     </QueryClientProvider>
   );
@@ -238,14 +236,17 @@ describe('Error Handling Integration Tests', () => {
     it('should display user-friendly message for GraphQL errors', async () => {
       server.use(
         graphql.query('ListUnityAIAssistantLogs', () => {
-          return HttpResponse.json({
-            errors: [
-              {
-                message: 'GraphQL error occurred',
-                errorType: 'GraphQLError',
-              },
-            ],
-          }, { status: 500 });
+          return HttpResponse.json(
+            {
+              errors: [
+                {
+                  message: 'GraphQL error occurred',
+                  errorType: 'GraphQLError',
+                },
+              ],
+            },
+            { status: 500 }
+          );
         })
       );
 
@@ -263,18 +264,21 @@ describe('Error Handling Integration Tests', () => {
     it('should handle multiple GraphQL errors', async () => {
       server.use(
         graphql.query('ListUnityAIAssistantLogs', () => {
-          return HttpResponse.json({
-            errors: [
-              {
-                message: 'Error 1',
-                errorType: 'GraphQLError',
-              },
-              {
-                message: 'Error 2',
-                errorType: 'GraphQLError',
-              },
-            ],
-          }, { status: 500 });
+          return HttpResponse.json(
+            {
+              errors: [
+                {
+                  message: 'Error 1',
+                  errorType: 'GraphQLError',
+                },
+                {
+                  message: 'Error 2',
+                  errorType: 'GraphQLError',
+                },
+              ],
+            },
+            { status: 500 }
+          );
         })
       );
 
@@ -324,7 +328,7 @@ describe('Error Handling Integration Tests', () => {
 
     it('should log error details for debugging', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       const ThrowError = () => {
         throw new Error('Component error');
       };
@@ -337,7 +341,7 @@ describe('Error Handling Integration Tests', () => {
 
       // Error should be logged
       expect(consoleSpy).toHaveBeenCalled();
-      
+
       consoleSpy.mockRestore();
     });
   });
@@ -345,14 +349,17 @@ describe('Error Handling Integration Tests', () => {
   describe('Error Recovery', () => {
     it('should allow retry after network error', async () => {
       let callCount = 0;
-      
+
       server.use(
         graphql.query('ListUnityAIAssistantLogs', () => {
           callCount++;
           if (callCount === 1) {
-            return HttpResponse.json({
-              errors: [{ message: 'Network error', errorType: 'NetworkError' }],
-            }, { status: 500 });
+            return HttpResponse.json(
+              {
+                errors: [{ message: 'Network error', errorType: 'NetworkError' }],
+              },
+              { status: 500 }
+            );
           }
           return HttpResponse.json({
             data: {
@@ -389,14 +396,17 @@ describe('Error Handling Integration Tests', () => {
 
     it('should recover from temporary errors', async () => {
       let callCount = 0;
-      
+
       server.use(
         graphql.query('GetReviewMetrics', () => {
           callCount++;
           if (callCount === 1) {
-            return HttpResponse.json({
-              errors: [{ message: 'Temporary error', errorType: 'ServerError' }],
-            }, { status: 500 });
+            return HttpResponse.json(
+              {
+                errors: [{ message: 'Temporary error', errorType: 'ServerError' }],
+              },
+              { status: 500 }
+            );
           }
           return HttpResponse.json({
             data: {
@@ -470,14 +480,17 @@ describe('Error Handling Integration Tests', () => {
     it('should display clear error messages', async () => {
       server.use(
         graphql.query('ListUnityAIAssistantLogs', () => {
-          return HttpResponse.json({
-            errors: [
-              {
-                message: 'Unable to fetch chat logs',
-                errorType: 'QueryError',
-              },
-            ],
-          }, { status: 500 });
+          return HttpResponse.json(
+            {
+              errors: [
+                {
+                  message: 'Unable to fetch chat logs',
+                  errorType: 'QueryError',
+                },
+              ],
+            },
+            { status: 500 }
+          );
         })
       );
 

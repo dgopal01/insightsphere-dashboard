@@ -20,15 +20,17 @@ const AWS_REGION = import.meta.env.VITE_AWS_REGION || 'us-east-1';
 async function getDynamoDBClient(): Promise<DynamoDBDocumentClient> {
   try {
     const session = await fetchAuthSession();
-    
+
     // Check if we have credentials
     if (!session.credentials) {
       console.error('No credentials in session:', session);
-      throw new Error('No credentials available. Please ensure you are signed in and the Identity Pool is configured.');
+      throw new Error(
+        'No credentials available. Please ensure you are signed in and the Identity Pool is configured.'
+      );
     }
 
     const credentials = session.credentials;
-    
+
     console.log('Creating DynamoDB client with credentials from:', {
       identityId: session.identityId,
       hasAccessKey: !!credentials.accessKeyId,
@@ -48,7 +50,9 @@ async function getDynamoDBClient(): Promise<DynamoDBDocumentClient> {
     return DynamoDBDocumentClient.from(client);
   } catch (error) {
     console.error('Error getting DynamoDB client:', error);
-    throw new Error(`Failed to get DynamoDB client: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to get DynamoDB client: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
@@ -154,7 +158,7 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
     const response = await client.send(command);
 
     console.log(`Successfully fetched ${response.Items?.length || 0} feedback logs`);
-    
+
     // Log first item to verify structure
     if (response.Items && response.Items.length > 0) {
       console.log('Sample feedback log (raw):', JSON.stringify(response.Items[0], null, 2));
@@ -240,7 +244,10 @@ export async function updateChatLogReview(
       ReturnValues: 'ALL_NEW' as const,
     };
 
-    console.log('DynamoDB UpdateCommand params for chat log:', JSON.stringify(updateParams, null, 2));
+    console.log(
+      'DynamoDB UpdateCommand params for chat log:',
+      JSON.stringify(updateParams, null, 2)
+    );
 
     const command = new UpdateCommand(updateParams);
     const response = await client.send(command);
@@ -257,7 +264,9 @@ export async function updateChatLogReview(
     });
 
     if (error?.name === 'ValidationException') {
-      throw new Error(`DynamoDB validation error: ${error.message}. Check that log_id="${logId}" and timestamp="${timestamp}" are correct.`);
+      throw new Error(
+        `DynamoDB validation error: ${error.message}. Check that log_id="${logId}" and timestamp="${timestamp}" are correct.`
+      );
     }
 
     throw new Error(`Failed to update chat log review: ${error?.message || 'Unknown error'}`);
@@ -320,7 +329,7 @@ export async function updateFeedbackLogReview(
 
     const command = new UpdateCommand(updateParams);
     const response = await client.send(command);
-    
+
     console.log('Update successful:', response.Attributes);
     return response.Attributes as FeedbackLogEntry;
   } catch (error: any) {
@@ -331,16 +340,17 @@ export async function updateFeedbackLogReview(
       errorCode: error?.$metadata?.httpStatusCode,
       requestId: error?.$metadata?.requestId,
     });
-    
+
     // Provide more helpful error message
     if (error?.name === 'ValidationException') {
-      throw new Error(`DynamoDB validation error: ${error.message}. Check that id="${id}" and datetime="${datetime}" are correct.`);
+      throw new Error(
+        `DynamoDB validation error: ${error.message}. Check that id="${id}" and datetime="${datetime}" are correct.`
+      );
     }
-    
+
     throw new Error(`Failed to update feedback review: ${error?.message || 'Unknown error'}`);
   }
 }
-
 
 /**
  * AI Evaluation Job Entry interface matching DynamoDB structure

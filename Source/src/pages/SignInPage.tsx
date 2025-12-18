@@ -186,7 +186,8 @@ const SignInPage: React.FC = () => {
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Must be at least 8 characters with uppercase, lowercase, number, and special character
+                  Must be at least 8 characters with uppercase, lowercase, number, and special
+                  character
                 </p>
               </div>
 
@@ -209,7 +210,11 @@ const SignInPage: React.FC = () => {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={isSubmitting || isLoading}
                   >
-                    {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
                   </button>
                 </div>
               </div>

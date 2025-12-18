@@ -94,11 +94,7 @@ export const getUserFeedback = /* GraphQL */ `
  * List User Feedbacks with optional filtering and pagination
  */
 export const listUserFeedbacks = /* GraphQL */ `
-  query ListUserFeedbacks(
-    $filter: ModelUserFeedbackFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
+  query ListUserFeedbacks($filter: ModelUserFeedbackFilterInput, $limit: Int, $nextToken: String) {
     listUserFeedbacks(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id

@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 
 const getMenuItems = (productId?: string) => {
   const basePath = productId ? `/${productId}` : '';
-  
+
   return [
     {
       id: 'ai-metrics',
@@ -142,9 +142,7 @@ export function AppSidebar({ productId }: AppSidebarProps) {
               <LogOut className="size-4" />
               <span>Logout</span>
             </Button>
-            <div className="text-sidebar-foreground/40 text-xs text-center">
-              v1.0.0
-            </div>
+            <div className="text-sidebar-foreground/40 text-xs text-center">v1.0.0</div>
           </div>
         ) : (
           <Button

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ethos-ai-config
+  namespace: swbc-ethos-ai
+data:
+  VITE_ENV: "production"
+  VITE_AWS_REGION: "us-east-1"
+  VITE_API_TIMEOUT: "30000"
+  VITE_API_RETRY_ATTEMPTS: "3"
+  VITE_ENABLE_ANALYTICS: "true"
+  VITE_ENABLE_ERROR_TRACKING: "true"
+  VITE_ENABLE_PERFORMANCE_MONITORING: "true"
+  VITE_DEBUG_MODE: "false"
+  VITE_LOG_LEVEL: "error"
+  VITE_ENABLE_SOURCE_MAPS: "false"
+  VITE_BUNDLE_ANALYZER: "false"
+  VITE_SENTRY_ENVIRONMENT: "production"
+  VITE_SENTRY_TRACES_SAMPLE_RATE: "0.1"

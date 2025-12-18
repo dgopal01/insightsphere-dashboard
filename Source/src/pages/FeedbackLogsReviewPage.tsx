@@ -70,16 +70,8 @@ const FeedbackLogsReviewPage: React.FC = () => {
   const [reviewFeedback, setReviewFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    logs,
-    loading,
-    error,
-    totalCount,
-    nextToken,
-    fetchLogs,
-    fetchNextPage,
-    refetch,
-  } = useFeedbackLogs();
+  const { logs, loading, error, totalCount, nextToken, fetchLogs, fetchNextPage, refetch } =
+    useFeedbackLogs();
 
   useEffect(() => {
     fetchLogs(filters, sortDirection);
@@ -99,12 +91,12 @@ const FeedbackLogsReviewPage: React.FC = () => {
 
   const handleSubmitFeedback = async () => {
     if (!selectedLog) return;
-    
+
     setIsSubmitting(true);
     try {
       // Import DynamoDB service
       const { updateFeedbackLogReview } = await import('../services/DynamoDBService');
-      
+
       // Update in DynamoDB with composite key (id + datetime)
       await updateFeedbackLogReview(
         selectedLog.id,
@@ -112,7 +104,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
         reviewComment,
         reviewFeedback
       );
-      
+
       // Close modal and refresh data
       setSelectedLog(null);
       setReviewComment('');
@@ -120,7 +112,9 @@ const FeedbackLogsReviewPage: React.FC = () => {
       refetch();
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      alert(`Failed to submit feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      alert(
+        `Failed to submit feedback: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -155,9 +149,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
           <ThumbsUp className="size-10 text-primary" />
           <div>
             <h1 className="text-3xl font-bold">Feedback Logs Review</h1>
-            <p className="text-muted-foreground">
-              Review and add comments to user feedback logs
-            </p>
+            <p className="text-muted-foreground">Review and add comments to user feedback logs</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -178,7 +170,9 @@ const FeedbackLogsReviewPage: React.FC = () => {
             <Filter className="size-5" />
             Filters
           </CardTitle>
-          <CardDescription>Filter feedback logs by review status, feedback type, and date range</CardDescription>
+          <CardDescription>
+            Filter feedback logs by review status, feedback type, and date range
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Review Status Filter */}
@@ -258,7 +252,9 @@ const FeedbackLogsReviewPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setFilters({ reviewStatus: filters.reviewStatus, feedbackType: 'all' })}
+              onClick={() =>
+                setFilters({ reviewStatus: filters.reviewStatus, feedbackType: 'all' })
+              }
               className="w-full"
             >
               <X className="size-4 mr-2" />
@@ -272,9 +268,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Feedback Logs ({logs.length})</CardTitle>
-          <CardDescription>
-            Click on a row to view details and add review comments
-          </CardDescription>
+          <CardDescription>Click on a row to view details and add review comments</CardDescription>
         </CardHeader>
         <CardContent>
           {loading && logs.length === 0 ? (
@@ -353,11 +347,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
               {/* Load More Button */}
               {nextToken && (
                 <div className="flex justify-center mt-6">
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={loading}
-                  >
+                  <Button variant="outline" onClick={handleLoadMore} disabled={loading}>
                     {loading ? (
                       <>
                         <RefreshCw className="size-4 mr-2 animate-spin" />
@@ -377,7 +367,10 @@ const FeedbackLogsReviewPage: React.FC = () => {
       {/* Editable Review Modal */}
       {selectedLog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <Card className="w-full max-w-6xl my-8 bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
+          <Card
+            className="w-full max-w-6xl my-8 bg-white shadow-2xl"
+            style={{ backgroundColor: '#ffffff' }}
+          >
             <CardHeader className="border-b">
               <div className="flex items-center justify-between">
                 <div>
@@ -395,18 +388,22 @@ const FeedbackLogsReviewPage: React.FC = () => {
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Conversation Transcript</h3>
-                    
+
                     {/* Feedback Type Badge */}
                     {selectedLog.info?.feedback && (
                       <div className="mb-4">
-                        <Badge 
+                        <Badge
                           variant={getFeedbackVariant(selectedLog.info.feedback)}
                           className="text-base px-3 py-1"
                         >
                           {selectedLog.info.feedback === 'thumbs_up' ? (
-                            <><ThumbsUp className="size-4 mr-1" /> Positive</>
+                            <>
+                              <ThumbsUp className="size-4 mr-1" /> Positive
+                            </>
                           ) : (
-                            <><ThumbsDown className="size-4 mr-1" /> Negative</>
+                            <>
+                              <ThumbsDown className="size-4 mr-1" /> Negative
+                            </>
                           )}
                         </Badge>
                       </div>
@@ -460,7 +457,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold mb-4">Submit Feedback</h3>
-                    
+
                     {/* Reviewer Comments */}
                     <div className="space-y-2 mb-6">
                       <Label htmlFor="rev_comment">Reviewer Comments</Label>
@@ -487,7 +484,7 @@ const FeedbackLogsReviewPage: React.FC = () => {
 
                     {/* Action Buttons */}
                     <div className="flex gap-3 pt-4 border-t mt-6">
-                      <Button 
+                      <Button
                         type="button"
                         className="flex-1"
                         style={{ backgroundColor: '#00818F', color: '#ffffff' }}
@@ -506,9 +503,9 @@ const FeedbackLogsReviewPage: React.FC = () => {
                           </>
                         )}
                       </Button>
-                      <Button 
+                      <Button
                         type="button"
-                        variant="outline" 
+                        variant="outline"
                         onClick={() => setSelectedLog(null)}
                         disabled={isSubmitting}
                       >

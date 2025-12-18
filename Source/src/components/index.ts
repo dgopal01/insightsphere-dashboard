@@ -1,6 +1,6 @@
 /**
  * Component exports
- * 
+ *
  * Note: Old Material-UI components have been archived to archive/components/
  * This file now exports only the new Tailwind CSS + Radix UI components
  */
@@ -8,12 +8,12 @@
 // Core Components
 export { ProtectedRoute } from './ProtectedRoute';
 export { ErrorBoundary } from './ErrorBoundary';
-export { 
-  ErrorDisplay, 
-  NetworkError, 
-  AuthenticationError, 
-  ValidationError, 
-  ServerError 
+export {
+  ErrorDisplay,
+  NetworkError,
+  AuthenticationError,
+  ValidationError,
+  ServerError,
 } from './ErrorDisplay';
 
 // Layout Components

@@ -334,9 +334,10 @@ describe('Chat Log Review Workflow Integration Tests', () => {
   describe('Error Handling', () => {
     it('should display error message when query fails', async () => {
       // Configure server to return error
-      server.use(
+      server
+        .use
         // Add error handler
-      );
+        ();
 
       renderWithProviders(<ChatLogsReviewPage />);
 

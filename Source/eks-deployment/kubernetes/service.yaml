@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ethos-ai-frontend-service
+  namespace: swbc-ethos-ai
+  labels:
+    app: ethos-ai-frontend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: ethos-ai-frontend

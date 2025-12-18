@@ -36,6 +36,6 @@ export const configureAmplify = () => {
       },
     },
   });
-  
+
   console.log('Amplify configured with Identity Pool:', awsconfig.aws_cognito_identity_pool_id);
 };

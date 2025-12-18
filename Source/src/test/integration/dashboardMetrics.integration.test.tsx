@@ -52,12 +52,15 @@ describe('Dashboard Metrics Integration Tests', () => {
 
     it('should display metrics within 3 seconds', async () => {
       const startTime = Date.now();
-      
+
       renderWithProviders(<ReviewDashboardPage />);
 
-      await waitFor(() => {
-        expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
+        },
+        { timeout: 3000 }
+      );
 
       const loadTime = Date.now() - startTime;
       expect(loadTime).toBeLessThan(3000);
@@ -360,9 +363,10 @@ describe('Dashboard Metrics Integration Tests', () => {
   describe('Error Handling', () => {
     it('should display error message when metrics query fails', async () => {
       // Configure server to return error
-      server.use(
+      server
+        .use
         // Add error handler
-      );
+        ();
 
       renderWithProviders(<ReviewDashboardPage />);
 
@@ -373,9 +377,10 @@ describe('Dashboard Metrics Integration Tests', () => {
 
     it('should provide retry option after error', async () => {
       // Configure server to return error
-      server.use(
+      server
+        .use
         // Add error handler
-      );
+        ();
 
       renderWithProviders(<ReviewDashboardPage />);
 
@@ -386,9 +391,10 @@ describe('Dashboard Metrics Integration Tests', () => {
 
     it('should handle network errors gracefully', async () => {
       // Configure server to return network error
-      server.use(
+      server
+        .use
         // Add network error handler
-      );
+        ();
 
       renderWithProviders(<ReviewDashboardPage />);
 

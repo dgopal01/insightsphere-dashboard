@@ -31,7 +31,10 @@ export interface UseChatLogsReturn {
 /**
  * Apply client-side filters to chat logs
  */
-function applyFilters(logs: DynamoDBService.ChatLogEntry[], filters?: ChatLogFilters): DynamoDBService.ChatLogEntry[] {
+function applyFilters(
+  logs: DynamoDBService.ChatLogEntry[],
+  filters?: ChatLogFilters
+): DynamoDBService.ChatLogEntry[] {
   if (!filters) return logs;
 
   return logs.filter((log) => {
@@ -66,7 +69,10 @@ function applyFilters(logs: DynamoDBService.ChatLogEntry[], filters?: ChatLogFil
 /**
  * Sort logs by timestamp
  */
-function sortLogs(logs: DynamoDBService.ChatLogEntry[], direction: SortDirection): DynamoDBService.ChatLogEntry[] {
+function sortLogs(
+  logs: DynamoDBService.ChatLogEntry[],
+  direction: SortDirection
+): DynamoDBService.ChatLogEntry[] {
   return [...logs].sort((a, b) => {
     const timeA = new Date(a.timestamp).getTime();
     const timeB = new Date(b.timestamp).getTime();
@@ -99,10 +105,10 @@ export function useChatLogs(): UseChatLogsReturn {
       try {
         // Fetch from DynamoDB
         const result = await DynamoDBService.listChatLogs(1000);
-        
+
         // Apply client-side filters
         const filteredLogs = applyFilters(result.items, filters);
-        
+
         // Sort logs
         const sortedLogs = sortLogs(filteredLogs, sortDirection);
 

@@ -23,7 +23,7 @@ describe('Core Data Types', () => {
       question: 'Test question',
       response: 'Test response',
     };
-    
+
     expect(chatLog.log_id).toBe('test-log-1');
     expect(chatLog.carrier_name).toBe('TestCarrier');
   });
@@ -34,7 +34,7 @@ describe('Core Data Types', () => {
       datetime: '2024-01-01T00:00:00Z',
       carrier: 'TestCarrier',
     };
-    
+
     expect(feedback.id).toBe('test-feedback-1');
     expect(feedback.carrier).toBe('TestCarrier');
   });
@@ -48,7 +48,7 @@ describe('Core Data Types', () => {
       reviewedFeedbackLogs: 25,
       pendingFeedbackLogs: 50,
     };
-    
+
     expect(metrics.totalChatLogs).toBe(100);
     expect(metrics.reviewedChatLogs).toBe(50);
   });
@@ -60,7 +60,7 @@ describe('Core Data Types', () => {
       endDate: '2024-12-31',
       reviewStatus: 'pending',
     };
-    
+
     expect(filters.carrier_name).toBe('TestCarrier');
     expect(filters.reviewStatus).toBe('pending');
   });
@@ -72,7 +72,7 @@ describe('Core Data Types', () => {
       endDate: '2024-12-31',
       reviewStatus: 'reviewed',
     };
-    
+
     expect(filters.carrier).toBe('TestCarrier');
     expect(filters.reviewStatus).toBe('reviewed');
   });
@@ -84,7 +84,7 @@ describe('Core Data Types', () => {
       nextToken: 'token123',
       hasMore: true,
     };
-    
+
     expect(pagination.currentPage).toBe(1);
     expect(pagination.pageSize).toBe(50);
     expect(pagination.hasMore).toBe(true);
@@ -95,7 +95,7 @@ describe('Core Data Types', () => {
       rev_comment: 'This is a review comment',
       rev_feedback: 'This is review feedback',
     };
-    
+
     expect(reviewData.rev_comment).toBe('This is a review comment');
     expect(reviewData.rev_feedback).toBe('This is review feedback');
   });
@@ -112,7 +112,7 @@ describe('Core Data Types', () => {
       rev_comment: 'Review comment',
       rev_feedback: 'Review feedback',
     };
-    
+
     expect(chatLog.chat_id).toBe('chat-123');
     expect(chatLog.rev_comment).toBe('Review comment');
   });
@@ -129,7 +129,7 @@ describe('Core Data Types', () => {
       rev_comment: 'Review comment',
       rev_feedback: 'Review feedback',
     };
-    
+
     expect(feedback.comments).toBe('User comments');
     expect(feedback.rev_comment).toBe('Review comment');
   });
@@ -138,7 +138,7 @@ describe('Core Data Types', () => {
     const allFilter: ChatLogFilters = { reviewStatus: 'all' };
     const reviewedFilter: ChatLogFilters = { reviewStatus: 'reviewed' };
     const pendingFilter: ChatLogFilters = { reviewStatus: 'pending' };
-    
+
     expect(allFilter.reviewStatus).toBe('all');
     expect(reviewedFilter.reviewStatus).toBe('reviewed');
     expect(pendingFilter.reviewStatus).toBe('pending');
@@ -148,7 +148,7 @@ describe('Core Data Types', () => {
     const allFilter: FeedbackLogFilters = { reviewStatus: 'all' };
     const reviewedFilter: FeedbackLogFilters = { reviewStatus: 'reviewed' };
     const pendingFilter: FeedbackLogFilters = { reviewStatus: 'pending' };
-    
+
     expect(allFilter.reviewStatus).toBe('all');
     expect(reviewedFilter.reviewStatus).toBe('reviewed');
     expect(pendingFilter.reviewStatus).toBe('pending');

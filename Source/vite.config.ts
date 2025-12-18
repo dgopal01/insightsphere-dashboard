@@ -56,7 +56,7 @@ export default defineConfig(({ mode }) => {
           manualChunks: (id) => {
             // Keep React and React-DOM together to avoid duplicate instances
             if (
-              id.includes('node_modules/react/') || 
+              id.includes('node_modules/react/') ||
               id.includes('node_modules/react-dom/') ||
               id.includes('node_modules/scheduler/')
             ) {
@@ -67,10 +67,7 @@ export default defineConfig(({ mode }) => {
               return 'router-vendor';
             }
             // Material-UI and Emotion (they depend on React)
-            if (
-              id.includes('node_modules/@mui') ||
-              id.includes('node_modules/@emotion')
-            ) {
+            if (id.includes('node_modules/@mui') || id.includes('node_modules/@emotion')) {
               return 'mui-vendor';
             }
             // AWS Amplify
@@ -98,15 +95,9 @@ export default defineConfig(({ mode }) => {
             }
           },
           // Optimize chunk file names for caching
-          chunkFileNames: isProd
-            ? 'assets/js/[name]-[hash].js'
-            : 'assets/js/[name].js',
-          entryFileNames: isProd
-            ? 'assets/js/[name]-[hash].js'
-            : 'assets/js/[name].js',
-          assetFileNames: isProd
-            ? 'assets/[ext]/[name]-[hash].[ext]'
-            : 'assets/[ext]/[name].[ext]',
+          chunkFileNames: isProd ? 'assets/js/[name]-[hash].js' : 'assets/js/[name].js',
+          entryFileNames: isProd ? 'assets/js/[name]-[hash].js' : 'assets/js/[name].js',
+          assetFileNames: isProd ? 'assets/[ext]/[name]-[hash].[ext]' : 'assets/[ext]/[name].[ext]',
         },
       },
       // Increase chunk size warning limit

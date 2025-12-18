@@ -102,9 +102,7 @@ const ReviewMetricsCardComponent: React.FC<ReviewMetricsCardProps> = ({
           {/* Total */}
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-center">
             <div className="text-sm text-muted-foreground mb-1">Total</div>
-            <div className="text-3xl font-bold text-primary">
-              {total.toLocaleString()}
-            </div>
+            <div className="text-3xl font-bold text-primary">{total.toLocaleString()}</div>
           </div>
 
           {/* Reviewed */}
@@ -113,9 +111,7 @@ const ReviewMetricsCardComponent: React.FC<ReviewMetricsCardProps> = ({
               <CheckCircle className="size-4" />
               <span>Reviewed</span>
             </div>
-            <div className="text-3xl font-bold text-green-700">
-              {reviewed.toLocaleString()}
-            </div>
+            <div className="text-3xl font-bold text-green-700">{reviewed.toLocaleString()}</div>
           </div>
 
           {/* Pending */}
@@ -124,9 +120,7 @@ const ReviewMetricsCardComponent: React.FC<ReviewMetricsCardProps> = ({
               <Clock className="size-4" />
               <span>Pending</span>
             </div>
-            <div className="text-3xl font-bold text-yellow-700">
-              {pending.toLocaleString()}
-            </div>
+            <div className="text-3xl font-bold text-yellow-700">{pending.toLocaleString()}</div>
           </div>
         </div>
 
@@ -135,9 +129,7 @@ const ReviewMetricsCardComponent: React.FC<ReviewMetricsCardProps> = ({
           <p className="text-xs text-muted-foreground">
             {reviewed} of {total} entries have been reviewed
           </p>
-          <p className="text-xs text-muted-foreground">
-            {pending} entries are pending review
-          </p>
+          <p className="text-xs text-muted-foreground">{pending} entries are pending review</p>
         </div>
       </CardContent>
     </Card>

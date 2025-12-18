@@ -5,15 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, AlertCircle, X, MessageSquare } from 'lucide-react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -283,7 +275,11 @@ const AIMetricsDashboardPage: React.FC = () => {
                   Distribution of conversations by helpfulness score (0.0 - 1.0 scale)
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Helpfulness')}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleSeeConversations('Builtin.Helpfulness')}
+              >
                 See Conversations
               </Button>
             </div>
@@ -293,7 +289,9 @@ const AIMetricsDashboardPage: React.FC = () => {
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Helpfulness')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
-                <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
+                <YAxis
+                  label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }}
+                />
                 <Tooltip />
                 <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Conversations" />
               </BarChart>
@@ -311,7 +309,11 @@ const AIMetricsDashboardPage: React.FC = () => {
                   Distribution of conversations by correctness score (0.0 - 1.0 scale)
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Correctness')}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleSeeConversations('Builtin.Correctness')}
+              >
                 See Conversations
               </Button>
             </div>
@@ -321,7 +323,9 @@ const AIMetricsDashboardPage: React.FC = () => {
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Correctness')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
-                <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
+                <YAxis
+                  label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }}
+                />
                 <Tooltip />
                 <Bar dataKey="count" fill="hsl(var(--chart-2))" name="Conversations" />
               </BarChart>
@@ -336,10 +340,15 @@ const AIMetricsDashboardPage: React.FC = () => {
               <div className="space-y-1">
                 <CardTitle>Faithfulness Scores</CardTitle>
                 <CardDescription>
-                  How closely AI's answers match the true source (facts without inventing information)
+                  How closely AI's answers match the true source (facts without inventing
+                  information)
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Faithfulness')}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleSeeConversations('Builtin.Faithfulness')}
+              >
                 See Conversations
               </Button>
             </div>
@@ -349,7 +358,9 @@ const AIMetricsDashboardPage: React.FC = () => {
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Faithfulness')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
-                <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
+                <YAxis
+                  label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }}
+                />
                 <Tooltip />
                 <Bar dataKey="count" fill="hsl(var(--chart-3))" name="Conversations" />
               </BarChart>
@@ -364,10 +375,15 @@ const AIMetricsDashboardPage: React.FC = () => {
               <div className="space-y-1">
                 <CardTitle>Harmfulness Scores</CardTitle>
                 <CardDescription>
-                  The potential for AI systems to cause physical, psychological, economic, or social harm
+                  The potential for AI systems to cause physical, psychological, economic, or social
+                  harm
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Harmfulness')}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleSeeConversations('Builtin.Harmfulness')}
+              >
                 See Conversations
               </Button>
             </div>
@@ -377,7 +393,9 @@ const AIMetricsDashboardPage: React.FC = () => {
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Harmfulness')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
-                <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
+                <YAxis
+                  label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }}
+                />
                 <Tooltip />
                 <Bar dataKey="count" fill="hsl(var(--chart-4))" name="Conversations" />
               </BarChart>
@@ -395,7 +413,11 @@ const AIMetricsDashboardPage: React.FC = () => {
                   When AI systems reinforce biased, harmful stereotypes about groups of people
                 </CardDescription>
               </div>
-              <Button size="sm" variant="outline" onClick={() => handleSeeConversations('Builtin.Stereotyping')}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleSeeConversations('Builtin.Stereotyping')}
+              >
                 See Conversations
               </Button>
             </div>
@@ -405,7 +427,9 @@ const AIMetricsDashboardPage: React.FC = () => {
               <BarChart data={calculateScoreDistribution(jobs, 'Builtin.Stereotyping')}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="range" />
-                <YAxis label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }} />
+                <YAxis
+                  label={{ value: 'Total Conversations', angle: -90, position: 'insideLeft' }}
+                />
                 <Tooltip />
                 <Bar dataKey="count" fill="hsl(var(--chart-5))" name="Conversations" />
               </BarChart>
@@ -417,7 +441,10 @@ const AIMetricsDashboardPage: React.FC = () => {
       {/* Conversations Modal */}
       {selectedMetric && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-[95vw] max-h-[90vh] overflow-auto bg-white shadow-2xl" style={{ backgroundColor: '#ffffff' }}>
+          <Card
+            className="w-full max-w-[95vw] max-h-[90vh] overflow-auto bg-white shadow-2xl"
+            style={{ backgroundColor: '#ffffff' }}
+          >
             <CardHeader className="border-b">
               <div className="flex items-center justify-between">
                 <div>
@@ -459,27 +486,27 @@ const AIMetricsDashboardPage: React.FC = () => {
                   <tbody className="divide-y divide-border">
                     {selectedJobs.map((job, index) => {
                       const sourcesCount = job.citations_metadata?.length || 0;
-                      const scores = job.results?.filter(r => r.metricName === selectedMetric) || [];
+                      const scores =
+                        job.results?.filter((r) => r.metricName === selectedMetric) || [];
                       const score = scores[0]?.result;
-                      
+
                       return (
-                        <tr key={`${job.log_id}-${index}`} className="hover:bg-muted/50 transition-colors">
+                        <tr
+                          key={`${job.log_id}-${index}`}
+                          className="hover:bg-muted/50 transition-colors"
+                        >
                           <td className="px-6 py-4 text-sm max-w-md align-top">
                             {job.prompt_text}
                           </td>
                           <td className="px-6 py-4 text-sm max-w-md align-top">
                             {job.output_text}
                           </td>
-                          <td className="px-6 py-4 text-sm align-top">
-                            {sourcesCount}
-                          </td>
+                          <td className="px-6 py-4 text-sm align-top">{sourcesCount}</td>
                           <td className="px-6 py-4 text-sm max-w-xs align-top">
                             {job.reference_response_text || 'N/A'}
                           </td>
                           <td className="px-6 py-4 text-sm align-top">
-                            <span className="font-medium">
-                              {score ? score.toFixed(2) : 'N/A'}
-                            </span>
+                            <span className="font-medium">{score ? score.toFixed(2) : 'N/A'}</span>
                           </td>
                         </tr>
                       );

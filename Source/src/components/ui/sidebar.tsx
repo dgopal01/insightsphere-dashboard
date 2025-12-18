@@ -51,7 +51,7 @@ function SidebarProvider({
   const [openMobile, setOpenMobile] = React.useState(false);
   const [_open, _setOpen] = React.useState(defaultOpen);
   const open = openProp ?? _open;
-  
+
   const setOpen = React.useCallback(
     (value: boolean | ((value: boolean) => boolean)) => {
       const openState = typeof value === 'function' ? value(open) : value;
@@ -123,10 +123,7 @@ function Sidebar({
     return (
       <div
         data-slot="sidebar"
-        className={cn(
-          'bg-sidebar text-sidebar-foreground flex h-full flex-col',
-          className
-        )}
+        className={cn('bg-sidebar text-sidebar-foreground flex h-full flex-col', className)}
         style={{ width: SIDEBAR_WIDTH }}
         {...props}
       >
@@ -175,7 +172,8 @@ function Sidebar({
             : `w-[${SIDEBAR_WIDTH}]`
         )}
         style={{
-          width: state === 'collapsed' && collapsible === 'icon' ? SIDEBAR_WIDTH_ICON : SIDEBAR_WIDTH,
+          width:
+            state === 'collapsed' && collapsible === 'icon' ? SIDEBAR_WIDTH_ICON : SIDEBAR_WIDTH,
         }}
       />
       <div
@@ -187,7 +185,8 @@ function Sidebar({
           className
         )}
         style={{
-          width: state === 'collapsed' && collapsible === 'icon' ? SIDEBAR_WIDTH_ICON : SIDEBAR_WIDTH,
+          width:
+            state === 'collapsed' && collapsible === 'icon' ? SIDEBAR_WIDTH_ICON : SIDEBAR_WIDTH,
         }}
         {...props}
       >
@@ -203,11 +202,7 @@ function Sidebar({
   );
 }
 
-function SidebarTrigger({
-  className,
-  onClick,
-  ...props
-}: React.ComponentProps<typeof Button>) {
+function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>) {
   const { toggleSidebar } = useSidebar();
 
   return (
@@ -261,10 +256,7 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-function SidebarSeparator({
-  className,
-  ...props
-}: React.ComponentProps<typeof Separator>) {
+function SidebarSeparator({ className, ...props }: React.ComponentProps<typeof Separator>) {
   return (
     <Separator
       data-slot="sidebar-separator"
@@ -328,7 +320,8 @@ const sidebarMenuButtonVariants = cva(
     variants: {
       variant: {
         default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-        outline: 'bg-background shadow-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+        outline:
+          'bg-background shadow-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
       },
       size: {
         default: 'h-8 text-sm',

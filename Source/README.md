@@ -4,8 +4,7 @@ A comprehensive ReactJS web application built with AWS Amplify for reviewing and
 
 ## 🚀 Quick Start
 
-**New to the project?** See [QUICK_START.md](./QUICK_START.md) for step-by-step setup instructions.
-
+### Local Development
 ```bash
 # Install dependencies
 npm install
@@ -20,22 +19,39 @@ npm test
 npm run build:prod
 ```
 
+### EKS Deployment (Recommended)
+```bash
+# Navigate to EKS deployment
+cd eks-deployment
+
+# One-command deployment
+./scripts/deploy.sh
+```
+
+See `eks-deployment/QUICK-START.md` for detailed instructions.
+
 ## Project Structure
 
 - `src/` - Application source code
-- `docs/` - Feature-specific documentation
-- `build_docs/` - Build, deployment, and setup documentation
+- `eks-deployment/` - Complete EKS deployment solution
+- `docs/` - General project documentation
 - `cloudformation/` - AWS infrastructure templates
 - `lambda/` - Lambda function code
 - `scripts/` - Build and deployment scripts
+- `amplify/` - AWS Amplify configuration (legacy)
+
+See [PROJECT-STRUCTURE.md](./PROJECT-STRUCTURE.md) for detailed project organization.
 
 ## 📚 Documentation
 
 ### 🎯 Quick Access
-- 📖 **[Complete Documentation Index](./docs/README.md)** - Start here for all documentation
-- 🏗️ **[Architecture Diagrams](./docs/ARCHITECTURE_DIAGRAM.md)** - System architecture with 11 diagrams
-- 🚀 **[Deployment Guide](./docs/DEPLOYMENT_GUIDE.md)** - Comprehensive deployment (Amplify + EKS)
-- 📊 **[DevOps Backlog](./docs/DEVOPS_BACKLOG.md)** - 5 PBIs for deployment project
+- 📖 **[Documentation Hub](./docs/README.md)** - Complete documentation navigation
+- 📋 **[Project Structure](./PROJECT-STRUCTURE.md)** - Complete project organization
+- 🚀 **[EKS Deployment Guide](./eks-deployment/README.md)** - Production deployment to Kubernetes
+- 🏗️ **[Architecture Diagrams](./docs/architecture/ARCHITECTURE_DIAGRAM.md)** - System architecture
+- 🔧 **[Development Guides](./docs/development/)** - Development setup and guides
+- 🚢 **[Deployment Guides](./docs/deployment/)** - Deployment and operations
+- 📊 **[DevOps Backlog](./docs/DEVOPS_BACKLOG.md)** - Development backlog
 
 ### 👥 For New Team Members
 - [Developer Onboarding Guide](./docs/onboarding/DEVELOPER_ONBOARDING_GUIDE.md)
@@ -43,11 +59,11 @@ npm run build:prod
 - [Backend Setup](./docs/BACKEND_SETUP.md)
 
 ### 🚢 For DevOps Engineers
-- [Deployment Guide](./docs/DEPLOYMENT_GUIDE.md) - **Start Here**
-- [Architecture Diagrams](./docs/ARCHITECTURE_DIAGRAM.md)
-- [DevOps Backlog](./docs/DEVOPS_BACKLOG.md)
-- [Deployment Checklist](./docs/DEPLOYMENT_CHECKLIST.md)
-- [CI/CD Pipeline](./docs/CI_CD_PIPELINE.md)
+- [EKS Deployment](./eks-deployment/) - **Start Here for Production Deployment**
+- [EKS Quick Start](./eks-deployment/QUICK-START.md)
+- [EKS Security Guide](./eks-deployment/docs/security.md)
+- [EKS Troubleshooting](./eks-deployment/docs/troubleshooting.md)
+- [EKS Maintenance](./eks-deployment/docs/maintenance.md)
 
 ### 📖 Feature Documentation
 - [Chat Logs Review System](./docs/chat-logs-review/README.md)
@@ -112,6 +128,19 @@ npm run format
 
 ## Deployment
 
+### EKS Deployment (Recommended)
+```bash
+# Setup DynamoDB tables
+npm run setup:dynamodb
+
+# Deploy to EKS cluster
+npm run deploy:eks
+
+# Check deployment status
+npm run k8s:status
+```
+
+### Amplify Deployment (Legacy)
 ```bash
 # Build for specific environment
 npm run build:dev
@@ -124,7 +153,7 @@ npm run deploy:staging
 npm run deploy:prod
 ```
 
-See [Cloud Deployment Guide](./build_docs/CLOUD_DEPLOYMENT_GUIDE.md) for detailed deployment instructions.
+See `eks-deployment/` directory for comprehensive deployment documentation.
 
 ## License
 
