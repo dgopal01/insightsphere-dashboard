@@ -58,6 +58,7 @@ export interface ChatLogEntry {
   response?: string;
   rev_comment?: string;
   rev_feedback?: string;
+  issue_tags?: string[] | string;
   session_id?: string;
   user_name?: string;
   usr_comment?: string;
