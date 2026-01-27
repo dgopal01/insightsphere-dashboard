@@ -1,0 +1,4 @@
+# file: C:\Users\DGopal\AppData\Roaming\Python\Python311\site-packages\pytest_benchmark\fixture.py
+# hypothesis_version: 6.148.7
+
+['benchmark(...)', 'callspec', 'disable_gc', 'max_time', 'min_rounds', 'min_time', 'timer', 'warmup']

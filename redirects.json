@@ -1,0 +1,14 @@
+[
+  {
+    "source": "/<*>",
+    "target": "/index.html",
+    "status": "200",
+    "condition": null
+  },
+  {
+    "source": "/api/<*>",
+    "target": "https://api.insightsphere.example.com/<*>",
+    "status": "200",
+    "condition": null
+  }
+]

@@ -1,0 +1,943 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Chat Logs Review System - Complete Infrastructure Stack'
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Environment name (dev, staging, or prod)
+  
+  ProjectName:
+    Type: String
+    Default: chat-logs-review
+    Description: Project name used for resource naming
+  
+  CognitoDomainPrefix:
+    Type: String
+    Description: Unique domain prefix for Cognito Hosted UI
+    AllowedPattern: ^[a-z0-9-]+$
+    ConstraintDescription: Must contain only lowercase letters, numbers, and hyphens
+
+Conditions:
+  IsProduction: !Equals [!Ref EnvironmentName, prod]
+
+Resources:
+  # Cognito User Pool
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub '${ProjectName}-${EnvironmentName}-users'
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Required: true
+          Mutable: false
+      UserPoolTags:
+        Environment: !Ref EnvironmentName
+        Project: !Ref ProjectName
+  
+  # Cognito User Pool Domain for Hosted UI
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Ref CognitoDomainPrefix
+      UserPoolId: !Ref UserPool
+  
+  # Cognito User Pool Client
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub '${ProjectName}-${EnvironmentName}-client'
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+      ReadAttributes:
+        - email
+        - email_verified
+      WriteAttributes:
+        - email
+      CallbackURLs:
+        - http://localhost:5173
+        - !Sub 'https://${AmplifyApp.DefaultDomain}'
+      LogoutURLs:
+        - http://localhost:5173
+        - !Sub 'https://${AmplifyApp.DefaultDomain}'
+      AllowedOAuthFlows:
+        - code
+        - implicit
+      AllowedOAuthScopes:
+        - email
+        - openid
+        - profile
+      AllowedOAuthFlowsUserPoolClient: true
+      SupportedIdentityProviders:
+        - COGNITO
+  
+  # Cognito Identity Pool
+  IdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: !Sub '${ProjectName}_${EnvironmentName}_identity'
+      AllowUnauthenticatedIdentities: false
+      CognitoIdentityProviders:
+        - ClientId: !Ref UserPoolClient
+          ProviderName: !GetAtt UserPool.ProviderName
+  
+  # DynamoDB Table: UnityAIAssistantLogs
+  UnityAIAssistantLogsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-${EnvironmentName}-UnityAIAssistantLogs'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: log_id
+          AttributeType: S
+        - AttributeName: carrier_name
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: log_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCarrierName
+          KeySchema:
+            - AttributeName: carrier_name
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: !If [IsProduction, true, false]
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: !Ref ProjectName
+  
+  # DynamoDB Table: UserFeedback
+  UserFeedbackTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${ProjectName}-${EnvironmentName}-UserFeedback'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: carrier
+          AttributeType: S
+        - AttributeName: datetime
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: byCarrier
+          KeySchema:
+            - AttributeName: carrier
+              KeyType: HASH
+            - AttributeName: datetime
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: !If [IsProduction, true, false]
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: !Ref ProjectName
+  
+  # IAM Role for AppSync
+  AppSyncServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-${EnvironmentName}-appsync-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: appsync.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt UnityAIAssistantLogsTable.Arn
+                  - !Sub '${UnityAIAssistantLogsTable.Arn}/index/*'
+                  - !GetAtt UserFeedbackTable.Arn
+                  - !Sub '${UserFeedbackTable.Arn}/index/*'
+        - PolicyName: LambdaInvokeAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: !GetAtt GetReviewMetricsFunction.Arn
+  
+  # IAM Role for Lambda
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-${EnvironmentName}-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBReadAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Scan
+                  - dynamodb:Query
+                  - dynamodb:GetItem
+                Resource:
+                  - !GetAtt UnityAIAssistantLogsTable.Arn
+                  - !GetAtt UserFeedbackTable.Arn
+  
+  # Lambda Function for Metrics Calculation
+  GetReviewMetricsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${EnvironmentName}-GetReviewMetrics'
+      Runtime: python3.11
+      Handler: index.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          CHAT_LOGS_TABLE: !Ref UnityAIAssistantLogsTable
+          FEEDBACK_TABLE: !Ref UserFeedbackTable
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import os
+          from decimal import Decimal
+          
+          dynamodb = boto3.resource('dynamodb')
+          
+          def lambda_handler(event, context):
+              """
+              Calculate review metrics for chat logs and feedback logs.
+              Returns total, reviewed, and pending counts for both tables.
+              """
+              try:
+                  chat_logs_table_name = os.environ['CHAT_LOGS_TABLE']
+                  feedback_table_name = os.environ['FEEDBACK_TABLE']
+                  
+                  chat_logs_table = dynamodb.Table(chat_logs_table_name)
+                  feedback_table = dynamodb.Table(feedback_table_name)
+                  
+                  # Scan chat logs table
+                  chat_logs_response = chat_logs_table.scan(
+                      ProjectionExpression='log_id, rev_comment, rev_feedback'
+                  )
+                  chat_logs_items = chat_logs_response.get('Items', [])
+                  
+                  # Handle pagination for chat logs
+                  while 'LastEvaluatedKey' in chat_logs_response:
+                      chat_logs_response = chat_logs_table.scan(
+                          ProjectionExpression='log_id, rev_comment, rev_feedback',
+                          ExclusiveStartKey=chat_logs_response['LastEvaluatedKey']
+                      )
+                      chat_logs_items.extend(chat_logs_response.get('Items', []))
+                  
+                  # Scan feedback table
+                  feedback_response = feedback_table.scan(
+                      ProjectionExpression='id, rev_comment, rev_feedback'
+                  )
+                  feedback_items = feedback_response.get('Items', [])
+                  
+                  # Handle pagination for feedback
+                  while 'LastEvaluatedKey' in feedback_response:
+                      feedback_response = feedback_table.scan(
+                          ProjectionExpression='id, rev_comment, rev_feedback',
+                          ExclusiveStartKey=feedback_response['LastEvaluatedKey']
+                      )
+                      feedback_items.extend(feedback_response.get('Items', []))
+                  
+                  # Calculate chat logs metrics
+                  total_chat_logs = len(chat_logs_items)
+                  reviewed_chat_logs = sum(
+                      1 for item in chat_logs_items
+                      if (item.get('rev_comment') and item.get('rev_comment').strip()) or
+                         (item.get('rev_feedback') and item.get('rev_feedback').strip())
+                  )
+                  pending_chat_logs = total_chat_logs - reviewed_chat_logs
+                  
+                  # Calculate feedback logs metrics
+                  total_feedback_logs = len(feedback_items)
+                  reviewed_feedback_logs = sum(
+                      1 for item in feedback_items
+                      if (item.get('rev_comment') and item.get('rev_comment').strip()) or
+                         (item.get('rev_feedback') and item.get('rev_feedback').strip())
+                  )
+                  pending_feedback_logs = total_feedback_logs - reviewed_feedback_logs
+                  
+                  return {
+                      'statusCode': 200,
+                      'body': json.dumps({
+                          'totalChatLogs': total_chat_logs,
+                          'reviewedChatLogs': reviewed_chat_logs,
+                          'pendingChatLogs': pending_chat_logs,
+                          'totalFeedbackLogs': total_feedback_logs,
+                          'reviewedFeedbackLogs': reviewed_feedback_logs,
+                          'pendingFeedbackLogs': pending_feedback_logs
+                      })
+                  }
+              except Exception as e:
+                  print(f"Error calculating metrics: {str(e)}")
+                  return {
+                      'statusCode': 500,
+                      'body': json.dumps({
+                          'error': 'Failed to calculate metrics',
+                          'message': str(e)
+                      })
+                  }
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: !Ref ProjectName
+  
+  # IAM Role for Cognito Identity Pool
+  AuthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-${EnvironmentName}-authenticated-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                cognito-identity.amazonaws.com:aud: !Ref IdentityPool
+              ForAnyValue:StringLike:
+                cognito-identity.amazonaws.com:amr: authenticated
+      Policies:
+        - PolicyName: AppSyncAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - appsync:GraphQL
+                Resource: !Sub '${GraphQLApi.Arn}/*'
+  
+  UnauthenticatedRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-${EnvironmentName}-unauthenticated-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: cognito-identity.amazonaws.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                cognito-identity.amazonaws.com:aud: !Ref IdentityPool
+              ForAnyValue:StringLike:
+                cognito-identity.amazonaws.com:amr: unauthenticated
+      Policies:
+        - PolicyName: DenyAll
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Deny
+                Action: '*'
+                Resource: '*'
+  
+  IdentityPoolRoleAttachment:
+    Type: AWS::Cognito::IdentityPoolRoleAttachment
+    Properties:
+      IdentityPoolId: !Ref IdentityPool
+      Roles:
+        authenticated: !GetAtt AuthenticatedRole.Arn
+        unauthenticated: !GetAtt UnauthenticatedRole.Arn
+  
+  # AppSync GraphQL API
+  GraphQLApi:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: !Sub '${ProjectName}-${EnvironmentName}-api'
+      AuthenticationType: AMAZON_COGNITO_USER_POOLS
+      UserPoolConfig:
+        UserPoolId: !Ref UserPool
+        AwsRegion: !Ref AWS::Region
+        DefaultAction: ALLOW
+      LogConfig:
+        CloudWatchLogsRoleArn: !GetAtt AppSyncLogsRole.Arn
+        FieldLogLevel: !If [IsProduction, ERROR, ALL]
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: !Ref ProjectName
+  
+  AppSyncLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: appsync.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSAppSyncPushToCloudWatchLogs
+
+  # GraphQL Schema
+  GraphQLSchema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Definition: |
+        type UnityAIAssistantLog {
+          log_id: ID!
+          timestamp: String!
+          carrier_name: String!
+          chat_id: String
+          citation: String
+          fi_name: String
+          guardrail_id: String
+          guardrail_intervened: Boolean
+          model_id: String
+          question: String!
+          response: String!
+          rev_comment: String
+          rev_feedback: String
+          session_id: String
+          user_name: String
+          usr_comment: String
+          usr_feedback: String
+        }
+        
+        type UserFeedback {
+          id: ID!
+          datetime: String!
+          carrier: String!
+          comments: String
+          feedback: String
+          question: String
+          response: String
+          session_id: String
+          type: String
+          username: String
+          user_name: String
+          rev_comment: String
+          rev_feedback: String
+        }
+        
+        type ReviewMetrics {
+          totalChatLogs: Int!
+          reviewedChatLogs: Int!
+          pendingChatLogs: Int!
+          totalFeedbackLogs: Int!
+          reviewedFeedbackLogs: Int!
+          pendingFeedbackLogs: Int!
+        }
+        
+        type UnityAIAssistantLogConnection {
+          items: [UnityAIAssistantLog]
+          nextToken: String
+        }
+        
+        type UserFeedbackConnection {
+          items: [UserFeedback]
+          nextToken: String
+        }
+        
+        input ModelUnityAIAssistantLogFilterInput {
+          log_id: ModelIDInput
+          carrier_name: ModelStringInput
+          timestamp: ModelStringInput
+          and: [ModelUnityAIAssistantLogFilterInput]
+          or: [ModelUnityAIAssistantLogFilterInput]
+          not: ModelUnityAIAssistantLogFilterInput
+        }
+        
+        input ModelUserFeedbackFilterInput {
+          id: ModelIDInput
+          carrier: ModelStringInput
+          datetime: ModelStringInput
+          and: [ModelUserFeedbackFilterInput]
+          or: [ModelUserFeedbackFilterInput]
+          not: ModelUserFeedbackFilterInput
+        }
+        
+        input ModelIDInput {
+          eq: ID
+          ne: ID
+          contains: ID
+          notContains: ID
+          beginsWith: ID
+        }
+        
+        input ModelStringInput {
+          eq: String
+          ne: String
+          contains: String
+          notContains: String
+          beginsWith: String
+        }
+        
+        input UpdateUnityAIAssistantLogInput {
+          log_id: ID!
+          rev_comment: String
+          rev_feedback: String
+        }
+        
+        input UpdateUserFeedbackInput {
+          id: ID!
+          rev_comment: String
+          rev_feedback: String
+        }
+        
+        type Query {
+          getUnityAIAssistantLog(log_id: ID!): UnityAIAssistantLog
+          listUnityAIAssistantLogs(
+            filter: ModelUnityAIAssistantLogFilterInput
+            limit: Int
+            nextToken: String
+          ): UnityAIAssistantLogConnection
+          getUserFeedback(id: ID!): UserFeedback
+          listUserFeedbacks(
+            filter: ModelUserFeedbackFilterInput
+            limit: Int
+            nextToken: String
+          ): UserFeedbackConnection
+          getReviewMetrics: ReviewMetrics
+        }
+        
+        type Mutation {
+          updateUnityAIAssistantLog(input: UpdateUnityAIAssistantLogInput!): UnityAIAssistantLog
+          updateUserFeedback(input: UpdateUserFeedbackInput!): UserFeedback
+        }
+        
+        type Subscription {
+          onUpdateUnityAIAssistantLog(log_id: ID): UnityAIAssistantLog
+            @aws_subscribe(mutations: ["updateUnityAIAssistantLog"])
+          onUpdateUserFeedback(id: ID): UserFeedback
+            @aws_subscribe(mutations: ["updateUserFeedback"])
+        }
+        
+        schema {
+          query: Query
+          mutation: Mutation
+          subscription: Subscription
+        }
+  
+  # Data Sources
+  UnityAIAssistantLogsDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: UnityAIAssistantLogsTable
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt AppSyncServiceRole.Arn
+      DynamoDBConfig:
+        TableName: !Ref UnityAIAssistantLogsTable
+        AwsRegion: !Ref AWS::Region
+  
+  UserFeedbackDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: UserFeedbackTable
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt AppSyncServiceRole.Arn
+      DynamoDBConfig:
+        TableName: !Ref UserFeedbackTable
+        AwsRegion: !Ref AWS::Region
+  
+  MetricsLambdaDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      Name: MetricsLambdaFunction
+      Type: AWS_LAMBDA
+      ServiceRoleArn: !GetAtt AppSyncServiceRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt GetReviewMetricsFunction.Arn
+  
+  # Resolvers
+  GetUnityAIAssistantLogResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: Query
+      FieldName: getUnityAIAssistantLog
+      DataSourceName: !GetAtt UnityAIAssistantLogsDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "GetItem",
+          "key": {
+            "log_id": $util.dynamodb.toDynamoDBJson($ctx.args.log_id)
+          }
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($ctx.result)
+  
+  ListUnityAIAssistantLogsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: Query
+      FieldName: listUnityAIAssistantLogs
+      DataSourceName: !GetAtt UnityAIAssistantLogsDataSource.Name
+      RequestMappingTemplate: |
+        #set($limit = $util.defaultIfNull($ctx.args.limit, 50))
+        #set($filter = $util.defaultIfNull($ctx.args.filter, {}))
+        
+        #if($filter.carrier_name && $filter.carrier_name.eq)
+          ## Use GSI for carrier_name filtering
+          {
+            "version": "2017-02-28",
+            "operation": "Query",
+            "index": "byCarrierName",
+            "query": {
+              "expression": "carrier_name = :carrier_name",
+              "expressionValues": {
+                ":carrier_name": $util.dynamodb.toDynamoDBJson($filter.carrier_name.eq)
+              }
+            },
+            "limit": $limit,
+            "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+          }
+        #else
+          ## Use Scan for other cases
+          {
+            "version": "2017-02-28",
+            "operation": "Scan",
+            "limit": $limit,
+            "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+          }
+        #end
+      ResponseMappingTemplate: |
+        {
+          "items": $util.toJson($ctx.result.items),
+          "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.result.nextToken, null))
+        }
+  
+  UpdateUnityAIAssistantLogResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: Mutation
+      FieldName: updateUnityAIAssistantLog
+      DataSourceName: !GetAtt UnityAIAssistantLogsDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "UpdateItem",
+          "key": {
+            "log_id": $util.dynamodb.toDynamoDBJson($ctx.args.input.log_id)
+          },
+          "update": {
+            "expression": "SET rev_comment = :rev_comment, rev_feedback = :rev_feedback",
+            "expressionValues": {
+              ":rev_comment": $util.dynamodb.toDynamoDBJson($util.defaultIfNull($ctx.args.input.rev_comment, "")),
+              ":rev_feedback": $util.dynamodb.toDynamoDBJson($util.defaultIfNull($ctx.args.input.rev_feedback, ""))
+            }
+          }
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($ctx.result)
+  
+  GetUserFeedbackResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: Query
+      FieldName: getUserFeedback
+      DataSourceName: !GetAtt UserFeedbackDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "GetItem",
+          "key": {
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
+          }
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($ctx.result)
+  
+  ListUserFeedbacksResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: Query
+      FieldName: listUserFeedbacks
+      DataSourceName: !GetAtt UserFeedbackDataSource.Name
+      RequestMappingTemplate: |
+        #set($limit = $util.defaultIfNull($ctx.args.limit, 50))
+        #set($filter = $util.defaultIfNull($ctx.args.filter, {}))
+        
+        #if($filter.carrier && $filter.carrier.eq)
+          ## Use GSI for carrier filtering
+          {
+            "version": "2017-02-28",
+            "operation": "Query",
+            "index": "byCarrier",
+            "query": {
+              "expression": "carrier = :carrier",
+              "expressionValues": {
+                ":carrier": $util.dynamodb.toDynamoDBJson($filter.carrier.eq)
+              }
+            },
+            "limit": $limit,
+            "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+          }
+        #else
+          ## Use Scan for other cases
+          {
+            "version": "2017-02-28",
+            "operation": "Scan",
+            "limit": $limit,
+            "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+          }
+        #end
+      ResponseMappingTemplate: |
+        {
+          "items": $util.toJson($ctx.result.items),
+          "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.result.nextToken, null))
+        }
+  
+  UpdateUserFeedbackResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: Mutation
+      FieldName: updateUserFeedback
+      DataSourceName: !GetAtt UserFeedbackDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "UpdateItem",
+          "key": {
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.input.id)
+          },
+          "update": {
+            "expression": "SET rev_comment = :rev_comment, rev_feedback = :rev_feedback",
+            "expressionValues": {
+              ":rev_comment": $util.dynamodb.toDynamoDBJson($util.defaultIfNull($ctx.args.input.rev_comment, "")),
+              ":rev_feedback": $util.dynamodb.toDynamoDBJson($util.defaultIfNull($ctx.args.input.rev_feedback, ""))
+            }
+          }
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($ctx.result)
+  
+  GetReviewMetricsResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt GraphQLApi.ApiId
+      TypeName: Query
+      FieldName: getReviewMetrics
+      DataSourceName: !GetAtt MetricsLambdaDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "Invoke",
+          "payload": {}
+        }
+      ResponseMappingTemplate: |
+        #set($body = $util.parseJson($ctx.result.body))
+        $util.toJson($body)
+  
+  # Amplify App
+  AmplifyApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: !Sub '${ProjectName}-${EnvironmentName}'
+      Repository: https://github.com/placeholder/chat-logs-review
+      AccessToken: '{{resolve:secretsmanager:github-token:SecretString:token}}'
+      BuildSpec: |
+        version: 1
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - npm ci
+            build:
+              commands:
+                - npm run build
+          artifacts:
+            baseDirectory: dist
+            files:
+              - '**/*'
+          cache:
+            paths:
+              - node_modules/**/*
+      EnvironmentVariables:
+        - Name: VITE_AWS_REGION
+          Value: !Ref AWS::Region
+        - Name: VITE_USER_POOL_ID
+          Value: !Ref UserPool
+        - Name: VITE_USER_POOL_CLIENT_ID
+          Value: !Ref UserPoolClient
+        - Name: VITE_IDENTITY_POOL_ID
+          Value: !Ref IdentityPool
+        - Name: VITE_GRAPHQL_ENDPOINT
+          Value: !GetAtt GraphQLApi.GraphQLUrl
+        - Name: VITE_COGNITO_DOMAIN
+          Value: !Sub '${CognitoDomainPrefix}.auth.${AWS::Region}.amazoncognito.com'
+      Tags:
+        - Key: Environment
+          Value: !Ref EnvironmentName
+        - Key: Project
+          Value: !Ref ProjectName
+  
+  AmplifyBranch:
+    Type: AWS::Amplify::Branch
+    Properties:
+      AppId: !GetAtt AmplifyApp.AppId
+      BranchName: !Ref EnvironmentName
+      EnableAutoBuild: true
+      EnablePullRequestPreview: false
+      Stage: !If [IsProduction, PRODUCTION, DEVELOPMENT]
+  
+  # IAM Role for Amplify
+  AmplifyServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-${EnvironmentName}-amplify-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: amplify.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess-Amplify
+
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+    Description: Cognito User Pool ID
+    Export:
+      Name: !Sub '${AWS::StackName}-UserPoolId'
+  
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
+    Description: Cognito User Pool Client ID
+    Export:
+      Name: !Sub '${AWS::StackName}-UserPoolClientId'
+  
+  IdentityPoolId:
+    Value: !Ref IdentityPool
+    Description: Cognito Identity Pool ID
+    Export:
+      Name: !Sub '${AWS::StackName}-IdentityPoolId'
+  
+  CognitoDomain:
+    Value: !Sub '${CognitoDomainPrefix}.auth.${AWS::Region}.amazoncognito.com'
+    Description: Cognito Hosted UI Domain
+    Export:
+      Name: !Sub '${AWS::StackName}-CognitoDomain'
+  
+  GraphQLApiEndpoint:
+    Value: !GetAtt GraphQLApi.GraphQLUrl
+    Description: AppSync GraphQL API Endpoint
+    Export:
+      Name: !Sub '${AWS::StackName}-GraphQLApiEndpoint'
+  
+  GraphQLApiId:
+    Value: !GetAtt GraphQLApi.ApiId
+    Description: AppSync GraphQL API ID
+    Export:
+      Name: !Sub '${AWS::StackName}-GraphQLApiId'
+  
+  UnityAIAssistantLogsTableName:
+    Value: !Ref UnityAIAssistantLogsTable
+    Description: DynamoDB UnityAIAssistantLogs Table Name
+    Export:
+      Name: !Sub '${AWS::StackName}-UnityAIAssistantLogsTableName'
+  
+  UserFeedbackTableName:
+    Value: !Ref UserFeedbackTable
+    Description: DynamoDB UserFeedback Table Name
+    Export:
+      Name: !Sub '${AWS::StackName}-UserFeedbackTableName'
+  
+  GetReviewMetricsFunctionArn:
+    Value: !GetAtt GetReviewMetricsFunction.Arn
+    Description: Lambda Function ARN for GetReviewMetrics
+    Export:
+      Name: !Sub '${AWS::StackName}-GetReviewMetricsFunctionArn'
+  
+  AmplifyAppId:
+    Value: !GetAtt AmplifyApp.AppId
+    Description: Amplify App ID
+    Export:
+      Name: !Sub '${AWS::StackName}-AmplifyAppId'
+  
+  AmplifyAppUrl:
+    Value: !Sub 'https://${EnvironmentName}.${AmplifyApp.DefaultDomain}'
+    Description: Amplify App URL
+    Export:
+      Name: !Sub '${AWS::StackName}-AmplifyAppUrl'
+  
+  Region:
+    Value: !Ref AWS::Region
+    Description: AWS Region
+    Export:
+      Name: !Sub '${AWS::StackName}-Region'

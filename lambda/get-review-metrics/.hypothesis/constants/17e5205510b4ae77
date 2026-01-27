@@ -1,0 +1,4 @@
+# file: C:\Users\DGopal\Documents\ai_metrics_portal\lambda\get-review-metrics\index.py
+# hypothesis_version: 6.148.7
+
+[200, 500, 'CHAT_LOGS_TABLE', 'Configuration error', 'FEEDBACK_TABLE', 'Items', 'LastEvaluatedKey', 'body', 'dynamodb', 'error', 'message', 'pendingChatLogs', 'pendingFeedbackLogs', 'rev_comment', 'rev_feedback', 'reviewedChatLogs', 'reviewedFeedbackLogs', 'statusCode', 'totalChatLogs', 'totalFeedbackLogs']

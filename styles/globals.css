@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+:root {
+  /* Base colors */
+  --background: 0 0% 100%;
+  --foreground: 213 28% 22%;
+  --card: 0 0% 100%;
+  --card-foreground: 213 28% 22%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 213 28% 22%;
+  
+  /* Primary: #28334A (Dark blue-gray) */
+  --primary: 213 28% 22%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary: #00818F (Teal) */
+  --secondary: 186 100% 28%;
+  --secondary-foreground: 0 0% 100%;
+  
+  /* Muted: #ececf0 */
+  --muted: 240 14% 93%;
+  --muted-foreground: 213 15% 45%;
+  
+  /* Accent */
+  --accent: 240 14% 93%;
+  --accent-foreground: 213 28% 22%;
+  
+  /* Destructive */
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  
+  /* Border & Input */
+  --border: 240 14% 90%;
+  --input: 240 14% 90%;
+  --ring: 186 100% 28%;
+  
+  /* Chart colors */
+  --chart-1: 186 100% 28%;  /* #00818F - Teal */
+  --chart-2: 213 28% 22%;   /* #28334A - Dark blue-gray */
+  --chart-3: 215 25% 45%;   /* #5A6F8F - Medium blue */
+  --chart-4: 187 85% 35%;   /* #0FA3B1 - Bright teal */
+  --chart-5: 210 35% 17%;   /* #1C2938 - Very dark blue */
+  
+  /* Border radius */
+  --radius: 0.625rem;
+  
+  /* Sidebar: #28334A */
+  --sidebar: 213 28% 22%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 186 100% 28%;  /* #00818F - Active state */
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 213 28% 28%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 213 28% 28%;
+  --sidebar-ring: 186 100% 28%;
+}
+
+.dark {
+  /* Base colors - darker versions */
+  --background: 210 35% 12%;
+  --foreground: 0 0% 98%;
+  --card: 210 35% 15%;
+  --card-foreground: 0 0% 98%;
+  --popover: 210 35% 15%;
+  --popover-foreground: 0 0% 98%;
+  
+  /* Primary - lighter in dark mode */
+  --primary: 186 100% 35%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary */
+  --secondary: 213 28% 30%;
+  --secondary-foreground: 0 0% 98%;
+  
+  /* Muted */
+  --muted: 213 20% 20%;
+  --muted-foreground: 240 5% 65%;
+  
+  /* Accent */
+  --accent: 213 20% 20%;
+  --accent-foreground: 0 0% 98%;
+  
+  /* Destructive */
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 0 86% 97%;
+  
+  /* Border & Input */
+  --border: 213 20% 25%;
+  --input: 213 20% 25%;
+  --ring: 186 100% 35%;
+  
+  /* Chart colors - adjusted for dark mode */
+  --chart-1: 186 100% 35%;  /* Brighter teal */
+  --chart-2: 213 28% 35%;   /* Lighter blue-gray */
+  --chart-3: 215 25% 55%;   /* Brighter medium blue */
+  --chart-4: 187 85% 45%;   /* Brighter teal */
+  --chart-5: 210 35% 25%;   /* Lighter dark blue */
+  
+  /* Sidebar - very dark */
+  --sidebar: 210 35% 12%;
+  --sidebar-foreground: 0 0% 98%;
+  --sidebar-primary: 186 100% 35%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 213 20% 20%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 213 20% 20%;
+  --sidebar-ring: 186 100% 35%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: system-ui, -apple-system, sans-serif;
+}

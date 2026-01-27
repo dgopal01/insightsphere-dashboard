@@ -1,0 +1,4 @@
+# file: C:\Users\DGopal\AppData\Roaming\Python\Python311\site-packages\botocore\useragent.py
+# hypothesis_version: 6.148.7
+
+[1024, "!$%&'*+-.^_`|~,", '#', ',', '-', '3', 'AWS_EXECUTION_ENV', 'B', 'Botocore', 'C', 'D', 'E', 'ENDPOINT_OVERRIDE', 'F', 'G', 'L', 'M', 'N', 'P', 'PAGINATOR', 'PROTOCOL_RPC_V2_CBOR', 'Q', 'R', 'RESOLVED_ACCOUNT_ID', 'RETRY_MODE_ADAPTIVE', 'RETRY_MODE_LEGACY', 'RETRY_MODE_STANDARD', 'S', 'S3_TRANSFER', 'SIGV4A_SIGNING', 'T', 'U', 'Unknown', 'User-Agent', 'V', 'W', 'WAITER', 'X', 'Y', 'Z', '_supplied_user_agent', 'a', 'android', 'app', 'arch', 'awscrt', 'b', 'c', 'cfg', 'darwin', 'endpoint-discovery', 'exec-env', 'ios', 'lang', 'linux', 'm', 'macos', 'md', 'mode', 'os', 'other', 'pyimpl', 'python', 'retry-mode', 'tvos', 'ua/2.1', 'utf-8', 'watchos', 'windows']
