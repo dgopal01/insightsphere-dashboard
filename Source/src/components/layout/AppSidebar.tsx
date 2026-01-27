@@ -6,7 +6,6 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
-  LogOut,
   User,
 } from 'lucide-react';
 import {
@@ -21,7 +20,6 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
 
 const getMenuItems = (productId?: string) => {
   const basePath = productId ? `/${productId}` : '';
@@ -63,17 +61,8 @@ export function AppSidebar({ productId }: AppSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { state, toggleSidebar } = useSidebar();
-  const { signOut, user } = useAuth();
+  const { user } = useAuth();
   const isCollapsed = state === 'collapsed';
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      navigate('/signin');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
 
   return (
     <Sidebar collapsible="icon">
@@ -130,30 +119,18 @@ export function AppSidebar({ productId }: AppSidebarProps) {
                   {user?.username || 'User'}
                 </p>
                 <p className="text-xs text-sidebar-foreground/60">
-                  {user?.email || 'user@example.com'}
+                  {user?.email || 'user@swbc.com'}
                 </p>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              onClick={handleLogout}
-            >
-              <LogOut className="size-4" />
-              <span>Logout</span>
-            </Button>
             <div className="text-sidebar-foreground/40 text-xs text-center">v1.0.0</div>
           </div>
         ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-full text-sidebar-foreground hover:bg-sidebar-accent"
-            onClick={handleLogout}
-            title="Logout"
-          >
-            <LogOut className="size-4" />
-          </Button>
+          <div className="flex items-center justify-center">
+            <div className="flex items-center justify-center size-8 rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
+              <User className="size-4" />
+            </div>
+          </div>
         )}
       </SidebarFooter>
     </Sidebar>

@@ -6,19 +6,9 @@ import './styles/globals.css';
 import App from './App.tsx';
 import { configureAmplify } from './amplify-config';
 import { ThemeProvider } from './contexts';
-import { initPerformanceMonitoring, initErrorTracking, initAnalytics } from './utils';
 
-// Configure AWS Amplify
+// Configure AWS Amplify (now mocked)
 configureAmplify();
-
-// Initialize error tracking (Requirement 9.3)
-initErrorTracking();
-
-// Initialize performance monitoring (Requirement 9.1, 9.2, 9.3)
-initPerformanceMonitoring();
-
-// Initialize analytics (Requirement 9.4)
-initAnalytics();
 
 // Create React Query client
 const queryClient = new QueryClient({

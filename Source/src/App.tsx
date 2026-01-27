@@ -1,7 +1,6 @@
 /**
  * Main Application Component
- * Sets up routing and authentication
- * Implements code splitting with React.lazy for performance optimization
+ * Sets up routing with direct access (no authentication required)
  */
 
 import { lazy, Suspense } from 'react';
@@ -9,11 +8,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectedRoute, ErrorBoundary } from './components';
 import { NewLayout } from './components/layout/NewLayout';
-import { handleError } from './utils';
-
-// Lazy load page components for code splitting (Requirement 9.1)
-const SignInPage = lazy(() => import('./pages/SignInPage'));
-const UnauthorizedPage = lazy(() => import('./pages/UnauthorizedPage'));
 
 // Landing Page
 const ProductsLandingPage = lazy(() => import('./pages/ProductsLandingPage'));
@@ -36,19 +30,15 @@ function App() {
   return (
     <ErrorBoundary
       onError={(error: Error, errorInfo: React.ErrorInfo) => {
-        // Log error with context
-        handleError(error, {
-          componentStack: errorInfo.componentStack || '',
-          location: window.location.href,
-        });
+        console.error('Application error:', error, errorInfo);
       }}
     >
       <AuthProvider>
         <Suspense fallback={<PageLoader />}>
           <Routes>
-            {/* Public routes */}
-            <Route path="/signin" element={<SignInPage />} />
-            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            {/* Legacy auth routes - now redirect to main app */}
+            <Route path="/signin" element={<Navigate to="/" replace />} />
+            <Route path="/unauthorized" element={<Navigate to="/" replace />} />
 
             {/* Landing Page - Products Selection */}
             <Route
@@ -60,7 +50,7 @@ function App() {
               }
             />
 
-            {/* Unity ISA Product Routes */}
+            {/* Unity ISA Product Routes - Direct access */}
             <Route
               path="/unity-isa/dashboard"
               element={
