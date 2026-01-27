@@ -119,11 +119,11 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
  * Update chat log review fields - Not implemented via API yet
  */
 export async function updateChatLogReview(
-  logId: string,
-  timestamp: string,
-  revComment?: string,
-  revFeedback?: string,
-  issueTags?: string[]
+  _logId: string,
+  _timestamp: string,
+  _revComment?: string,
+  _revFeedback?: string,
+  _issueTags?: string[]
 ): Promise<ChatLogEntry> {
   throw new Error('Update operations not implemented via Lambda API yet');
 }
@@ -132,10 +132,10 @@ export async function updateChatLogReview(
  * Update feedback log review fields - Not implemented via API yet
  */
 export async function updateFeedbackLogReview(
-  id: string,
-  datetime: string,
-  revComment?: string,
-  revFeedback?: string
+  _id: string,
+  _datetime: string,
+  _revComment?: string,
+  _revFeedback?: string
 ): Promise<FeedbackLogEntry> {
   throw new Error('Update operations not implemented via Lambda API yet');
 }
