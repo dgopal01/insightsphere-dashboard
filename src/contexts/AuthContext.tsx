@@ -1,10 +1,10 @@
 /**
- * Mock Authentication Context
- * Provides authentication interface without actual authentication
- * Allows direct access to all application features
+ * Authentication Context
+ * Manages authentication state and provides auth-related functionality
  */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { signIn, signOut, getCurrentUser, fetchAuthSession, confirmSignIn } from 'aws-amplify/auth';
 import type { UserRole } from '../types';
 
 interface AuthUser {
@@ -32,52 +32,174 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [requiresNewPassword, setRequiresNewPassword] = useState(false);
 
-  // Mock user - automatically authenticated
-  useEffect(() => {
-    const mockUser: AuthUser = {
-      username: 'mock-user',
-      email: 'user@swbc.com',
-      role: 'admin', // Grant admin access to all features
-      attributes: {
-        'custom:role': 'admin',
-        email: 'user@swbc.com'
+  /**
+   * Extract user role from Cognito attributes
+   * Defaults to 'viewer' if no role is specified
+   */
+  const extractUserRole = (attributes?: Record<string, string>): UserRole => {
+    const role = attributes?.['custom:role'] || attributes?.role;
+    return role === 'admin' || role === 'viewer' ? role : 'viewer';
+  };
+
+  /**
+   * Load current authenticated user
+   */
+  const loadUser = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const currentUser = await getCurrentUser();
+      const session = await fetchAuthSession();
+
+      if (!session.tokens) {
+        setUser(null);
+        return;
       }
-    };
-    
-    setUser(mockUser);
-    setIsLoading(false);
+
+      // Extract user attributes from ID token
+      const idToken = session.tokens.idToken;
+      const attributes = idToken?.payload as Record<string, string> | undefined;
+
+      const authUser: AuthUser = {
+        username: currentUser.username,
+        email: attributes?.email as string | undefined,
+        role: extractUserRole(attributes),
+        attributes,
+      };
+
+      setUser(authUser);
+    } catch (err) {
+      console.error('Error loading user:', err);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const handleSignIn = async () => {
-    // Mock sign in - always succeeds
-    return Promise.resolve();
+  /**
+   * Initialize auth state on mount
+   */
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
+
+  /**
+   * Sign in with username and password
+   */
+  const handleSignIn = async (username: string, password: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      setRequiresNewPassword(false);
+
+      const signInResult = await signIn({ username, password });
+
+      // Check if user needs to change password
+      if (signInResult.nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+        setRequiresNewPassword(true);
+        setIsLoading(false);
+        return;
+      }
+
+      await loadUser();
+    } catch (err: any) {
+      console.error('Sign in error:', err);
+
+      // Provide user-friendly error messages
+      let errorMessage = 'Failed to sign in. Please try again.';
+
+      if (err.name === 'NotAuthorizedException') {
+        errorMessage = 'Incorrect username or password.';
+      } else if (err.name === 'UserNotFoundException') {
+        errorMessage = 'User not found.';
+      } else if (err.name === 'UserNotConfirmedException') {
+        errorMessage = 'Please confirm your account before signing in.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const confirmNewPassword = async () => {
-    return Promise.resolve();
+  /**
+   * Confirm new password for users who need to change their temporary password
+   */
+  const confirmNewPassword = async (newPassword: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      await confirmSignIn({ challengeResponse: newPassword });
+      setRequiresNewPassword(false);
+      await loadUser();
+    } catch (err: any) {
+      console.error('Password change error:', err);
+
+      let errorMessage = 'Failed to change password. Please try again.';
+      if (err.message) {
+        errorMessage = err.message;
+      }
+
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  /**
+   * Sign out current user
+   */
   const handleSignOut = async () => {
-    // Mock sign out - no actual action needed
-    return Promise.resolve();
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      await signOut();
+      setUser(null);
+    } catch (err: any) {
+      console.error('Sign out error:', err);
+      setError('Failed to sign out. Please try again.');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const hasRole = (): boolean => {
-    // Always return true - grant access to all features
-    return true;
+  /**
+   * Check if user has specific role
+   */
+  const hasRole = (role: UserRole): boolean => {
+    if (!user) return false;
+
+    // Admin has access to everything
+    if (user.role === 'admin') return true;
+
+    // Otherwise, check exact role match
+    return user.role === role;
   };
 
+  /**
+   * Manually refresh authentication state
+   */
   const refreshAuth = async () => {
-    return Promise.resolve();
+    await loadUser();
   };
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: true, // Always authenticated
+    isAuthenticated: !!user,
     isLoading,
-    error: null,
-    requiresNewPassword: false,
+    error,
+    requiresNewPassword,
     signIn: handleSignIn,
     confirmNewPassword,
     signOut: handleSignOut,
