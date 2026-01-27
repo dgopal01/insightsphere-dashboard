@@ -84,8 +84,7 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       run: |
         # Create ECR repository if it doesn't exist
-        aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
-        aws ecr create-repository --repository-name $ECR_REPOSITORY
+        aws ecr describe-repositories --repository-names $ECR_REPOSITORY || aws ecr create-repository --repository-name $ECR_REPOSITORY
 
         # Build and push image
         docker build -f eks-deployment/docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -143,7 +142,7 @@ jobs:
         sleep 10
         
         # Test health endpoint
-        curl -f http://localhost:8080/health || exit 1
+        curl -f "http://localhost:8080/health" || exit 1
         
         echo "Health check passed!"
 
