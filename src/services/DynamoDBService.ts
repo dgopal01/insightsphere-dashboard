@@ -1,39 +1,36 @@
 /**
  * DynamoDB Service
- * Direct access to DynamoDB tables using AWS credentials from environment
+ * Access DynamoDB through Lambda API using IAM roles
  */
 
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-
-// Table names from environment variables
-const CHAT_LOG_TABLE = import.meta.env.VITE_CHATLOG_TABLE || 'UnityAIAssistantLogs';
-const FEEDBACK_TABLE = import.meta.env.VITE_FEEDBACK_TABLE || 'userFeedback';
-const EVAL_JOB_TABLE = import.meta.env.VITE_EVAL_JOB_TABLE || 'UnityAIAssistantEvalJob';
-const AWS_REGION = import.meta.env.VITE_AWS_REGION || 'us-east-1';
+// API endpoint for Lambda function
+const API_ENDPOINT = import.meta.env.VITE_DYNAMODB_API_ENDPOINT || 'https://your-api-gateway-url.amazonaws.com/prod/dynamodb';
 
 /**
- * Get DynamoDB client with AWS credentials from environment
+ * Call Lambda API for DynamoDB operations
  */
-async function getDynamoDBClient(): Promise<DynamoDBDocumentClient> {
+async function callDynamoDBAPI(action: string, table: string, params: any = {}) {
   try {
-    console.log('Creating DynamoDB client with AWS credentials');
-
-    const client = new DynamoDBClient({
-      region: AWS_REGION,
-      credentials: {
-        accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID || '',
-        secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY || '',
-        sessionToken: import.meta.env.VITE_AWS_SESSION_TOKEN || undefined,
+    const response = await fetch(API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        action,
+        table,
+        ...params
+      })
     });
 
-    return DynamoDBDocumentClient.from(client);
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
   } catch (error) {
-    console.error('Error getting DynamoDB client:', error);
-    throw new Error(
-      `Failed to get DynamoDB client: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
+    console.error('DynamoDB API error:', error);
+    throw error;
   }
 }
 
@@ -83,82 +80,43 @@ export interface FeedbackLogEntry {
 }
 
 /**
- * List chat logs from DynamoDB
+ * List chat logs from DynamoDB via Lambda API
  */
 export async function listChatLogs(limit: number = 50): Promise<{
   items: ChatLogEntry[];
   lastEvaluatedKey?: any;
 }> {
   try {
-    const client = await getDynamoDBClient();
-
-    console.log('Fetching chat logs from table:', CHAT_LOG_TABLE);
-
-    const command = new ScanCommand({
-      TableName: CHAT_LOG_TABLE,
-      Limit: limit,
-    });
-
-    const response = await client.send(command);
-
-    console.log(`Successfully fetched ${response.Items?.length || 0} chat logs`);
-
-    return {
-      items: (response.Items as ChatLogEntry[]) || [],
-      lastEvaluatedKey: response.LastEvaluatedKey,
-    };
+    console.log('Fetching chat logs via Lambda API');
+    const response = await callDynamoDBAPI('scan', 'chatLogs', { limit });
+    console.log(`Successfully fetched ${response.items?.length || 0} chat logs`);
+    return response;
   } catch (error: any) {
-    console.error('Error listing chat logs:', {
-      error,
-      errorName: error?.name,
-      errorMessage: error?.message,
-      errorCode: error?.$metadata?.httpStatusCode,
-      tableName: CHAT_LOG_TABLE,
-    });
+    console.error('Error listing chat logs:', error);
     throw new Error(`Failed to list chat logs: ${error?.message || 'Unknown error'}`);
   }
 }
 
 /**
- * List feedback logs from DynamoDB
+ * List feedback logs from DynamoDB via Lambda API
  */
 export async function listFeedbackLogs(limit: number = 50): Promise<{
   items: FeedbackLogEntry[];
   lastEvaluatedKey?: any;
 }> {
   try {
-    const client = await getDynamoDBClient();
-
-    console.log('Fetching feedback logs from table:', FEEDBACK_TABLE);
-
-    const command = new ScanCommand({
-      TableName: FEEDBACK_TABLE,
-      Limit: limit,
-    });
-
-    const response = await client.send(command);
-
-    console.log(`Successfully fetched ${response.Items?.length || 0} feedback logs`);
-
-    return {
-      items: (response.Items as FeedbackLogEntry[]) || [],
-      lastEvaluatedKey: response.LastEvaluatedKey,
-    };
+    console.log('Fetching feedback logs via Lambda API');
+    const response = await callDynamoDBAPI('scan', 'feedbackLogs', { limit });
+    console.log(`Successfully fetched ${response.items?.length || 0} feedback logs`);
+    return response;
   } catch (error: any) {
-    console.error('Error listing feedback logs:', {
-      error,
-      errorName: error?.name,
-      errorMessage: error?.message,
-      errorCode: error?.$metadata?.httpStatusCode,
-      tableName: FEEDBACK_TABLE,
-      stack: error?.stack,
-    });
+    console.error('Error listing feedback logs:', error);
     throw new Error(`Failed to list feedback logs: ${error?.message || 'Unknown error'}`);
   }
 }
 
 /**
- * Update chat log review fields
+ * Update chat log review fields - Not implemented via API yet
  */
 export async function updateChatLogReview(
   logId: string,
@@ -167,51 +125,11 @@ export async function updateChatLogReview(
   revFeedback?: string,
   issueTags?: string[]
 ): Promise<ChatLogEntry> {
-  try {
-    const client = await getDynamoDBClient();
-
-    const updateExpression: string[] = [];
-    const expressionAttributeValues: any = {};
-    const expressionAttributeNames: any = {};
-
-    updateExpression.push('#rev_comment = :rev_comment');
-    expressionAttributeValues[':rev_comment'] = revComment || '';
-    expressionAttributeNames['#rev_comment'] = 'rev_comment';
-
-    updateExpression.push('#rev_feedback = :rev_feedback');
-    expressionAttributeValues[':rev_feedback'] = revFeedback || '';
-    expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
-
-    if (issueTags !== undefined) {
-      updateExpression.push('#issue_tags = :issue_tags');
-      expressionAttributeValues[':issue_tags'] = JSON.stringify(issueTags);
-      expressionAttributeNames['#issue_tags'] = 'issue_tags';
-    }
-
-    const updateParams = {
-      TableName: CHAT_LOG_TABLE,
-      Key: {
-        log_id: logId,
-        timestamp: timestamp,
-      },
-      UpdateExpression: `SET ${updateExpression.join(', ')}`,
-      ExpressionAttributeValues: expressionAttributeValues,
-      ExpressionAttributeNames: expressionAttributeNames,
-      ReturnValues: 'ALL_NEW' as const,
-    };
-
-    const command = new UpdateCommand(updateParams);
-    const response = await client.send(command);
-
-    return response.Attributes as ChatLogEntry;
-  } catch (error: any) {
-    console.error('Error updating chat log:', error);
-    throw new Error(`Failed to update chat log review: ${error?.message || 'Unknown error'}`);
-  }
+  throw new Error('Update operations not implemented via Lambda API yet');
 }
 
 /**
- * Update feedback log review fields
+ * Update feedback log review fields - Not implemented via API yet
  */
 export async function updateFeedbackLogReview(
   id: string,
@@ -219,41 +137,7 @@ export async function updateFeedbackLogReview(
   revComment?: string,
   revFeedback?: string
 ): Promise<FeedbackLogEntry> {
-  try {
-    const client = await getDynamoDBClient();
-
-    const updateExpression: string[] = [];
-    const expressionAttributeValues: any = {};
-    const expressionAttributeNames: any = {};
-
-    updateExpression.push('#rev_comment = :rev_comment');
-    expressionAttributeValues[':rev_comment'] = revComment || '';
-    expressionAttributeNames['#rev_comment'] = 'rev_comment';
-
-    updateExpression.push('#rev_feedback = :rev_feedback');
-    expressionAttributeValues[':rev_feedback'] = revFeedback || '';
-    expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
-
-    const updateParams = {
-      TableName: FEEDBACK_TABLE,
-      Key: {
-        id: id,
-        datetime: datetime,
-      },
-      UpdateExpression: `SET ${updateExpression.join(', ')}`,
-      ExpressionAttributeValues: expressionAttributeValues,
-      ExpressionAttributeNames: expressionAttributeNames,
-      ReturnValues: 'ALL_NEW' as const,
-    };
-
-    const command = new UpdateCommand(updateParams);
-    const response = await client.send(command);
-
-    return response.Attributes as FeedbackLogEntry;
-  } catch (error: any) {
-    console.error('Error updating feedback log:', error);
-    throw new Error(`Failed to update feedback review: ${error?.message || 'Unknown error'}`);
-  }
+  throw new Error('Update operations not implemented via Lambda API yet');
 }
 
 /**
@@ -286,38 +170,19 @@ export interface AIEvaluationJobEntry {
 }
 
 /**
- * List AI evaluation jobs from DynamoDB
+ * List AI evaluation jobs from DynamoDB via Lambda API
  */
 export async function listAIEvaluationJobs(limit: number = 100): Promise<{
   items: AIEvaluationJobEntry[];
   lastEvaluatedKey?: any;
 }> {
   try {
-    const client = await getDynamoDBClient();
-
-    console.log('Fetching AI evaluation jobs from table:', EVAL_JOB_TABLE);
-
-    const command = new ScanCommand({
-      TableName: EVAL_JOB_TABLE,
-      Limit: limit,
-    });
-
-    const response = await client.send(command);
-
-    console.log(`Successfully fetched ${response.Items?.length || 0} AI evaluation jobs`);
-
-    return {
-      items: (response.Items as AIEvaluationJobEntry[]) || [],
-      lastEvaluatedKey: response.LastEvaluatedKey,
-    };
+    console.log('Fetching AI evaluation jobs via Lambda API');
+    const response = await callDynamoDBAPI('scan', 'evalJobs', { limit });
+    console.log(`Successfully fetched ${response.items?.length || 0} AI evaluation jobs`);
+    return response;
   } catch (error: any) {
-    console.error('Error listing AI evaluation jobs:', {
-      error,
-      errorName: error?.name,
-      errorMessage: error?.message,
-      errorCode: error?.$metadata?.httpStatusCode,
-      tableName: EVAL_JOB_TABLE,
-    });
+    console.error('Error listing AI evaluation jobs:', error);
     throw new Error(`Failed to list AI evaluation jobs: ${error?.message || 'Unknown error'}`);
   }
 }
