@@ -4,7 +4,6 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { fetchAuthSession } from 'aws-amplify/auth';
 import type { UserRole } from '../types';
 
 interface AuthUser {
