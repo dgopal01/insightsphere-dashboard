@@ -1,0 +1,274 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'DynamoDB Proxy Lambda Function and API Gateway'
+
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: dynamodb-proxy-lambda-role
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+
+  DynamoDBProxyFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: dynamodb-proxy
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          CHATLOG_TABLE: UnityAIAssistantLogs
+          FEEDBACK_TABLE: userFeedback
+          EVAL_JOB_TABLE: UnityAIAssistantEvalJob
+      Code:
+        ZipFile: |
+          const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+          const { DynamoDBDocumentClient, ScanCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+          
+          const client = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+          const docClient = DynamoDBDocumentClient.from(client);
+          
+          const TABLES = {
+            chatLogs: process.env.CHATLOG_TABLE || 'UnityAIAssistantLogs',
+            feedbackLogs: process.env.FEEDBACK_TABLE || 'userFeedback',
+            evalJobs: process.env.EVAL_JOB_TABLE || 'UnityAIAssistantEvalJob'
+          };
+          
+          exports.handler = async (event) => {
+            const headers = {
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Headers': 'Content-Type',
+              'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+            };
+          
+            if (event.httpMethod === 'OPTIONS') {
+              return { statusCode: 200, headers, body: '' };
+            }
+          
+            try {
+              const { action, table, ...params } = JSON.parse(event.body || '{}');
+          
+              if (action === 'scan') {
+                return await handleScan(table, params, headers);
+              }
+          
+              if (action === 'updateChatLog') {
+                return await handleUpdateChatLog(params, headers);
+              }
+          
+              if (action === 'updateFeedbackLog') {
+                return await handleUpdateFeedbackLog(params, headers);
+              }
+          
+              throw new Error(`Unsupported action: ${action}`);
+          
+            } catch (error) {
+              console.error('Lambda error:', error);
+              return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ error: error.message })
+              };
+            }
+          };
+          
+          async function handleScan(table, params, headers) {
+            const tableName = TABLES[table];
+            if (!tableName) {
+              throw new Error(`Invalid table: ${table}`);
+            }
+          
+            const command = new ScanCommand({
+              TableName: tableName,
+              Limit: params.limit || 50
+            });
+          
+            const response = await docClient.send(command);
+          
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify({
+                items: response.Items || [],
+                lastEvaluatedKey: response.LastEvaluatedKey
+              })
+            };
+          }
+          
+          async function handleUpdateChatLog(params, headers) {
+            const { log_id, timestamp, rev_comment, rev_feedback, issue_tags } = params;
+          
+            if (!log_id || !timestamp) {
+              throw new Error('log_id and timestamp are required for chat log updates');
+            }
+          
+            const updateExpression = [];
+            const expressionAttributeValues = {};
+            const expressionAttributeNames = {};
+          
+            if (rev_comment !== undefined) {
+              updateExpression.push('#rev_comment = :rev_comment');
+              expressionAttributeNames['#rev_comment'] = 'rev_comment';
+              expressionAttributeValues[':rev_comment'] = rev_comment;
+            }
+          
+            if (rev_feedback !== undefined) {
+              updateExpression.push('#rev_feedback = :rev_feedback');
+              expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
+              expressionAttributeValues[':rev_feedback'] = rev_feedback;
+            }
+          
+            if (issue_tags !== undefined) {
+              updateExpression.push('#issue_tags = :issue_tags');
+              expressionAttributeNames['#issue_tags'] = 'issue_tags';
+              expressionAttributeValues[':issue_tags'] = JSON.stringify(issue_tags);
+            }
+          
+            if (updateExpression.length === 0) {
+              throw new Error('No fields to update');
+            }
+          
+            const command = new UpdateCommand({
+              TableName: TABLES.chatLogs,
+              Key: { log_id, timestamp },
+              UpdateExpression: `SET ${updateExpression.join(', ')}`,
+              ExpressionAttributeNames: expressionAttributeNames,
+              ExpressionAttributeValues: expressionAttributeValues,
+              ReturnValues: 'ALL_NEW'
+            });
+          
+            const response = await docClient.send(command);
+          
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify(response.Attributes)
+            };
+          }
+          
+          async function handleUpdateFeedbackLog(params, headers) {
+            const { id, datetime, rev_comment, rev_feedback } = params;
+          
+            if (!id || !datetime) {
+              throw new Error('id and datetime are required for feedback log updates');
+            }
+          
+            const updateExpression = [];
+            const expressionAttributeValues = {};
+            const expressionAttributeNames = {};
+          
+            if (rev_comment !== undefined) {
+              updateExpression.push('#rev_comment = :rev_comment');
+              expressionAttributeNames['#rev_comment'] = 'rev_comment';
+              expressionAttributeValues[':rev_comment'] = rev_comment;
+            }
+          
+            if (rev_feedback !== undefined) {
+              updateExpression.push('#rev_feedback = :rev_feedback');
+              expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
+              expressionAttributeValues[':rev_feedback'] = rev_feedback;
+            }
+          
+            if (updateExpression.length === 0) {
+              throw new Error('No fields to update');
+            }
+          
+            const command = new UpdateCommand({
+              TableName: TABLES.feedbackLogs,
+              Key: { id, datetime },
+              UpdateExpression: `SET ${updateExpression.join(', ')}`,
+              ExpressionAttributeNames: expressionAttributeNames,
+              ExpressionAttributeValues: expressionAttributeValues,
+              ReturnValues: 'ALL_NEW'
+            });
+          
+            const response = await docClient.send(command);
+          
+            return {
+              statusCode: 200,
+              headers,
+              body: JSON.stringify(response.Attributes)
+            };
+          }
+
+  ApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: dynamodb-proxy-api
+      Description: API for DynamoDB proxy Lambda
+
+  ApiGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: dynamodb
+
+  ApiGatewayMethodPost:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref ApiGatewayResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DynamoDBProxyFunction.Arn}/invocations'
+
+  ApiGatewayMethodOptions:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGateway
+      ResourceId: !Ref ApiGatewayResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ApiGatewayMethodPost
+      - ApiGatewayMethodOptions
+    Properties:
+      RestApiId: !Ref ApiGateway
+      StageName: prod
+
+  LambdaApiGatewayPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DynamoDBProxyFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*'
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/dynamodb'
+    Export:
+      Name: DynamoDBProxyApiEndpoint
