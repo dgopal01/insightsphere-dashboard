@@ -3,18 +3,18 @@ frontend:
   phases:
     preBuild:
       commands:
-        - echo "Installing dependencies..."
-        - npm ci
+        - "echo Installing dependencies..."
+        - "npm ci"
         - "echo Environment - $AWS_BRANCH"
         
     build:
       commands:
-        - echo "Building application..."
-        - npm run build
+        - "echo Building application..."
+        - "npm run build"
         
     postBuild:
       commands:
-        - echo "Build completed successfully"
+        - "echo Build completed successfully"
         
   artifacts:
     baseDirectory: dist
