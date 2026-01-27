@@ -1,6 +1,6 @@
 /**
  * DynamoDB Service
- * Direct access to DynamoDB tables using environment credentials
+ * Direct access to DynamoDB tables using AWS credentials from environment
  */
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
@@ -13,17 +13,18 @@ const EVAL_JOB_TABLE = import.meta.env.VITE_EVAL_JOB_TABLE || 'UnityAIAssistantE
 const AWS_REGION = import.meta.env.VITE_AWS_REGION || 'us-east-1';
 
 /**
- * Get DynamoDB client with environment credentials
+ * Get DynamoDB client with AWS credentials from environment
  */
 async function getDynamoDBClient(): Promise<DynamoDBDocumentClient> {
   try {
-    console.log('Creating DynamoDB client with environment credentials');
+    console.log('Creating DynamoDB client with AWS credentials');
 
     const client = new DynamoDBClient({
       region: AWS_REGION,
       credentials: {
         accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID || '',
         secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY || '',
+        sessionToken: import.meta.env.VITE_AWS_SESSION_TOKEN || undefined,
       },
     });
 
