@@ -1,12 +1,10 @@
 /**
  * DynamoDB Service
- * Direct access to DynamoDB tables bypassing AppSync
- * Temporary solution until AppSync schema is fixed
+ * Direct access to DynamoDB tables using IAM roles
  */
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { fetchAuthSession } from 'aws-amplify/auth';
 
 // Table names from environment variables
 const CHAT_LOG_TABLE = import.meta.env.VITE_CHATLOG_TABLE || 'UnityAIAssistantLogs';
@@ -15,36 +13,15 @@ const EVAL_JOB_TABLE = import.meta.env.VITE_EVAL_JOB_TABLE || 'UnityAIAssistantE
 const AWS_REGION = import.meta.env.VITE_AWS_REGION || 'us-east-1';
 
 /**
- * Get DynamoDB client with Cognito credentials
+ * Get DynamoDB client using IAM roles
  */
 async function getDynamoDBClient(): Promise<DynamoDBDocumentClient> {
   try {
-    const session = await fetchAuthSession();
-
-    // Check if we have credentials
-    if (!session.credentials) {
-      console.error('No credentials in session:', session);
-      throw new Error(
-        'No credentials available. Please ensure you are signed in and the Identity Pool is configured.'
-      );
-    }
-
-    const credentials = session.credentials;
-
-    console.log('Creating DynamoDB client with credentials from:', {
-      identityId: session.identityId,
-      hasAccessKey: !!credentials.accessKeyId,
-      hasSecretKey: !!credentials.secretAccessKey,
-      hasSessionToken: !!credentials.sessionToken,
-    });
+    console.log('Creating DynamoDB client with IAM role credentials');
 
     const client = new DynamoDBClient({
       region: AWS_REGION,
-      credentials: {
-        accessKeyId: credentials.accessKeyId,
-        secretAccessKey: credentials.secretAccessKey,
-        sessionToken: credentials.sessionToken,
-      },
+      // Use default credential provider chain (IAM roles, environment variables, etc.)
     });
 
     return DynamoDBDocumentClient.from(client);
@@ -159,12 +136,6 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
 
     console.log(`Successfully fetched ${response.Items?.length || 0} feedback logs`);
 
-    // Log first item to verify structure
-    if (response.Items && response.Items.length > 0) {
-      console.log('Sample feedback log (raw):', JSON.stringify(response.Items[0], null, 2));
-      console.log('Sample feedback log info field:', response.Items[0].info);
-    }
-
     return {
       items: (response.Items as FeedbackLogEntry[]) || [],
       lastEvaluatedKey: response.LastEvaluatedKey,
@@ -184,12 +155,6 @@ export async function listFeedbackLogs(limit: number = 50): Promise<{
 
 /**
  * Update chat log review fields
- * Note: UnityAIAssistantLogs table has composite key (log_id + timestamp)
- * @param logId - The partition key (log_id) for the chat log
- * @param timestamp - The sort key (timestamp) for the chat log
- * @param revComment - Review comment to set
- * @param revFeedback - Review feedback to set
- * @param issueTags - Array of issue tags to set
  */
 export async function updateChatLogReview(
   logId: string,
@@ -201,21 +166,10 @@ export async function updateChatLogReview(
   try {
     const client = await getDynamoDBClient();
 
-    console.log('Updating chat log with params:', {
-      table: CHAT_LOG_TABLE,
-      logId,
-      timestamp,
-      revComment,
-      revFeedback,
-      issueTags,
-    });
-
-    // Build update expression
     const updateExpression: string[] = [];
     const expressionAttributeValues: any = {};
     const expressionAttributeNames: any = {};
 
-    // Always set both fields to ensure they exist
     updateExpression.push('#rev_comment = :rev_comment');
     expressionAttributeValues[':rev_comment'] = revComment || '';
     expressionAttributeNames['#rev_comment'] = 'rev_comment';
@@ -224,14 +178,12 @@ export async function updateChatLogReview(
     expressionAttributeValues[':rev_feedback'] = revFeedback || '';
     expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
 
-    // Add issue_tags if provided
     if (issueTags !== undefined) {
       updateExpression.push('#issue_tags = :issue_tags');
       expressionAttributeValues[':issue_tags'] = JSON.stringify(issueTags);
       expressionAttributeNames['#issue_tags'] = 'issue_tags';
     }
 
-    // Update using composite key (log_id + timestamp)
     const updateParams = {
       TableName: CHAT_LOG_TABLE,
       Key: {
@@ -244,42 +196,18 @@ export async function updateChatLogReview(
       ReturnValues: 'ALL_NEW' as const,
     };
 
-    console.log(
-      'DynamoDB UpdateCommand params for chat log:',
-      JSON.stringify(updateParams, null, 2)
-    );
-
     const command = new UpdateCommand(updateParams);
     const response = await client.send(command);
 
-    console.log('Chat log update successful:', response.Attributes);
     return response.Attributes as ChatLogEntry;
   } catch (error: any) {
-    console.error('Error updating chat log:', {
-      error,
-      errorName: error?.name,
-      errorMessage: error?.message,
-      errorCode: error?.$metadata?.httpStatusCode,
-      requestId: error?.$metadata?.requestId,
-    });
-
-    if (error?.name === 'ValidationException') {
-      throw new Error(
-        `DynamoDB validation error: ${error.message}. Check that log_id="${logId}" and timestamp="${timestamp}" are correct.`
-      );
-    }
-
+    console.error('Error updating chat log:', error);
     throw new Error(`Failed to update chat log review: ${error?.message || 'Unknown error'}`);
   }
 }
 
 /**
  * Update feedback log review fields
- * Note: userFeedback table has composite key (id + datetime)
- * @param id - The partition key (id) for the feedback log
- * @param datetime - The sort key (datetime) for the feedback log
- * @param revComment - Review comment to set
- * @param revFeedback - Review feedback to set
  */
 export async function updateFeedbackLogReview(
   id: string,
@@ -290,20 +218,10 @@ export async function updateFeedbackLogReview(
   try {
     const client = await getDynamoDBClient();
 
-    console.log('Updating feedback log with params:', {
-      table: FEEDBACK_TABLE,
-      id,
-      datetime,
-      revComment,
-      revFeedback,
-    });
-
-    // Build update expression
     const updateExpression: string[] = [];
     const expressionAttributeValues: any = {};
     const expressionAttributeNames: any = {};
 
-    // Always set both fields to ensure they exist
     updateExpression.push('#rev_comment = :rev_comment');
     expressionAttributeValues[':rev_comment'] = revComment || '';
     expressionAttributeNames['#rev_comment'] = 'rev_comment';
@@ -312,7 +230,6 @@ export async function updateFeedbackLogReview(
     expressionAttributeValues[':rev_feedback'] = revFeedback || '';
     expressionAttributeNames['#rev_feedback'] = 'rev_feedback';
 
-    // Update using composite key (id + datetime)
     const updateParams = {
       TableName: FEEDBACK_TABLE,
       Key: {
@@ -325,29 +242,12 @@ export async function updateFeedbackLogReview(
       ReturnValues: 'ALL_NEW' as const,
     };
 
-    console.log('DynamoDB UpdateCommand params:', JSON.stringify(updateParams, null, 2));
-
     const command = new UpdateCommand(updateParams);
     const response = await client.send(command);
 
-    console.log('Update successful:', response.Attributes);
     return response.Attributes as FeedbackLogEntry;
   } catch (error: any) {
-    console.error('Error updating feedback log:', {
-      error,
-      errorName: error?.name,
-      errorMessage: error?.message,
-      errorCode: error?.$metadata?.httpStatusCode,
-      requestId: error?.$metadata?.requestId,
-    });
-
-    // Provide more helpful error message
-    if (error?.name === 'ValidationException') {
-      throw new Error(
-        `DynamoDB validation error: ${error.message}. Check that id="${id}" and datetime="${datetime}" are correct.`
-      );
-    }
-
+    console.error('Error updating feedback log:', error);
     throw new Error(`Failed to update feedback review: ${error?.message || 'Unknown error'}`);
   }
 }
