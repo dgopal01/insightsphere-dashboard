@@ -53,3 +53,5 @@ deployment-logs/
 
 # Temporary cleanup file
 CLEANUP_ACTIONS.md
+# EKS deployment files (exclude from Amplify deployment)
+eks-deployment/
