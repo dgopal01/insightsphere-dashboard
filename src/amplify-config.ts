@@ -1,32 +1,41 @@
 /**
- * AWS Amplify Configuration
- * Configures AWS services for the application
+ * Amplify Configuration and Initialization
+ * This file configures AWS Amplify with authentication, API, and storage settings
  */
 
 import { Amplify } from 'aws-amplify';
+import awsconfig from './aws-exports';
 
-const amplifyConfig = {
-  Auth: {
-    Cognito: {
-      userPoolId: import.meta.env.VITE_USER_POOL_ID || 'us-east-1_placeholder',
-      userPoolClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID || 'placeholder',
-      identityPoolId: import.meta.env.VITE_IDENTITY_POOL_ID || 'us-east-1:placeholder'
-    }
-  },
-  API: {
-    GraphQL: {
-      endpoint: import.meta.env.VITE_GRAPHQL_ENDPOINT || 'https://placeholder.appsync-api.us-east-1.amazonaws.com/graphql',
-      region: import.meta.env.VITE_AWS_REGION || 'us-east-1',
-      defaultAuthMode: 'userPool' as const
-    }
-  }
-};
-
+/**
+ * Configure Amplify with AWS services
+ * This should be called once at application startup
+ */
 export const configureAmplify = () => {
-  try {
-    Amplify.configure(amplifyConfig);
-    console.log('Amplify configured successfully');
-  } catch (error) {
-    console.error('Error configuring Amplify:', error);
-  }
+  Amplify.configure({
+    Auth: {
+      Cognito: {
+        userPoolId: awsconfig.aws_user_pools_id,
+        userPoolClientId: awsconfig.aws_user_pools_web_client_id,
+        identityPoolId: awsconfig.aws_cognito_identity_pool_id,
+        loginWith: {
+          email: true,
+        },
+      },
+    },
+    API: {
+      GraphQL: {
+        endpoint: awsconfig.aws_appsync_graphqlEndpoint,
+        region: awsconfig.aws_appsync_region,
+        defaultAuthMode: 'userPool',
+      },
+    },
+    Storage: {
+      S3: {
+        bucket: awsconfig.aws_user_files_s3_bucket,
+        region: awsconfig.aws_user_files_s3_bucket_region,
+      },
+    },
+  });
+
+  console.log('Amplify configured with Identity Pool:', awsconfig.aws_cognito_identity_pool_id);
 };
