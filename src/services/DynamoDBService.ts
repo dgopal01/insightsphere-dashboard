@@ -1,6 +1,6 @@
 /**
  * DynamoDB Service
- * Direct access to DynamoDB tables using IAM roles
+ * Direct access to DynamoDB tables using environment credentials
  */
 
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
@@ -13,15 +13,18 @@ const EVAL_JOB_TABLE = import.meta.env.VITE_EVAL_JOB_TABLE || 'UnityAIAssistantE
 const AWS_REGION = import.meta.env.VITE_AWS_REGION || 'us-east-1';
 
 /**
- * Get DynamoDB client using IAM roles
+ * Get DynamoDB client with environment credentials
  */
 async function getDynamoDBClient(): Promise<DynamoDBDocumentClient> {
   try {
-    console.log('Creating DynamoDB client with IAM role credentials');
+    console.log('Creating DynamoDB client with environment credentials');
 
     const client = new DynamoDBClient({
       region: AWS_REGION,
-      // Use default credential provider chain (IAM roles, environment variables, etc.)
+      credentials: {
+        accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY || '',
+      },
     });
 
     return DynamoDBDocumentClient.from(client);
