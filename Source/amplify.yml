@@ -5,7 +5,7 @@ frontend:
       commands:
         - echo "Installing dependencies"
         - npm ci
-        - echo "Environment - $AWS_BRANCH"
+        - "echo Environment - $AWS_BRANCH"
         
     build:
       commands:
